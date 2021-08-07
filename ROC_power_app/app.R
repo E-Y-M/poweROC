@@ -40,7 +40,7 @@ intro_tab <- tabItem(
     box(width = 12,
         collapsible = TRUE,
         title = "What is this?",
-        tags$p('This R Shiny app allows users to simulate power for ROC curve analyses of eyewitness lineup data. This app was heavily inspired by both Boogert et al.`s (2021) ', a(href = 'https://lmickes.github.io/pyWitness/index.html', 'pyWitness', .noWS = "outside"), ' program, Cohen et al.`s (2021) ', a(href = 'https://link.springer.com/article/10.3758%2Fs13428-020-01402-7', 'sdtlu', .noWS = "outside"), ' R package, and Grolund et al.`s (2014) ', a(href = 'http://mickeslab.com/handy/roc-tutorial/', 'ROC tutorial', .noWS = "outside"), ' for pROC/R. The goal of this app was to provide a user-friendly interface for ROC power simulations. This app takes as input lineup data with either one or two conditions and repeatedly samples from the data at different effect/sample sizes to provide power estimates.', .noWS = c("after-begin", "before-end"))
+        tags$p('This R Shiny app allows users to simulate power for ROC curve analyses of eyewitness lineup data. This app was heavily inspired by both Boogert et al.`s (2021) ', a(href = 'https://lmickes.github.io/pyWitness/index.html', 'pyWitness', .noWS = "outside"), ' program, Cohen et al.`s (2021) ', a(href = 'https://link.springer.com/article/10.3758%2Fs13428-020-01402-7', 'sdtlu', .noWS = "outside"), ' R package, and Grolund et al.`s (2014) ', a(href = 'http://mickeslab.com/handy/roc-tutorial/', 'ROC tutorial', .noWS = "outside"), ' for pROC/R. The goal of this app is to provide a user-friendly interface for ROC power simulations. This app takes as input lineup data with either one or two conditions and repeatedly samples from the data at different effect/sample sizes to provide power estimates.', .noWS = c("after-begin", "before-end"))
     ),
     box(width = 12,
         collapsible = TRUE,
@@ -57,8 +57,8 @@ intro_tab <- tabItem(
             tags$li("		 Record test significance", style="white-space: pre-wrap"),
             tags$li("Record proportion of significant tests at each effect size/N", style="white-space: pre-wrap")),
         tags$br(),
-        tags$p(strong('NOTE:'), ' Due to the bootstrap resampling involved in ROC analyses, simulations can take a long time (e.g., at 3-5s per simulation, complete analysis can potentially take several hours). Thus, I recommend either downloading a local copy of the app to run in R/RStudio, or temporarily disabling sleep/hibernation when running the web version'),
-        tags$p('Complete code for this app can be found at XXXX, and any issues can be reported at XXXX.')
+        tags$p(strong('NOTE:'), ' Due to the bootstrap resampling involved in ROC analyses, simulations can take a long time (e.g., at 3-5s per simulation, complete analysis can potentially take several hours). Thus, I recommend either downloading a local copy of the app to run in R/RStudio (see link below), or temporarily disabling sleep/hibernation when running the web version'),
+        tags$p('Complete source code for this app can be downloaded from GitHub at ', a(href = 'https://github.com/E-Y-M/poweROC', 'https://github.com/E-Y-M/poweROC', .noWS = "outside"), ', and any issues can be reported at ', a(href = 'https://github.com/E-Y-M/poweROC/issues', 'https://github.com/E-Y-M/poweROC/issues', .noWS = "outside"), '.', .noWS = c("after-begin", "before-end"))
     )
 )
 
