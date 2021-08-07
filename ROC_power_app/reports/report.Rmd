@@ -1,0 +1,32 @@
+---
+title: "ROC Eyewitness Power Simulation Results"
+output: html_document
+params: 
+    sim_params: NULL
+    hypothetical_plot: NULL
+    sim_results: NULL
+    pwr_plot: NULL
+    time_taken: NULL
+---
+
+## Simulation parameters
+```{r echo=FALSE, warning=FALSE}
+library(knitr)
+knitr::kable(params$sim_params)
+```
+
+## Plot of hypothetical ROC curves that were tested
+```{r echo=FALSE, warning=FALSE}
+params$hypothetical_plot
+```
+
+## Simulation results
+### `r params$time_taken`
+```{r echo=FALSE, warning=FALSE}
+knitr::kable(params$sim_results)
+```
+
+## Power curves
+```{r echo=FALSE, warning=FALSE}
+params$pwr_plot
+```
