@@ -40,7 +40,7 @@ intro_tab <- tabItem(
     box(width = 12,
         collapsible = TRUE,
         title = "What is this?",
-        tags$p('This R Shiny app allows users to simulate power for ROC curve analyses of eyewitness lineup data. This app was heavily inspired by both Boogert et al.`s (2021) ', a(href = 'https://lmickes.github.io/pyWitness/index.html', 'pyWitness', .noWS = "outside"), ' program and Cohen et al.`s (2021) ', a(href = 'https://link.springer.com/article/10.3758%2Fs13428-020-01402-7', 'sdtlu', .noWS = "outside"), ' R package. Both incorporate in-depth simulation of various SDT models from eyewitness lineup data, but simulation for power is not their primary focus. The goal of this app is to provide a simple user-friendly interface for the kinds of ROC analyses commonly conducted in lineup experiments. This app takes as input lineup data with either one or two conditions (e.g., simultaneous, sequential), and allows users to visualize various hypothetical ROC curves, simulate datasets by repeatedly sampling from the data under different conditions/effect sizes/sample sizes to provide power estimates, and download summary reports of power simulations.', .noWS = c("after-begin", "before-end"))
+        tags$p('This R Shiny app allows users to simulate power for ROC curve analyses of eyewitness lineup data. This app was heavily inspired by both Boogert et al.`s (2021) ', a(href = 'https://lmickes.github.io/pyWitness/index.html', 'pyWitness', .noWS = "outside"), ' program and Cohen et al.`s (2021) ', a(href = 'https://link.springer.com/article/10.3758%2Fs13428-020-01402-7', 'sdtlu', .noWS = "outside"), ' R package. Both allow for in-depth simulation and analysis of various SDT models from eyewitness lineup data, but simulation for power is not their primary focus. The goal of this app is to provide a simple user-friendly interface for the kinds of ROC analyses commonly conducted in lineup experiments. This app takes as input lineup data with either one or two conditions (e.g., simultaneous, sequential), and allows users to visualize various hypothetical ROC curves, simulate datasets by repeatedly sampling from the data under different conditions/effect sizes/sample sizes to provide power estimates, and download summary reports of power simulations.', .noWS = c("after-begin", "before-end"))
     ),
     box(width = 12,
         collapsible = TRUE,
@@ -57,7 +57,7 @@ intro_tab <- tabItem(
             tags$li("		 Record test significance", style="white-space: pre-wrap"),
             tags$li("Record proportion of significant tests at each effect size/N", style="white-space: pre-wrap")),
         tags$br(),
-        tags$p(strong('NOTE:'), ' Due to the somewhat computationally intensive bootstrap resampling involved in ROC analyses, simulations can take a long time (e.g., at 3-5s per simulation, complete analysis will likely take several hours). Thus, it is recommended that users download a local copy of the app to run in R/RStudio (see link below) to avoid simulation disruption with dropped internet connections. Whether running the web or a local version, it is also recommended that hibernation settings be temporarily disabled.'),
+        tags$p(strong('NOTE:'), ' Due to the computationally intensive bootstrap resampling involved in ROC analyses, simulations can take a long time (e.g., at 3-5s per simulation, complete analysis will likely take several hours). Thus, it is recommended that users download a local copy of the app to run in R/RStudio (see link below) to avoid simulation disruption with dropped internet connections. Whether running the web or a local version, it is also recommended that hibernation settings be temporarily disabled.'),
         tags$p('Complete source code for this app can be downloaded from GitHub at ', a(href = 'https://github.com/E-Y-M/poweROC', 'https://github.com/E-Y-M/poweROC', .noWS = "outside"), ', and any issues can be reported at ', a(href = 'https://github.com/E-Y-M/poweROC/issues', 'https://github.com/E-Y-M/poweROC/issues', .noWS = "outside"), '. This app is very much in the beta stage, so feedback/suggestions/bug reports are very much appreciated!', .noWS = c("after-begin", "before-end"))
     )
 )
@@ -69,7 +69,7 @@ data_tab <- tabItem(
         width = 12,
         collapsible = TRUE,
         title = "Instructions",
-        tags$p('Upload your data (.csv format) here. Data files uploaded are NOT saved to the server and are only used for a given session. Data must be formatted so that each row represents a single lineup decision by a single subject. Data files must contain the following (case-sensitive) columns:'),
+        tags$p('Upload your data (.csv format) here. Data files uploaded are NOT saved to the server and are only used for a given session. Data must be formatted so that each row represents a single lineup decision by a single participant. Data files must contain the following (case-sensitive) columns:'),
         tags$ul(
             tags$li(strong('id_type'), ': The lineup decision, one of “suspect”, “filler”, or “reject”'),
             tags$li(strong('conf_level'), ': The confidence rating for the decision, where lower values represent lower confidence. Must be numeric, and if not already binned (e.g., a 1-100 continuous scale), should be binned as desired prior to uploading'),
