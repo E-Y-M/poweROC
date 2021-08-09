@@ -40,25 +40,25 @@ intro_tab <- tabItem(
     box(width = 12,
         collapsible = TRUE,
         title = "What is this?",
-        tags$p('This R Shiny app allows users to simulate power for ROC curve analyses of eyewitness lineup data. This app was heavily inspired by both Boogert et al.`s (2021) ', a(href = 'https://lmickes.github.io/pyWitness/index.html', 'pyWitness', .noWS = "outside"), ' program, Cohen et al.`s (2021) ', a(href = 'https://link.springer.com/article/10.3758%2Fs13428-020-01402-7', 'sdtlu', .noWS = "outside"), ' R package, and Grolund et al.`s (2014) ', a(href = 'http://mickeslab.com/handy/roc-tutorial/', 'ROC tutorial', .noWS = "outside"), ' for pROC/R. The goal of this app is to provide a user-friendly interface for ROC power simulations. This app takes as input lineup data with either one or two conditions and repeatedly samples from the data at different effect/sample sizes to provide power estimates.', .noWS = c("after-begin", "before-end"))
+        tags$p('This R Shiny app allows users to simulate power for ROC curve analyses of eyewitness lineup data. This app was heavily inspired by both Boogert et al.`s (2021) ', a(href = 'https://lmickes.github.io/pyWitness/index.html', 'pyWitness', .noWS = "outside"), ' program and Cohen et al.`s (2021) ', a(href = 'https://link.springer.com/article/10.3758%2Fs13428-020-01402-7', 'sdtlu', .noWS = "outside"), ' R package. Both incorporate in-depth simulation of various SDT models from eyewitness lineup data, but simulation for power is not their primary focus. The goal of this app is to provide a simple user-friendly interface for the kinds of ROC analyses commonly conducted in lineup experiments. This app takes as input lineup data with either one or two conditions (e.g., simultaneous, sequential), and allows users to visualize various hypothetical ROC curves, simulate datasets by repeatedly sampling from the data under different conditions/effect sizes/sample sizes to provide power estimates, and download summary reports of power simulations.', .noWS = c("after-begin", "before-end"))
     ),
     box(width = 12,
         collapsible = TRUE,
         title = "How does it work?",
-        tags$p('You’ll first need to upload a data file (see the “Data Upload” tab for instructions). This file can contain a single condition (e.g., pilot data) or data from two conditions (e.g., data from another experiment similar to the one you are powering for). If the former, the app will automatically duplicate data from the single provided condition to use as a basis for effect size adjustment and comparison. Then, you’ll set the parameters for the simulation (e.g., effect/sample sizes to test, number of simulation samples, one- or two-tailed testing protocol, etc.). The simulations themselves operate like so:'),
+        tags$p('This app requires an uploaded data file containing lineup data (see the “Data Upload” tab for instructions). This file can contain a single condition (e.g., pilot data) or data from two conditions (e.g., data from another experiment similar to the one being powered for). If the former, the app will automatically duplicate data from the single provided condition to use as a basis for effect size adjustment and comparison. Before simulating data, various parameters will need to be specified (e.g., effect/sample sizes to test, number of simulation samples, one- or two-tailed testing protocol, etc.). The simulations themselves operate like so:'),
         tags$ol(
             tags$li("For each specified effect size:"),
-            tags$li("   Apply that effect size to the correct ID rates for the 2nd condition in the data file", style="white-space: pre-wrap"),
-            tags$li("	Calculate the proportion of correct/false IDs at each confidence level", style="white-space: pre-wrap"),
+            tags$li("   Apply that effect size to the # of correct IDs for the 2nd condition in the data file", style="white-space: pre-wrap"),
+            tags$li("	Calculate the new proportion of correct IDs at each confidence level", style="white-space: pre-wrap"),
             tags$li("	For each specified sample size:", style="white-space: pre-wrap"),
             tags$li("	  For each simulation sample:", style="white-space: pre-wrap"),
-            tags$li("		 Sample lineup outcomes/confidence according to the newly define proportions", style="white-space: pre-wrap"),
-            tags$li("		 Compute ROC curves for each condition and compare via pROC partial AUC analysis", style="white-space: pre-wrap"),
+            tags$li("		 Sample lineup outcomes/confidence according to the newly defined proportions", style="white-space: pre-wrap"),
+            tags$li("		 Compute ROC curves for each condition and compare via pROC partial AUC analysis, as per Gronlund et al.`s (2014) ", a(href = 'http://mickeslab.com/handy/roc-tutorial/', 'ROC tutorial', .noWS = "outside"), style="white-space: pre-wrap", .noWS = c("after-begin", "before-end")),
             tags$li("		 Record test significance", style="white-space: pre-wrap"),
             tags$li("Record proportion of significant tests at each effect size/N", style="white-space: pre-wrap")),
         tags$br(),
-        tags$p(strong('NOTE:'), ' Due to the bootstrap resampling involved in ROC analyses, simulations can take a long time (e.g., at 3-5s per simulation, complete analysis can potentially take several hours). Thus, I recommend either downloading a local copy of the app to run in R/RStudio (see link below), or temporarily disabling sleep/hibernation when running the web version'),
-        tags$p('Complete source code for this app can be downloaded from GitHub at ', a(href = 'https://github.com/E-Y-M/poweROC', 'https://github.com/E-Y-M/poweROC', .noWS = "outside"), ', and any issues can be reported at ', a(href = 'https://github.com/E-Y-M/poweROC/issues', 'https://github.com/E-Y-M/poweROC/issues', .noWS = "outside"), '.', .noWS = c("after-begin", "before-end"))
+        tags$p(strong('NOTE:'), ' Due to the somewhat computationally intensive bootstrap resampling involved in ROC analyses, simulations can take a long time (e.g., at 3-5s per simulation, complete analysis will likely take several hours). Thus, it is recommended that users download a local copy of the app to run in R/RStudio (see link below) to avoid simulation disruption with dropped internet connections. Whether running the web or a local version, it is also recommended that hibernation settings be temporarily disabled.'),
+        tags$p('Complete source code for this app can be downloaded from GitHub at ', a(href = 'https://github.com/E-Y-M/poweROC', 'https://github.com/E-Y-M/poweROC', .noWS = "outside"), ', and any issues can be reported at ', a(href = 'https://github.com/E-Y-M/poweROC/issues', 'https://github.com/E-Y-M/poweROC/issues', .noWS = "outside"), '. This app is very much in the beta stage, so feedback/suggestions/bug reports are very much appreciated!', .noWS = c("after-begin", "before-end"))
     )
 )
 
@@ -69,12 +69,12 @@ data_tab <- tabItem(
         width = 12,
         collapsible = TRUE,
         title = "Instructions",
-        tags$p('Upload your data (.csv format) here. Data must be formatted such that each row represents a single lineup decision. Data files must contain the following columns:'),
+        tags$p('Upload your data (.csv format) here. Data files uploaded are NOT saved to the server and are only used for a given session. Data must be formatted so that each row represents a single lineup decision by a single subject. Data files must contain the following (case-sensitive) columns:'),
         tags$ul(
             tags$li(strong('id_type'), ': The lineup decision, one of “suspect”, “filler”, or “reject”'),
             tags$li(strong('conf_level'), ': The confidence rating for the decision, where lower values represent lower confidence. Must be numeric, and if not already binned (e.g., a 1-100 continuous scale), should be binned as desired prior to uploading'),
             tags$li(strong('culprit_present'), ': Whether or not the lineup was culprit present/absent, one of “present” or “absent”'),
-            tags$li(strong('cond'), ': The between-subjects condition for that participant/lineup. Only necessary to specify if you have data with two conditions, otherwise the variable will be created automatically')
+            tags$li(strong('cond'), ': The between-subjects condition for that participant/lineup. Only necessary to include if you have data with two pre-existing conditions, otherwise the variable will be created automatically')
         ),
 tags$p('See the example data file below for proper formatting'),
         fileInput(
