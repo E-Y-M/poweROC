@@ -77,7 +77,7 @@ data_tab <- tabItem(
             tags$li(strong('id_type'), ': The lineup decision, one of “suspect”, “filler”, or “reject”'),
             tags$li(strong('conf_level'), ': The confidence rating for the decision, where lower values represent lower confidence. Must be numeric, and if not already binned (e.g., a 1-100 continuous scale), should be binned as desired prior to uploading'),
             tags$li(strong('culprit_present'), ': Whether or not the lineup was culprit present/absent, one of “present” or “absent”'),
-            tags$li(strong('cond'), ': The between-subjects condition for that participant/lineup. Only necessary to include if you have data with two pre-existing conditions, otherwise the variable will be created and populated automatically. Note that the condition that comes 2nd alphabetically will be the one that effect sizes are applied to.')
+            tags$li(strong('cond'), ': The between-subjects condition for that participant/lineup. Only necessary to include if you have data with two pre-existing conditions (which is recommended), otherwise the variable will be created and populated automatically. Note that the condition that comes 2nd alphabetically will be the one that effect sizes are applied to.')
         ),
 tags$p('See the example data file below for proper formatting'),
         fileInput(
