@@ -358,7 +358,7 @@ server <- function(input, output, session) {
                 data_files$processed_data = data_files$user_data %>% 
                     mutate(id_type = tolower(id_type),
                            culprit_present = tolower(culprit_present),
-                           cond = as.factor(cond))
+                           cond = as.character(cond))
             } else {
                 data_files$processed_data = data_files$user_data %>% 
                     rbind(data_files$user_data) %>% 
@@ -389,17 +389,23 @@ server <- function(input, output, session) {
                                 #roc_paired = NA)
     
     observeEvent(data_files$processed_data, {
-        parameters$cond1 = data_files$processed_data %>% 
-            as.data.frame() %>% 
-            select(cond) %>% 
-            unique() %>% 
-            slice(1)
+        #parameters$cond1 = data_files$processed_data %>% 
+        #    as.data.frame() %>% 
+        #    select(cond) %>% 
+        #    unique() %>% 
+        #    slice(1) %>% 
+        #    as.character()
         
-        parameters$cond2 = data_files$processed_data %>% 
-            as.data.frame() %>% 
-            select(cond) %>% 
-            unique() %>% 
-            slice(2)
+        parameters$cond1 = as.character(unique(data_files$processed_data$cond)[1])
+        
+        #parameters$cond2 = data_files$processed_data %>% 
+        #    as.data.frame() %>% 
+        #    select(cond) %>% 
+        #    unique() %>% 
+        #    slice(2) %>% 
+        #    as.character()
+        
+        parameters$cond2 = as.character(unique(data_files$processed_data$cond)[2])
         
         message(parameters$cond1)
         message(parameters$cond2)
@@ -562,6 +568,7 @@ server <- function(input, output, session) {
             filter(id_type == "suspect")
         
         message("Data processing complete")
+        message(data_original)
         
         ROC_data = data.frame(prop = rep(NA, times = length(unique(data_original$cond))*
                                              length(unique(data_original$culprit_present))*
@@ -627,8 +634,8 @@ server <- function(input, output, session) {
         ROC_data_wide = spread(ROC_data,
                                key = "presence",
                                value = "prop")  %>% 
-            rbind(data.frame(cond = rep(c(unique(data_original$cond)[1], 
-                                          unique(data_original$cond)[2]), 
+            rbind(data.frame(cond = rep(c(parameters$cond1, 
+                                          parameters$cond2), 
                                         each = length(parameters$effs)),
                              criteria = NA,
                              eff = rep(parameters$effs, times = length(unique(data_original$cond))),
@@ -652,8 +659,9 @@ server <- function(input, output, session) {
                 max()
         }
 
-        
         message("Created data for plotting")
+        message(ROC_data_wide)
+        
         
         ROC_data_plot = ROC_data_wide %>% 
             ggplot(aes(x = absent, y = present, color = cond, linetype = as.factor(eff)))+

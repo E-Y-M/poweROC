@@ -40,3 +40,6 @@ vignettes/*.pdf
 
 # Shiny files
 **/.secrets
+
+# Testing files
+**/.Stuff for testing
