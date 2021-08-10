@@ -28,7 +28,10 @@ example_data = data.frame(id_type = sample(c("suspect", "filler", "reject"),
                                                    100,
                                                    replace = TRUE,
                                                    prob = c(.5, .5)),
-                          cond = NA)
+                          cond = sample(c("A", "B"),
+                                        100,
+                                        replace = TRUE,
+                                        prob = c(.5, .5)))
 
 # user interface ----
 shinyjs::useShinyjs()
@@ -40,7 +43,7 @@ intro_tab <- tabItem(
     box(width = 12,
         collapsible = TRUE,
         title = "What is this?",
-        tags$p('This R Shiny app allows users to simulate power for ROC curve analyses of eyewitness lineup data. This app was heavily inspired by both Boogert et al.`s (2021) ', a(href = 'https://lmickes.github.io/pyWitness/index.html', 'pyWitness', .noWS = "outside"), ' program and Cohen et al.`s (2021) ', a(href = 'https://link.springer.com/article/10.3758%2Fs13428-020-01402-7', 'sdtlu', .noWS = "outside"), ' R package. Both allow for in-depth simulation and analysis of various SDT models from eyewitness lineup data, but simulation for power is not their primary focus. The goal of this app is to provide a simple user-friendly interface for the kinds of ROC analyses commonly conducted in lineup experiments. This app takes as input lineup data with either one or two conditions (e.g., simultaneous, sequential), and allows users to visualize various hypothetical ROC curves, simulate datasets by repeatedly sampling from the data under different conditions/effect sizes/sample sizes to provide power estimates, and download summary reports of power simulations.', .noWS = c("after-begin", "before-end"))
+        tags$p('This R Shiny app allows users to simulate power for ROC curve analyses of eyewitness lineup data. This app was heavily inspired by both Boogert et al.`s (2021) ', a(href = 'https://lmickes.github.io/pyWitness/index.html', 'pyWitness', .noWS = "outside"), ' program and Cohen et al.`s (2021) ', a(href = 'https://link.springer.com/article/10.3758%2Fs13428-020-01402-7', 'sdtlu', .noWS = "outside"), ' R package. Both allow for in-depth simulation and analysis of various SDT models from eyewitness lineup data, but simulation for power is not their primary focus. The goal of this app is to provide a simple user-friendly interface for the kinds of ROC analyses commonly conducted in lineup experiments. This app takes as input lineup data with either one condition or two between-subjects conditions, and allows users to visualize various hypothetical ROC curves, simulate datasets by repeatedly sampling from the data under different conditions/effect sizes/sample sizes to provide power estimates, and download summary reports of power simulations.', .noWS = c("after-begin", "before-end"))
     ),
     box(width = 12,
         collapsible = TRUE,
@@ -74,7 +77,7 @@ data_tab <- tabItem(
             tags$li(strong('id_type'), ': The lineup decision, one of “suspect”, “filler”, or “reject”'),
             tags$li(strong('conf_level'), ': The confidence rating for the decision, where lower values represent lower confidence. Must be numeric, and if not already binned (e.g., a 1-100 continuous scale), should be binned as desired prior to uploading'),
             tags$li(strong('culprit_present'), ': Whether or not the lineup was culprit present/absent, one of “present” or “absent”'),
-            tags$li(strong('cond'), ': The between-subjects condition for that participant/lineup. Only necessary to include if you have data with two pre-existing conditions, otherwise the variable will be created automatically')
+            tags$li(strong('cond'), ': The between-subjects condition for that participant/lineup. Only necessary to include if you have data with two pre-existing conditions, otherwise the variable will be created and populated automatically. Note that the condition that comes 2nd alphabetically will be the one that effect sizes are applied to.')
         ),
 tags$p('See the example data file below for proper formatting'),
         fileInput(
@@ -106,7 +109,7 @@ parameters_tab = tabItem(tabName = "parameters_tab",
                                      placeholder = "0.5, 1.5"
                                  ),
                                  bsTooltip("effs",
-                                           "Specify effect sizes to test in a comma-separated list. In this app, effect sizes are operationalized as a multiplier to apply to the # of correct IDs at each confidence level for the 2nd condition in your data file. E.g., an effect size of 2 means that the 2nd condition results in 2x more correct IDs at each confidence level. If you only wish to test two conditions for which data are already present in your file, leave this as 1",
+                                           "Specify effect sizes to test in a comma-separated list. In this app, effect sizes are operationalized as a multiplier to apply to the # of correct IDs at each confidence level for the 2nd condition in your data file. E.g., an effect size of 2 means that the 2nd condition results in 2x more correct IDs at each confidence level. If you have data for two conditions and only wish to test the effect size in the data, leave this as 1",
                                            placement = "bottom",
                                            trigger = "hover"),
                                  textInput(
