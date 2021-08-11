@@ -94,7 +94,7 @@ tags$p('See the example data file below for proper formatting'),
     box(width = 6,
         collapsible = TRUE,
         title = "Your data",
-        dataTableOutput("processed_data"))
+        div(style = 'overflow-x: scroll',dataTableOutput("processed_data")))
 )
 
 ### simulation parameters tab ----
@@ -340,8 +340,6 @@ server <- function(input, output, session) {
     })
 
     observeEvent(input$user_data, {
-            
-        
         if (!c("id_type", "conf_level", "culprit_present") %in% colnames(data_files$user_data)) {
             showModal(modalDialog(
                 title = "Warning",
@@ -355,21 +353,47 @@ server <- function(input, output, session) {
             ))
         } else {
             if (length(unique(data_files$user_data$cond)) > 1) {
-                data_files$processed_data = data_files$user_data %>% 
-                    mutate(id_type = tolower(id_type),
-                           culprit_present = tolower(culprit_present),
-                           cond = as.character(cond))
+                minimum_conf = min(data_files$user_data$conf_level)
+                
+                if (minimum_conf == 0) {
+                    data_files$processed_data = data_files$user_data %>% 
+                        mutate(id_type = tolower(id_type),
+                               culprit_present = tolower(culprit_present),
+                               cond = as.character(cond),
+                               conf_level = conf_level + 1,
+                               conf_level_rev = max(conf_level)+1 - conf_level)
+                } else {
+                    data_files$processed_data = data_files$user_data %>% 
+                        mutate(id_type = tolower(id_type),
+                               culprit_present = tolower(culprit_present),
+                               cond = as.character(cond),
+                               conf_level = conf_level,
+                               conf_level_rev = max(conf_level)+1 - conf_level)
+                }
             } else {
-                data_files$processed_data = data_files$user_data %>% 
-                    rbind(data_files$user_data) %>% 
-                    mutate(cond = rep(c("A", "B"), each = nrow(data_files$user_data)),
-                           id_type = tolower(id_type),
-                           culprit_present = tolower(culprit_present))
+                minimum_conf = min(data_files$user_data$conf_level)
+                
+                if (minimum_conf < 1) {
+                    data_files$processed_data = data_files$user_data %>% 
+                        rbind(data_files$user_data) %>% 
+                        mutate(cond = rep(c("A", "B"), each = nrow(data_files$user_data)),
+                               id_type = tolower(id_type),
+                               culprit_present = tolower(culprit_present),
+                               conf_level = conf_level + 1,
+                               conf_level_rev = max(conf_level)+1 - conf_level)
+                } else {
+                    data_files$processed_data = data_files$user_data %>% 
+                        rbind(data_files$user_data) %>% 
+                        mutate(cond = rep(c("A", "B"), each = nrow(data_files$user_data)),
+                               id_type = tolower(id_type),
+                               culprit_present = tolower(culprit_present),
+                               conf_level = conf_level,
+                               conf_level_rev = max(conf_level)+1 - conf_level)
+                }
                 message("Created processed data")
             } 
         }
     })
-        
     
     output$user_data = renderDataTable({
         data_files$user_data
@@ -406,9 +430,6 @@ server <- function(input, output, session) {
         #    as.character()
         
         parameters$cond2 = as.character(unique(data_files$processed_data$cond)[2])
-        
-        message(parameters$cond1)
-        message(parameters$cond2)
     })
     
     #observeEvent(input$roc_paired, {
@@ -551,20 +572,18 @@ server <- function(input, output, session) {
             dplyr::select(prop) %>% 
             as.numeric()
         
-        
         message("Processed data for both conditions")
         
         #### Getting responses at each confidence level for both conditions ----
         data_original = data_files$processed_data %>%
-            mutate(conf_level = as.factor(conf_level)) %>% 
-            group_by(id_type, conf_level, culprit_present, cond) %>% 
+            #mutate(conf_level = as.factor(conf_level)) %>% 
+            group_by(id_type, conf_level_rev, culprit_present, cond) %>% 
             count() %>% 
             ungroup() %>% 
             group_by(culprit_present, cond) %>% 
             mutate(total = sum(n),
                    prop = n/total) %>% 
-            ungroup() %>% 
-            mutate(conf_level_rev = (max(as.numeric(conf_level))+1) - as.numeric(conf_level)) %>% 
+            ungroup() %>%
             filter(id_type == "suspect")
         
         message("Data processing complete")
@@ -572,7 +591,7 @@ server <- function(input, output, session) {
         
         ROC_data = data.frame(prop = rep(NA, times = length(unique(data_original$cond))*
                                              length(unique(data_original$culprit_present))*
-                                             length(unique(data_original$conf_level))*
+                                             length(unique(data_original$conf_level_rev))*
                                              length(parameters$effs)),
                               cond = NA,
                               presence = NA,
@@ -600,11 +619,11 @@ server <- function(input, output, session) {
                 curr_cond = unique(data$cond)[i]
                 for (j in 1:length(unique(data$culprit_present))) {
                     curr_present = unique(data$culprit_present)[j]
-                    for (k in 1:length(unique(data$conf_level))) {
-                        curr_conf = unique(data$conf_level)[k]
+                    for (k in 1:length(unique(data$conf_level_rev))) {
+                        curr_conf = unique(data$conf_level_rev)[k]
                         curr_resps = sum(data$prop[data$cond == curr_cond &
                                                        data$culprit_present == curr_present &
-                                                       data$conf_level %in% c(1:curr_conf)])
+                                                       data$conf_level_rev %in% c(1:curr_conf)])
                         
                         ROC_data$cond[row] = curr_cond
                         ROC_data$presence[row] = curr_present
@@ -703,6 +722,10 @@ server <- function(input, output, session) {
                            ncol = length(parameters$effs))
         auc_store = matrix(nrow = length(parameters$ns),
                            ncol = length(parameters$effs))
+        auc_1_store = matrix(nrow = length(parameters$ns),
+                             ncol = length(parameters$effs))
+        auc_2_store = matrix(nrow = length(parameters$ns),
+                             ncol = length(parameters$effs))
         
         show("sim_progress")
         sim_counter = 0
@@ -714,7 +737,7 @@ server <- function(input, output, session) {
             eff = parameters$effs[g]
             
             data_original = data_files$processed_data %>%
-                mutate(conf_level = as.factor(conf_level)) %>%
+                #mutate(conf_level = as.factor(conf_level)) %>%
                 group_by(id_type, conf_level, culprit_present, cond) %>%
                 count() %>%
                 ungroup() %>%
@@ -785,8 +808,8 @@ server <- function(input, output, session) {
                     ####### TA ----
                     TA_data_cond1 = sample(
                         c(
-                            as_vector(TA_data_cond1_root$conf_level_rev),
-                            NA
+                            as_vector(TA_data_cond1_root$conf_level),
+                            0
                         ),
                         size = round((curr_n/2) * input$n_TA_lineups),
                         replace = TRUE,
@@ -798,13 +821,13 @@ server <- function(input, output, session) {
                     
                     TA_data_cond1 = TA_data_cond1[!is.na(TA_data_cond1)]
                     
-                    cond1_partial = length(TA_data_cond1) / round((curr_n/2) * input$n_TA_lineups)
+                    cond1_partial = length(TA_data_cond1[TA_data_cond1 > 0]) / round((curr_n/2) * input$n_TA_lineups)
                     
                     ####### TP ----
                     TP_data_cond1 = sample(
                         c(
-                            as_vector(TP_data_cond1_root$conf_level_rev),
-                            NA
+                            as_vector(TP_data_cond1_root$conf_level),
+                            0
                         ),
                         size = round((curr_n/2) * input$n_TP_lineups),
                         replace = TRUE,
@@ -821,8 +844,8 @@ server <- function(input, output, session) {
                     ####### TA ----
                     TA_data_cond2 = sample(
                         c(
-                            as_vector(TA_data_cond2_root$conf_level_rev),
-                            NA
+                            as_vector(TA_data_cond2_root$conf_level),
+                            0
                         ),
                         size = round((curr_n/2) * input$n_TA_lineups),
                         replace = TRUE,
@@ -834,13 +857,13 @@ server <- function(input, output, session) {
                     
                     TA_data_cond2 = TA_data_cond2[!is.na(TA_data_cond2)]
                     
-                    cond2_partial = length(TA_data_cond2) / round((curr_n/2) * input$n_TA_lineups)
+                    cond2_partial = length(TA_data_cond2[TA_data_cond2 > 0]) / round((curr_n/2) * input$n_TA_lineups)
                     
                     ####### TP ----
                     TP_data_cond2 = sample(
                         c(
-                            as_vector(TP_data_cond2_root$conf_level_rev),
-                            NA
+                            as_vector(TP_data_cond2_root$conf_level),
+                            0
                         ),
                         size = round((curr_n/2) * input$n_TP_lineups),
                         replace = TRUE,
@@ -854,22 +877,24 @@ server <- function(input, output, session) {
                     
                     ##### Generate the ROCs ----
                     ###### Condition 1 ----
-                    if (length(TP_data_cond1) > length(TA_data_cond1)) {
-                        TA_data_cond1 = append(TA_data_cond1,
-                                               rep(
-                                                   0,
-                                                   length(TP_data_cond1) - length(TA_data_cond1)
-                                               ))
-                    } else if (length(TA_data_cond1) > length(TP_data_cond1)) {
-                        TP_data_cond1 = append(TP_data_cond1,
-                                               rep(
-                                                   0,
-                                                   length(TA_data_cond1) - length(TP_data_cond1)
-                                               ))
-                    } else {
-                        TA_data_cond1 = TA_data_cond1
-                        TP_data_cond1 = TP_data_cond1
-                    }
+                    
+                    
+                    #if (length(TP_data_cond1) > length(TA_data_cond1)) {
+                    #    TA_data_cond1 = append(TA_data_cond1,
+                    #                           rep(
+                    #                               0,
+                    #                               length(TP_data_cond1) - length(TA_data_cond1)
+                    #                           ))
+                    #} else if (length(TA_data_cond1) > length(TP_data_cond1)) {
+                    #    TP_data_cond1 = append(TP_data_cond1,
+                    #                           rep(
+                    #                               0,
+                    #                               length(TA_data_cond1) - length(TP_data_cond1)
+                    #                           ))
+                    #} else {
+                    #    TA_data_cond1 = TA_data_cond1
+                    #    TP_data_cond1 = TP_data_cond1
+                    #}
                     
                     roc_cond1 = roc(
                         controls = TA_data_cond1,
@@ -881,22 +906,22 @@ server <- function(input, output, session) {
                     )
                     
                     ###### Condition 2 ----
-                    if (length(TP_data_cond2) > length(TA_data_cond2)) {
-                        TA_data_cond2 = append(TA_data_cond2,
-                                               rep(
-                                                   0,
-                                                   length(TP_data_cond2) - length(TA_data_cond2)
-                                               ))
-                    } else if (length(TA_data_cond2) > length(TP_data_cond2)) {
-                        TP_data_cond2 = append(TP_data_cond2,
-                                               rep(
-                                                   0,
-                                                   length(TA_data_cond2) - length(TP_data_cond2)
-                                               ))
-                    } else {
-                        TA_data_cond2 = TA_data_cond2
-                        TP_data_cond2 = TP_data_cond2
-                    }
+                    #if (length(TP_data_cond2) > length(TA_data_cond2)) {
+                    #    TA_data_cond2 = append(TA_data_cond2,
+                    #                           rep(
+                    #                               0,
+                    #                               length(TP_data_cond2) - length(TA_data_cond2)
+                    #                           ))
+                    #} else if (length(TA_data_cond2) > length(TP_data_cond2)) {
+                    #    TP_data_cond2 = append(TP_data_cond2,
+                    #                           rep(
+                    #                               0,
+                    #                               length(TA_data_cond2) - length(TP_data_cond2)
+                    #                           ))
+                    #} else {
+                    #    TA_data_cond2 = TA_data_cond2
+                    #    TP_data_cond2 = TP_data_cond2
+                    #}
                     
                     roc_cond2 = roc(
                         controls = TA_data_cond2,
@@ -942,6 +967,8 @@ server <- function(input, output, session) {
                     }
                     
                     sim_store$auc_diff[i] = roc_test$estimate[1] - roc_test$estimate[2]
+                    sim_store$auc_1[i] = roc_test$estimate[1]
+                    sim_store$auc_2[i] = roc_test$estimate[2]
                     sim_store$auc_p[i] = roc_test$p.value
                     
                     if (input$test_tails == "2_tail") {
@@ -950,10 +977,10 @@ server <- function(input, output, session) {
                                                            parameters$cond1,
                                                            parameters$cond2)) {
                         sim_store$sig[i] = ifelse(sim_store$auc_p[i] < input$alpha_level * 2 &
-                                                      sim_store$auc_diff > 0, 1, 0)
+                                                      sim_store$auc_diff[i] > 0, 1, 0)
                     } else {
                         sim_store$sig[i] = ifelse(sim_store$auc_p[i] < input$alpha_level * 2 &
-                                                      sim_store$auc_diff < 0, 1, 0)
+                                                      sim_store$auc_diff[i] < 0, 1, 0)
                     }
                     
                     
@@ -971,6 +998,8 @@ server <- function(input, output, session) {
                 }
                 pwr_store[h, g] = mean(sim_store$sig)
                 auc_store[h, g] = mean(sim_store$auc_diff)
+                auc_1_store[h, g] = mean(sim_store$auc_1)
+                auc_2_store[h, g] = mean(sim_store$auc_2)
             }
         }
         ### generate resuts dataframes ----
@@ -982,6 +1011,22 @@ server <- function(input, output, session) {
                    value = "Avg. AUC difference",
                    -N)
         
+        auc_1_store = auc_1_store %>% 
+            as.data.frame() %>% 
+            `colnames<-`(parameters$effs) %>% 
+            mutate(N = parameters$ns) %>% 
+            gather(key = "Effect size",
+                   value = !!paste("Avg. AUC in", parameters$cond1, sep = " "),
+                   -N)
+        
+        auc_2_store = auc_2_store %>% 
+            as.data.frame() %>% 
+            `colnames<-`(parameters$effs) %>% 
+            mutate(N = parameters$ns) %>% 
+            gather(key = "Effect size",
+                   value = !!paste("Avg. AUC in", parameters$cond2, sep = " "),
+                   -N)
+        
         data_files$pwr_store = as.data.frame(pwr_store) %>% 
             `colnames<-`(parameters$effs) %>% 
             mutate(N = parameters$ns) %>% 
@@ -989,6 +1034,8 @@ server <- function(input, output, session) {
                    value = "Power",
                    -N) %>% 
             select(N, `Effect size`, `Power`) %>% 
+            left_join(auc_1_store) %>% 
+            left_join(auc_2_store) %>% 
             left_join(auc_store)
             
         end_time = Sys.time()
