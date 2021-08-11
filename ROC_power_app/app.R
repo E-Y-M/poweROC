@@ -361,14 +361,16 @@ server <- function(input, output, session) {
                                culprit_present = tolower(culprit_present),
                                cond = as.character(cond),
                                conf_level = conf_level + 1,
-                               conf_level_rev = max(conf_level)+1 - conf_level)
+                               conf_level_rev = max(conf_level)+1 - conf_level) %>% 
+                        arrange(cond)
                 } else {
                     data_files$processed_data = data_files$user_data %>% 
                         mutate(id_type = tolower(id_type),
                                culprit_present = tolower(culprit_present),
                                cond = as.character(cond),
                                conf_level = conf_level,
-                               conf_level_rev = max(conf_level)+1 - conf_level)
+                               conf_level_rev = max(conf_level)+1 - conf_level) %>% 
+                        arrange(cond)
                 }
             } else {
                 minimum_conf = min(data_files$user_data$conf_level)
@@ -380,7 +382,8 @@ server <- function(input, output, session) {
                                id_type = tolower(id_type),
                                culprit_present = tolower(culprit_present),
                                conf_level = conf_level + 1,
-                               conf_level_rev = max(conf_level)+1 - conf_level)
+                               conf_level_rev = max(conf_level)+1 - conf_level) %>% 
+                        arrange(cond)
                 } else {
                     data_files$processed_data = data_files$user_data %>% 
                         rbind(data_files$user_data) %>% 
@@ -388,7 +391,8 @@ server <- function(input, output, session) {
                                id_type = tolower(id_type),
                                culprit_present = tolower(culprit_present),
                                conf_level = conf_level,
-                               conf_level_rev = max(conf_level)+1 - conf_level)
+                               conf_level_rev = max(conf_level)+1 - conf_level) %>% 
+                        arrange(cond)
                 }
                 message("Created processed data")
             } 
@@ -447,7 +451,9 @@ server <- function(input, output, session) {
     ## other reactive variables ----
     other_vars = reactiveValues(sim_counter = 0,
                                 sim_total = NA,
-                                time_taken = NA)
+                                time_taken = NA,
+                                start_time = NA,
+                                end_time = NA)
     
     ### number of lineups ----
     observeEvent(input$n_total_lineups, {
@@ -704,15 +710,15 @@ server <- function(input, output, session) {
     
     ## main simulation loop ----
     observeEvent(input$sim_start, {
-        start_time = Sys.time()
+        other_vars$start_time = Sys.time()
         
         other_vars$sim_total = input$nsims * length(parameters$ns) * length(parameters$effs)
         
-        showModal(modalDialog(HTML(sprintf("Start time: %s <br/>With %s simulations @ ~3-5s each, estimated completion time is between %s and %s <br/>Do not close this tab/window",
+        showModal(modalDialog(HTML(sprintf("Start time: %s <br/>With %s simulations @ ~5-7s each, estimated completion time is between %s and %s <br/>Do not close this tab/window",
                             start_time,
                             other_vars$sim_total,
-                            start_time + (other_vars$sim_total * 3),
-                            start_time + (other_vars$sim_total * 5))),
+                            start_time + (other_vars$sim_total * 5),
+                            start_time + (other_vars$sim_total * 7))),
                     fade = FALSE,
                     easyClose = FALSE,
                     size = "l"))
@@ -1038,15 +1044,15 @@ server <- function(input, output, session) {
             left_join(auc_2_store) %>% 
             left_join(auc_store)
             
-        end_time = Sys.time()
+        other_vars$end_time = Sys.time()
         
         output$time_taken = renderText({
             sprintf("Time taken: %s minutes",
-                    round((end_time - start_time)/60), 2)
+                    round((other_vars$end_time - other_vars$start_time)/60), 2)
             
         other_vars$time_taken = 
             sprintf("Time taken: %s minutes",
-                    round((end_time - start_time)/60), 2)
+                    round((other_vars$end_time - other_vars$start_time)/60), 2)
         })
 
     })

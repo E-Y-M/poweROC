@@ -17,7 +17,10 @@ colloff = read.csv("./Dataset testing and reports/Data/Colloff et al. 2021/Exper
     mutate(conf_level_rev = max(conf_level)+1 - conf_level) %>% 
     mutate(cond = ifelse(cond == 1, "high_similarity",
                          ifelse(cond == 2, "med_similarity", "low_similarity"))) %>% 
-    filter(cond != "med_similarity")
+    filter(cond != "med_similarity") %>% 
+    mutate(cond = as.character(cond))
+
+table(colloff$cond)
 
 density(colloff$suspect_prob[!is.na(colloff$suspect_prob)]) %>%
     plot()
