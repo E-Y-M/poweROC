@@ -12,11 +12,11 @@ suppressPackageStartupMessages({
 
 ## functions ----
 source("scripts/func.R") # helper functions
-#source("scripts/gs4.R") # google sheets functions
+source("scripts/gs4.R") # google sheets functions
 
 ## Google Sheets setup ----
-#gs4_auth(cache = ".secrets", email = "eric7mah@gmail.com")
-#google_sheet_id = "1V1T2Jml1OyxDyIY71GQtv-8EG6A66g7qnyGCKLPj6yk"
+gs4_auth(cache = ".secrets", email = "eric7mah@gmail.com")
+google_sheet_id = "12hwA8QHK7D_kgo-OJjGv9xoasgZ2ksChkPtW875aOQQ"
 
 ## read in necessary data files ----
 example_data = data.frame(id_type = sample(c("suspect", "filler", "reject"),
@@ -43,7 +43,9 @@ intro_tab <- tabItem(
     box(width = 12,
         collapsible = TRUE,
         title = "What is this?",
-        tags$p('This R Shiny app allows users to simulate power for ROC curve analyses of eyewitness lineup data. This app was heavily inspired by both Boogert et al.`s (2021) ', a(href = 'https://lmickes.github.io/pyWitness/index.html', 'pyWitness', .noWS = "outside"), ' program and Cohen et al.`s (2021) ', a(href = 'https://link.springer.com/article/10.3758%2Fs13428-020-01402-7', 'sdtlu', .noWS = "outside"), ' R package. Both allow for in-depth simulation and analysis of various SDT models from eyewitness lineup data, but simulation for power is not their primary focus. The goal of this app is to provide a simple user-friendly interface for the kinds of ROC analyses commonly conducted in lineup experiments. This app takes as input lineup data with either one condition or two between-subjects conditions, and allows users to visualize various hypothetical ROC curves, simulate datasets by repeatedly sampling from the data under different conditions/effect sizes/sample sizes to provide power estimates, and download summary reports of power simulations.', .noWS = c("after-begin", "before-end"))
+        tags$p('This R Shiny app allows users to simulate power for ROC curve analyses of eyewitness lineup data*. This app was heavily inspired by both Boogert et al.`s (2021) ', a(href = 'https://lmickes.github.io/pyWitness/index.html', 'pyWitness', .noWS = "outside"), ' program and Cohen et al.`s (2021) ', a(href = 'https://link.springer.com/article/10.3758%2Fs13428-020-01402-7', 'sdtlu', .noWS = "outside"), ' R package. Both allow for in-depth simulation and analysis of various SDT models from eyewitness lineup data, but simulation for power is not their primary focus. The goal of this app is to provide a simple user-friendly interface for the kinds of ROC analyses commonly conducted in lineup experiments. This app takes as input lineup data with either one condition or two between-subjects conditions, and allows users to visualize various hypothetical ROC curves, simulate datasets by repeatedly sampling from the data under different conditions/effect sizes/sample sizes to provide power estimates, download summary reports of power simulations, upload simulation results for other users, and view the results of previous simulations uploaded by other users (see "Previous simulation results" tab).', .noWS = c("after-begin", "before-end")),
+        tags$br(),
+        tags$p("*And certain recognition memory designs; see the note in the 'Data Upload' tab")
     ),
     box(width = 12,
         collapsible = TRUE,
@@ -60,7 +62,7 @@ intro_tab <- tabItem(
             tags$li("		 Record test significance", style="white-space: pre-wrap"),
             tags$li("Record proportion of significant tests at each effect size/N", style="white-space: pre-wrap")),
         tags$br(),
-        tags$p(strong('NOTE:'), ' Due to the computationally intensive bootstrap resampling involved in ROC analyses, simulations can take a long time (e.g., at 3-5s per simulation, complete analysis will likely take several hours). Thus, it is recommended that users download a local copy of the app to run in R/RStudio (see link below) to avoid simulation disruption with dropped internet connections. Whether running the web or a local version, it is also recommended that hibernation settings be temporarily disabled.'),
+        tags$p(strong('NOTE:'), ' Due to the computationally intensive bootstrap resampling involved in ROC analyses, simulations can potentially take a long time (e.g., several hours). Thus, it is recommended that users download a local copy of the app to run in R/RStudio (see link below) to avoid simulation disruption with dropped internet connections. Whether running the web or a local version, it is also recommended that hibernation settings be temporarily disabled.'),
         tags$p('Complete source code for this app can be downloaded from GitHub at ', a(href = 'https://github.com/E-Y-M/poweROC', 'https://github.com/E-Y-M/poweROC', .noWS = "outside"), ', and any issues can be reported at ', a(href = 'https://github.com/E-Y-M/poweROC/issues', 'https://github.com/E-Y-M/poweROC/issues', .noWS = "outside"), '. This app is very much in the beta stage, so feedback/suggestions/bug reports are very much appreciated!', .noWS = c("after-begin", "before-end"))
     )
 )
@@ -72,20 +74,61 @@ data_tab <- tabItem(
         width = 12,
         collapsible = TRUE,
         title = "Instructions",
-        tags$p('Upload your data (.csv format) here. Data files uploaded are NOT saved to the server and are only used for a given session. Data must be formatted so that each row represents a single lineup decision by a single participant. Data files must contain the following (case-sensitive) columns:'),
-        tags$ul(
-            tags$li(strong('id_type'), ': The lineup decision, one of “suspect”, “filler”, or “reject”'),
-            tags$li(strong('conf_level'), ': The confidence rating for the decision, where lower values represent lower confidence. Must be numeric, and if not already binned (e.g., a 1-100 continuous scale), should be binned as desired prior to uploading'),
-            tags$li(strong('culprit_present'), ': Whether or not the lineup was culprit present/absent, one of “present” or “absent”'),
-            tags$li(strong('cond'), ': The between-subjects condition for that participant/lineup. Only necessary to include if you have data with two pre-existing conditions (which is recommended), otherwise the variable will be created and populated automatically. Note that the condition that comes 2nd alphabetically will be the one that effect sizes are applied to.')
+        tags$p(
+            'Upload your data (.csv format) here. Data files uploaded are NOT saved to the server and are only used for a given session. Data must be formatted so that each row represents a single lineup decision by a single participant. Data files must contain the following (case-sensitive) columns:'
         ),
-tags$p('See the example data file below for proper formatting'),
+        tags$ul(
+            tags$li(
+                strong('id_type'),
+                ': The lineup decision, one of “suspect”, “filler”, or “reject”. If your data does not contain a designated innocent suspect, you will be able to generate false IDs (using lineup size) after uploading.'
+            ),
+            tags$li(
+                strong('conf_level'),
+                ': The confidence rating for the decision, where lower values represent lower confidence. Must be numeric, and if not already binned (e.g., a 1-100 continuous scale), should be binned as desired prior to uploading'
+            ),
+            tags$li(
+                strong('culprit_present'),
+                ': Whether or not the lineup was culprit present/absent, one of “present” or “absent”'
+            ),
+            tags$li(
+                strong('cond'),
+                ': The between-subjects condition for that participant/lineup. Only necessary to include if you have data with two pre-existing conditions (which is recommended), otherwise the variable will be created and populated automatically. Note that the condition that comes 2nd alphabetically will be the one that effect sizes are applied to.'
+            )
+        ),
+        tags$br(),
+        tags$p(strong('NOTE:'), ' While this app is primarily designed for lineup data, it can also be used for general recognition memory experiments where participants study items then are tested for recognition of old/new items. In this case, each row should be a recognition trial with hits and false alarms recoded to "suspect" for id_type (rejections recoded to "reject"), and culprit_present denoting old/new status.'),
+        tags$p('See the example data file below for proper formatting'),
         fileInput(
             "user_data",
             "Upload your data",
             multiple = FALSE,
             accept = ".csv"
-        )
+        ),
+        hidden(radioButtons(
+            "designated_suspect",
+            "Does your data contain a designated innocent suspect?",
+            choices = c("Yes",
+                        "No"),
+            selected = "Yes"
+        )),
+        bsTooltip("designated_suspect",
+                  "If your data does not contain a designated innocent suspect, the app will automatically convert culprit-absent filler IDs to suspect IDs with a probability of 1/lineup size",
+                  placement = "left",
+                  trigger = "hover"),
+        htmlOutput("cond1_lineup_text"),
+        hidden(numericInput(
+            "lineup_size_1",
+            "",
+            value = 6,
+            min = 1
+        )),
+        htmlOutput("cond2_lineup_text"),
+        hidden(numericInput(
+            "lineup_size_2",
+            "",
+            value = 6,
+            min = 1
+        ))
     ),
     box(width = 6,
         collapsible = TRUE,
@@ -198,7 +241,7 @@ parameters_tab = tabItem(tabName = "parameters_tab",
                                  ),
                                  bsTooltip(
                                      "nboot_iter",
-                                     "Specify the # of bootstrap iterations per pROC AUC test. 1000 provides relatively stable estimates, but if time is not a concern recommend upping to the pROC default of 2000",
+                                     "Specify the # of bootstrap iterations per pROC AUC test. 1000 provides relatively stable estimates, but if time is not a concern or if the AUC difference in question is small, recommend upping to the pROC default of 2000",
                                      #"Specify the # of bootstrap iterations per pROC AUC test. 1000 provides relatively stable estimates, but if time is not a concern recommend upping to pROC's default of 2000",
                                      placement = "bottom",
                                      trigger = "hover"
@@ -260,12 +303,26 @@ results_tab = tabItem(tabName = "results_tab",
                           tags$br(),
                           dataTableOutput("pwr_store"),
                       downloadButton("report_dl",
-                                     "Download summary report")),
+                                     "Download summary report"),
+                      actionButton("upload_results",
+                                   "Upload analysis results",
+                                   icon = icon("upload"))),
+                      bsTooltip("upload_results",
+                                "Anonymously upload your analysis results for others to use. Note that this does not upload your data, just the power simulation results",
+                                placement = "bottom",
+                                trigger = "hover"),
                       box(width = 12,
                           title = "Power curves",
                           collapsible = TRUE,
                           plotOutput("pwr_plot"))
                       )
+
+### results compendium tab ----
+previous_tab = tabItem(tabName = "previous_tab",
+                       box(width = 12,
+                           title = "Previous simulation results",
+                           tags$p("This page shows power analysis results uploaded by other users. Results are anonymously uploaded to a Google sheet linked to this app."),
+                           div(style = 'overflow-x: scroll', dataTableOutput("power_results"))))
 
 ## UI ----
 skin_color <- "black"
@@ -283,7 +340,8 @@ ui <- dashboardPage(
             menuItem("Data Upload", tabName = "data_tab", icon = icon("table")),
             menuItem("Simulation Parameters", tabName = "parameters_tab", icon = icon("gear")),
             #menuItem("Simulation Results", tabName = "results_tab", icon = icon("poll"))
-            sidebarMenuOutput("results_render")
+            sidebarMenuOutput("results_render"),
+            menuItem("Previous simulation results", tabName = "previous_tab", icon = icon("history"))
             #sidebarMenuOutput("trench_toggle"),
             )
     ),
@@ -299,7 +357,8 @@ ui <- dashboardPage(
             intro_tab,
             data_tab,
             parameters_tab,
-            results_tab
+            results_tab,
+            previous_tab
         )
     )
 )
@@ -309,6 +368,8 @@ server <- function(input, output, session) {
     ## data files ----
     data_files = reactiveValues(user_data = NULL,
                                 processed_data = NULL,
+                                saved_data = NULL,
+                                upload_data = NULL,
                                 pwr_store = NULL,
                                 sim_params = data.frame(Parameter = rep(NA, times = 10)))
     
@@ -343,6 +404,32 @@ server <- function(input, output, session) {
     
     observeEvent(input$user_data, {
         data_files$user_data = read_csv(input$user_data$datapath)
+    })
+    
+    observeEvent(input$designated_suspect, {
+        req(data_files$processed_data)
+        if (input$designated_suspect == "Yes") {
+            
+            output$cond1_lineup_text = NULL
+            output$cond2_lineup_text = NULL
+
+            
+            hide("lineup_size_1")
+            hide("lineup_size_2")
+        } else {
+            ### lineup size ----
+            output$cond1_lineup_text = renderPrint({
+                HTML(paste0("<b>", "Lineup size for ", parameters$cond1, "</b>"))
+            })
+            
+            output$cond2_lineup_text = renderText({
+                sprintf("<b> Lineup size for %s </b>",
+                        parameters$cond2)
+            })
+            
+            show("lineup_size_1")
+            show("lineup_size_2")
+        }
     })
 
     observeEvent(input$user_data, {
@@ -400,8 +487,11 @@ server <- function(input, output, session) {
                                conf_level_rev = max(conf_level)+1 - conf_level) %>% 
                         arrange(cond)
                 }
-                message("Created processed data")
-            } 
+
+            }
+            data_files$saved_data = data_files$processed_data
+            show("designated_suspect")
+            message("Created processed data")
         }
     })
     
@@ -411,6 +501,26 @@ server <- function(input, output, session) {
     
     output$processed_data = renderDataTable({
         data_files$processed_data
+    })
+    
+    
+    ## deal with datasets without designated innocent suspects ----
+    observeEvent(c(input$designated_suspect, input$lineup_size_1, input$lineup_size_2), {
+        if (input$designated_suspect == "Yes") {
+            data_files$processed_data = data_files$saved_data
+        } else {
+            data_files$processed_data = data_files$saved_data %>% 
+                mutate(lineup_size = ifelse(cond == parameters$cond1, input$lineup_size_1, input$lineup_size_2),
+                       suspect_prob = 1/lineup_size)
+            
+            for (i in 1:nrow(data_files$processed_data)) {
+                if (data_files$processed_data$culprit_present[i] == "absent" & data_files$processed_data$id_type[i] == "filler") {
+                    data_files$processed_data$id_type[i] = sample(c("filler", "suspect"), 1, prob = c(1-data_files$processed_data$suspect_prob[i], data_files$processed_data$suspect_prob[i]))
+                } else {
+                    data_files$processed_data$id_type[i] = data_files$processed_data$id_type[i]
+                }
+            }
+        }
     })
     
     ## simulation parameters ----
@@ -459,7 +569,9 @@ server <- function(input, output, session) {
                                 sim_total = NA,
                                 time_taken = NA,
                                 start_time = NA,
-                                end_time = NA)
+                                end_time = NA,
+                                avg_n = NA,
+                                end_time_est = NA)
     
     ### number of lineups ----
     observeEvent(input$n_total_lineups, {
@@ -534,6 +646,8 @@ server <- function(input, output, session) {
         
         parameters$ns = 
             unique(extract(input$ns))
+        
+        other_vars$avg_n = mean(parameters$ns)
     })
     
     ### generate hypothetical ROCs before simulation ----
@@ -720,12 +834,14 @@ server <- function(input, output, session) {
         start_time = Sys.time()
         
         other_vars$sim_total = input$nsims * length(parameters$ns) * length(parameters$effs)
+        duration = (other_vars$avg_n/2000 + input$nboot_iter/1000) * other_vars$sim_total
+        other_vars$end_time_est = start_time + duration
         
-        showModal(modalDialog(HTML(sprintf("Start time: %s <br/>With %s simulations @ ~5-7s each, estimated completion time is between %s and %s <br/>Do not close this tab/window until you see the 'Simulation Results' tab appear on the left",
+        message(other_vars$end_time_est)
+        
+        showModal(modalDialog(HTML(sprintf("Start time: %s <br/>Estimated completion time is %s<br/>Do not close this tab/window until you see the 'Simulation Results' tab appear on the left",
                             other_vars$start_time,
-                            other_vars$sim_total,
-                            other_vars$start_time + (other_vars$sim_total * 5),
-                            other_vars$start_time + (other_vars$sim_total * 7))),
+                            other_vars$end_time_est)),
                     fade = FALSE,
                     easyClose = FALSE,
                     size = "l"))
@@ -1053,8 +1169,9 @@ server <- function(input, output, session) {
             
         end_time = Sys.time()
         other_vars$end_time = Sys.time()
+
         other_vars$time_taken = 
-            paste("Time taken: ", round((end_time - start_time)/60, 2), " minutes", sep = "")
+            paste("Time taken: ", (end_time - start_time)/60, " minutes", sep = "")
         
         output$time_taken = renderText({
             other_vars$time_taken
@@ -1145,6 +1262,59 @@ server <- function(input, output, session) {
                               intermediates_dir = tempdir())
         }
     )
+    
+    ## upload simulation results to google sheet ----
+    observeEvent(input$upload_results, {
+        cond_1_greater = paste0(parameters$cond1, " >")
+        cond_2_greater = paste0(parameters$cond2, " >")
+        
+        data_files$upload_data = data_files$pwr_store %>% 
+            as_tibble() %>% 
+            mutate(sim_id = Sys.time(),
+                   `TA lineups/subj` = input$n_TA_lineups,
+                   `TP lineups/subj` = input$n_TP_lineups,
+                   `Simulated samples` = input$nsims,
+                   `AUC bootstraps` = input$nboot_iter,
+                   `Time taken` = other_vars$time_taken,
+                   `Test tails` = input$test_tails,
+                   `ROC truncation` = input$roc_trunc,
+                   `Type I error rate` = input$alpha_level) %>% 
+            rename(`Avg. AUC in Cond A` = !!paste("Avg. AUC in", parameters$cond1, sep = " "),
+                   `Avg. AUC in Cond B` = !!paste("Avg. AUC in", parameters$cond2, sep = " ")) %>% 
+            mutate(`Test tails` = ifelse(grepl(`Test tails`, "Two-tailed"), "Two-tailed",
+                                         ifelse(grepl(`Test tails`, cond_1_greater), "A > B", "B > A"))) %>% 
+            select(sim_id, 
+                   N,
+                   `Effect size`,
+                   `Avg. AUC in Cond A`,
+                   `Avg. AUC in Cond B`,
+                   `Avg. AUC difference`,
+                   Power,
+                   `Type I error rate`, 
+                   `Test tails`,
+                   `ROC truncation`,
+                   `TA lineups/subj`,
+                   `TP lineups/subj`,
+                   `Simulated samples`,
+                   `AUC bootstraps`,
+                   `Time taken`)
+        
+        sheet_append(google_sheet_id, data_files$upload_data, "Power results")
+        
+        showModal(modalDialog(
+            title = "Upload complete",
+            "Your results have been uploaded. Thank you!"
+            ,
+            fade = TRUE,
+            easyClose = TRUE,
+            size = "l"))
+    })
+    
+    ## render results compendium ----
+    output$power_results = renderDataTable({
+        input$upload_results
+        as_tibble(read_sheet(google_sheet_id, "Power results"))
+    })
     
 }
 

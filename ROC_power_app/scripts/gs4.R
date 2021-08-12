@@ -2,9 +2,7 @@ message("initialising googlesheets")
 
 # set variables ----
 email <- "eric7mah@gmail.com"
-SHEET_ID <- "1shQPrk1Dnk7qK07rCVGpMA0E55dPjtqCc-sEDRHz5No"
-sheet_name <- "questionnaire-demo3"
-sheet_tabs <- c("food", "pet")
+SHEET_ID <- "12hwA8QHK7D_kgo-OJjGv9xoasgZ2ksChkPtW875aOQQ"
 
 # load packages ----
 suppressPackageStartupMessages({

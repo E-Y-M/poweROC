@@ -1,9 +1,12 @@
 library(psych)
 library(tidyverse)
 library(pROC)
+library(lubridate)
 
 source("ROC_power_app/scripts/func.R") # helper functions
 
+
+(2000*2000)/1000
 
 test = "1, 1, 1.25, 1.5"
 test_extract = unique(extract(test))
@@ -193,6 +196,16 @@ ROC_data = data.frame(prop = rep(NA, times = length(unique(data_original$cond))*
                       eff = NA)
 
 row = 1
+
+cond1 = "low_similarity"
+
+cond_1_greater = paste0(cond1, " >")
+
+test = data.frame(`testing spaces` = NA,
+                  "Testing spaces" = NA)
+
+test = tibble("Testing spaces" = NA,
+              `Testing spaces 2` = NA)
 
 message("Created empty ROC store object for hypothetical plot")
 
