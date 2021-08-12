@@ -181,23 +181,29 @@ parameters_tab = tabItem(tabName = "parameters_tab",
                                  numericInput(
                                      "nsims",
                                      "# of simulated samples per effect size/N",
-                                     value = 500,
+                                     value = 100,
                                      min = 1
                                  ),
-                                 bsTooltip("nsims",
-                                           "Specify the # of samples to simulate for each effect size/N combination. The more samples, the more accurate estimates you will get (but the longer the program will take to run)",
-                                           placement = "bottom",
-                                           trigger = "hover"),
+                                 bsTooltip(
+                                     "nsims",
+                                     "Specify the # of samples to simulate for each effect size/N combination. 100 provides relatively stable estimates, but if time is not a concern recommend a larger # (e.g., 500-1000)",
+                                     placement = "bottom",
+                                     trigger = "hover"
+                                 ),
                                  numericInput(
                                      "nboot_iter",
                                      "# of bootstraps per AUC test",
-                                     value = 2000,
+                                     value = 1000,
                                      min = 1
                                  ),
-                             bsTooltip("nboot_iter",
-                                       "Specify the # of bootstrap iterations per pROC AUC test. 2000 is the recommended default in pROC",
-                                       placement = "bottom",
-                                       trigger = "hover")),
+                                 bsTooltip(
+                                     "nboot_iter",
+                                     "Specify the # of bootstrap iterations per pROC AUC test. 1000 provides relatively stable estimates, but if time is not a concern recommend upping to the pROC default of 2000",
+                                     #"Specify the # of bootstrap iterations per pROC AUC test. 1000 provides relatively stable estimates, but if time is not a concern recommend upping to pROC's default of 2000",
+                                     placement = "bottom",
+                                     trigger = "hover"
+                                 )
+                             ), 
                              column(
                                  3,
                                  #radioButtons(
@@ -515,7 +521,7 @@ server <- function(input, output, session) {
         req(input$effs)
         
         parameters$effs = 
-            extract(input$effs)
+            unique(extract(input$effs))
     })
     
     #output$effs = renderText({
@@ -527,7 +533,7 @@ server <- function(input, output, session) {
         req(input$ns)
         
         parameters$ns = 
-            extract(input$ns)
+            unique(extract(input$ns))
     })
     
     ### generate hypothetical ROCs before simulation ----
@@ -711,14 +717,15 @@ server <- function(input, output, session) {
     ## main simulation loop ----
     observeEvent(input$sim_start, {
         other_vars$start_time = Sys.time()
+        start_time = Sys.time()
         
         other_vars$sim_total = input$nsims * length(parameters$ns) * length(parameters$effs)
         
-        showModal(modalDialog(HTML(sprintf("Start time: %s <br/>With %s simulations @ ~5-7s each, estimated completion time is between %s and %s <br/>Do not close this tab/window",
-                            start_time,
+        showModal(modalDialog(HTML(sprintf("Start time: %s <br/>With %s simulations @ ~5-7s each, estimated completion time is between %s and %s <br/>Do not close this tab/window until you see the 'Simulation Results' tab appear on the left",
+                            other_vars$start_time,
                             other_vars$sim_total,
-                            start_time + (other_vars$sim_total * 5),
-                            start_time + (other_vars$sim_total * 7))),
+                            other_vars$start_time + (other_vars$sim_total * 5),
+                            other_vars$start_time + (other_vars$sim_total * 7))),
                     fade = FALSE,
                     easyClose = FALSE,
                     size = "l"))
@@ -1044,17 +1051,21 @@ server <- function(input, output, session) {
             left_join(auc_2_store) %>% 
             left_join(auc_store)
             
+        end_time = Sys.time()
         other_vars$end_time = Sys.time()
+        other_vars$time_taken = 
+            paste("Time taken: ", round((end_time - start_time)/60, 2), " minutes", sep = "")
         
         output$time_taken = renderText({
-            sprintf("Time taken: %s minutes",
-                    round((other_vars$end_time - other_vars$start_time)/60), 2)
-            
-        other_vars$time_taken = 
-            sprintf("Time taken: %s minutes",
-                    round((other_vars$end_time - other_vars$start_time)/60), 2)
+            other_vars$time_taken
         })
-
+            
+        #other_vars$time_taken = 
+        #    sprintf("Time taken: %s minutes",
+        #            round((end_time - start_time)/60, 2))
+        
+        #message(start_time)
+        #message(end_time)
     })
     
     ## render final simulation results ----
@@ -1075,19 +1086,33 @@ server <- function(input, output, session) {
                 menuItem("Simulation Results", tabName = "results_tab", icon = icon("poll"))
             })
             
-            plots$pwr_plot = 
-            data_files$pwr_store %>% 
-                ggplot(aes(x = N,
-                           y = Power,
-                           linetype = `Effect size`,
-                           color = `Effect size`))+
-                geom_line()+
-                scale_x_continuous(breaks = parameters$ns)+
-                apatheme+
-                labs(x = "\nN",
-                     y = "Power to detect effect\n")+
-                theme(text = element_text(size = 20))
-            
+            if (length(parameters$ns) == 1) {
+                plots$pwr_plot = 
+                    data_files$pwr_store %>% 
+                    ggplot(aes(x = N,
+                               y = Power,
+                               #linetype = `Effect size`,
+                               color = `Effect size`))+
+                    geom_point(size = 3)+
+                    scale_x_continuous(breaks = parameters$ns)+
+                    apatheme+
+                    labs(x = "\nN",
+                         y = "Power to detect effect\n")+
+                    theme(text = element_text(size = 20))
+            } else {
+                plots$pwr_plot = 
+                    data_files$pwr_store %>% 
+                    ggplot(aes(x = N,
+                               y = Power,
+                               linetype = `Effect size`,
+                               color = `Effect size`))+
+                    geom_line()+
+                    scale_x_continuous(breaks = parameters$ns)+
+                    apatheme+
+                    labs(x = "\nN",
+                         y = "Power to detect effect\n")+
+                    theme(text = element_text(size = 20))
+            }
         } else {
             output$results_render = NULL
         }

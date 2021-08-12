@@ -2,6 +2,12 @@ library(psych)
 library(tidyverse)
 library(pROC)
 
+source("ROC_power_app/scripts/func.R") # helper functions
+
+
+test = "1, 1, 1.25, 1.5"
+test_extract = unique(extract(test))
+
 colloff = read.csv("./Dataset testing and reports/Data/Colloff et al. 2021/Experiment1.csv") %>% 
     filter(include == "yes") %>% 
     select(condition, targetPresent, participantIDdecision, confidence) %>% 
