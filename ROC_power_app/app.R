@@ -13,52 +13,12 @@ suppressPackageStartupMessages({
 
 ## functions ----
 source("scripts/func.R") # helper functions
-#source("scripts/gs4.R") # google sheets functions
-
-sheet_append <- function(ss, data, sheet = 1) {
-    # always use faster append on deployed apps
-    is_local <- Sys.getenv('SHINY_PORT') == ""
-    if (!is_local) {
-        x <- googlesheets4::sheet_append(ss, data, sheet)
-        return(x)
-    }
-    
-    # safer append for a development environment
-    data_sheet_orig <- read_sheet(ss, sheet)
-    
-    # convert data to characters to avoid bind problems
-    data_sheet_char <- apply(data_sheet_orig, 2, as.character, simplify = FALSE)
-    data_sheet <- as.data.frame(data_sheet_char)
-    list_char <- apply(data, 2, as.character, simplify = FALSE)
-    data_char <- as.data.frame(list_char)
-    
-    # bind and convert
-    if (nrow(data_sheet) > 0) {
-        data_bind <- dplyr::bind_rows(data_sheet, data_char)
-    } else {
-        data_bind <- data_char
-    }
-    data_conv <- type.convert(data_bind, as.is = TRUE)
-    
-    # get data types
-    orig_types <- apply(data_sheet, 2, typeof)
-    conv_types <- apply(data_conv, 2, typeof)
-    
-    if (identical(orig_types, conv_types)) {
-        # append last row: fast and won't cause overwrite
-        last_row <- data_conv[nrow(data_conv), ]
-        googlesheets4::sheet_append(ss, last_row, sheet)
-    } else {
-        # the data has extra columns, or changes data types, so over-write
-        # slower and might cause simultaneous access problems
-        googlesheets4::write_sheet(data_conv, ss, sheet)
-    }
-}
+source("scripts/gs4.R") # google sheets functions
 
 ## Google Sheets setup ----
 #setwd("./ROC_power_app")
 #gs4_deauth()
-gs4_auth(cache = ".secrets", email = "eric7mah@gmail.com")
+#gs4_auth(cache = ".secrets", email = "eric7mah@gmail.com")
 google_sheet_id = "12hwA8QHK7D_kgo-OJjGv9xoasgZ2ksChkPtW875aOQQ"
 
 ## read in necessary data files ----
@@ -887,7 +847,7 @@ server <- function(input, output, session) {
         start_time = Sys.time()
         
         other_vars$sim_total = input$nsims * length(parameters$ns) * length(parameters$effs)
-        duration = (other_vars$avg_n/1500 * input$nboot_iter/1000) * other_vars$sim_total
+        duration = (other_vars$avg_n/1000 * input$nboot_iter/1000) * other_vars$sim_total
         other_vars$duration_est = duration/60
         other_vars$end_time_est = start_time + duration
         

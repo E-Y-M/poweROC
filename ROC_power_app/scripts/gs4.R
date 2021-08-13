@@ -9,26 +9,28 @@ suppressPackageStartupMessages({
   library(googlesheets4)
 })
 
+SHEET_ID = "12hwA8QHK7D_kgo-OJjGv9xoasgZ2ksChkPtW875aOQQ"
+
 ## authorise googlesheets ----
-#options(gargle_oauth_cache = ".secrets",
-#        gargle_oauth_email = email)
-#if (is.null(SHEET_ID)) googledrive::drive_auth()
-#gs4_auth()
-#
-## get sheet for this app ----
-### this takes a long time, so it's better to set the SHEET_ID above
-#if (is.null(SHEET_ID)) {
-#  message(sprintf("finding %s", sheet_name))
-#  sheet <- gs4_find(sheet_name)
-#  if (length(sheet$id) == 0) {
-#    message(sprintf("creating %s", sheet_name))
-#    SHEET_ID <- gs4_create(sheet_name, sheets = sheet_tabs)
-#  } else {
-#    SHEET_ID <- sheet$id
-#  }
-#}
-#
-#message(sprintf("SHEET_ID: %s", SHEET_ID))
+options(gargle_oauth_cache = ".secrets",
+        gargle_oauth_email = "eric7mah@gmail.com")
+if (is.null(SHEET_ID)) googledrive::drive_auth()
+gs4_auth()
+
+# get sheet for this app ----
+## this takes a long time, so it's better to set the SHEET_ID above
+if (is.null(SHEET_ID)) {
+  message(sprintf("finding %s", sheet_name))
+  sheet <- gs4_find(sheet_name)
+  if (length(sheet$id) == 0) {
+    message(sprintf("creating %s", sheet_name))
+    SHEET_ID <- gs4_create(sheet_name, sheets = sheet_tabs)
+  } else {
+    SHEET_ID <- sheet$id
+  }
+}
+
+message(sprintf("SHEET_ID: %s", SHEET_ID))
 
 
 # custom function for safer append ----
