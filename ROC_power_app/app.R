@@ -57,7 +57,7 @@ sheet_append <- function(ss, data, sheet = 1) {
 
 ## Google Sheets setup ----
 gs4_deauth()
-#gs4_auth(cache = ".secrets", email = "")
+#gs4_auth(cache = ".secrets", email = "eric7mah@gmail.com")
 google_sheet_id = "12hwA8QHK7D_kgo-OJjGv9xoasgZ2ksChkPtW875aOQQ"
 
 ## read in necessary data files ----
@@ -104,7 +104,7 @@ intro_tab <- tabItem(
             tags$li("		 Record test significance", style="white-space: pre-wrap"),
             tags$li("Record proportion of significant tests at each effect size/N", style="white-space: pre-wrap")),
         tags$br(),
-        tags$p(strong('NOTE:'), ' Due to the computationally intensive bootstrap resampling involved in ROC analyses, simulations can potentially take a long time (e.g., several hours). Thus, it is recommended that users download a local copy of the app to run in R/RStudio (see link below) to avoid simulation disruption with dropped internet connections. Whether running the web or a local version, it is also recommended that hibernation settings be temporarily disabled.'),
+        tags$p(strong('NOTE:'), ' Due to the computationally intensive bootstrap resampling involved in ROC analyses, simulations can potentially take a long time (e.g., several hours). Thus, users may want to download a local copy of the app to run in R/RStudio (see link below) to avoid simulation disruption with dropped internet connections. Whether running the web or a local version, it is also recommended that hibernation settings be temporarily disabled.'),
         tags$p('Complete source code for this app can be downloaded from GitHub at ', a(href = 'https://github.com/E-Y-M/poweROC', 'https://github.com/E-Y-M/poweROC', .noWS = "outside"), ', and any issues can be reported at ', a(href = 'https://github.com/E-Y-M/poweROC/issues', 'https://github.com/E-Y-M/poweROC/issues', .noWS = "outside"), '. This app is very much in the beta stage, so feedback/suggestions/bug reports are very much appreciated!', .noWS = c("after-begin", "before-end"))
     )
 )
@@ -122,7 +122,7 @@ data_tab <- tabItem(
         tags$ul(
             tags$li(
                 strong('id_type'),
-                ': The lineup decision, one of “suspect”, “filler”, or “reject”. If your data does not contain a designated innocent suspect, you will be able to generate false IDs (using lineup size) after uploading.'
+                ': The lineup decision, one of “suspect”, “filler”, or “reject”. If your data does not contain a designated innocent suspect, you will need to generate false IDs (using lineup size) via the option that will appear after uploading the data.'
             ),
             tags$li(
                 strong('conf_level'),
@@ -337,33 +337,42 @@ parameters_tab = tabItem(tabName = "parameters_tab",
                          ))
 
 ### simulation results tab ----
-results_tab = tabItem(tabName = "results_tab",
-                      box(width = 12,
-                          title = "Results",
-                          collapsible = TRUE,
-                          textOutput("time_taken"),
-                          tags$br(),
-                          dataTableOutput("pwr_store"),
-                      downloadButton("report_dl",
-                                     "Download summary report"),
-                      actionButton("upload_results",
-                                   "Upload analysis results",
-                                   icon = icon("upload"))),
-                      bsTooltip("upload_results",
-                                "Anonymously upload your analysis results for others to use. Note that this does not upload your data, just the power simulation results",
-                                placement = "bottom",
-                                trigger = "hover"),
-                      box(width = 12,
-                          title = "Power curves",
-                          collapsible = TRUE,
-                          plotOutput("pwr_plot"))
-                      )
+results_tab = tabItem(
+    tabName = "results_tab",
+    box(
+        width = 12,
+        title = "Results",
+        collapsible = TRUE,
+        textOutput("time_taken"),
+        tags$br(),
+        dataTableOutput("pwr_store"),
+        tags$br(),
+        tags$p(strong("You can download a summary report of the power analysis by clicking the button below. You can also (anonymously) upload your power analysis results to our compendium--doing so helps other users and provides information I can use to improve this app.")),
+        downloadButton("report_dl",
+                       "Download summary report"),
+        actionButton("upload_results",
+                     "Upload analysis results",
+                     icon = icon("upload"))
+    ),
+    bsTooltip(
+        "upload_results",
+        "Anonymously upload your analysis results for others to use. Note that this does not upload your data, just the power simulation results",
+        placement = "bottom",
+        trigger = "hover"
+    ),
+    box(
+        width = 12,
+        title = "Power curves",
+        collapsible = TRUE,
+        plotOutput("pwr_plot")
+    )
+)
 
 ### results compendium tab ----
 previous_tab = tabItem(tabName = "previous_tab",
                        box(width = 12,
                            title = "Previous simulation results",
-                           tags$p("This page shows power analysis results uploaded by other users. Results are anonymously uploaded to a Google sheet linked to this app."),
+                           tags$p("This page shows power analysis results uploaded by other users. Results are anonymously uploaded to a Google Sheet linked to this app."),
                            div(style = 'overflow-x: scroll', dataTableOutput("power_results"))))
 
 ## UI ----
@@ -613,7 +622,8 @@ server <- function(input, output, session) {
                                 start_time = NA,
                                 end_time = NA,
                                 avg_n = NA,
-                                end_time_est = NA)
+                                end_time_est = NA,
+                                duration_est = NA)
     
     ### number of lineups ----
     observeEvent(input$n_total_lineups, {
@@ -876,7 +886,8 @@ server <- function(input, output, session) {
         start_time = Sys.time()
         
         other_vars$sim_total = input$nsims * length(parameters$ns) * length(parameters$effs)
-        duration = (other_vars$avg_n/2000 + input$nboot_iter/1000) * other_vars$sim_total
+        duration = (other_vars$avg_n/1500 * input$nboot_iter/1000) * other_vars$sim_total
+        other_vars$duration_est = duration/60
         other_vars$end_time_est = start_time + duration
         
         message(other_vars$end_time_est)
@@ -1310,6 +1321,8 @@ server <- function(input, output, session) {
         cond_1_greater = paste0(parameters$cond1, " >")
         cond_2_greater = paste0(parameters$cond2, " >")
         
+        google_sheet = as_tibble(read_sheet(google_sheet_id, "Power results"))
+        
         data_files$upload_data = data_files$pwr_store %>% 
             as_tibble() %>% 
             mutate(sim_id = Sys.time(),
@@ -1317,7 +1330,8 @@ server <- function(input, output, session) {
                    `TP lineups/subj` = input$n_TP_lineups,
                    `Simulated samples` = input$nsims,
                    `AUC bootstraps` = input$nboot_iter,
-                   `Time taken` = other_vars$time_taken,
+                   `Time taken (m)` = parse_number(other_vars$time_taken),
+                   `Estimated time taken (m)` = other_vars$duration_est,
                    `Test tails` = input$test_tails,
                    `ROC truncation` = input$roc_trunc,
                    `Type I error rate` = input$alpha_level) %>% 
@@ -1339,9 +1353,14 @@ server <- function(input, output, session) {
                    `TP lineups/subj`,
                    `Simulated samples`,
                    `AUC bootstraps`,
-                   `Time taken`)
+                   `Time taken (m)`,
+                   `Estimated time taken (m)`)
         
-        sheet_append(google_sheet_id, data_files$upload_data, "Power results")
+        data_files$upload_data = rbind(data_files$upload_data, google_sheet) %>% 
+            arrange(sim_id) %>% 
+            sheet_write(google_sheet_id, "Power results")
+        
+        #sheet_append(google_sheet_id, data_files$upload_data, "Power results")
         
         showModal(modalDialog(
             title = "Upload complete",

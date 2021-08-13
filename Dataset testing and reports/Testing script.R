@@ -3,6 +3,11 @@ library(tidyverse)
 library(pROC)
 library(lubridate)
 
+end_time = 800
+start_time = 500
+
+time_test = paste("Time taken: ", (end_time - start_time)/60, " minutes", sep = "")
+parse_number(time_test)
 source("ROC_power_app/scripts/func.R") # helper functions
 
 
