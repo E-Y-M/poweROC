@@ -39,7 +39,6 @@ vignettes/*.pdf
 .Renviron
 
 # Shiny files
-**/.secrets
 
 # Testing files
 **/.Stuff for testing
