@@ -27,6 +27,7 @@ vignettes/*.pdf
 # R Environment Variables
 .Renviron
 # Shiny files
+**/.secrets
 # Testing files
 **/.Stuff for testing
 Stuff for testing

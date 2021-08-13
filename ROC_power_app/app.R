@@ -17,7 +17,7 @@ source("scripts/gs4.R") # google sheets functions
 
 ## Google Sheets setup ----
 #setwd("./ROC_power_app")
-#gs4_deauth()
+gs4_deauth()
 #gs4_auth(cache = ".secrets", email = "eric7mah@gmail.com")
 google_sheet_id = "12hwA8QHK7D_kgo-OJjGv9xoasgZ2ksChkPtW875aOQQ"
 
@@ -1298,7 +1298,7 @@ server <- function(input, output, session) {
                    `Type I error rate` = input$alpha_level) %>% 
             rename(`Avg. AUC in Cond A` = !!paste("Avg. AUC in", parameters$cond1, sep = " "),
                    `Avg. AUC in Cond B` = !!paste("Avg. AUC in", parameters$cond2, sep = " ")) %>% 
-            mutate(`Test tails` = ifelse(grepl("Two-tailed", `Test tails`), "Two-tailed",
+            mutate(`Test tails` = ifelse(grepl("2_tail", `Test tails`), "Two-tailed",
                                          ifelse(grepl(cond_1_greater, `Test tails`), "A > B", "B > A"))) %>% 
             select(sim_id, 
                    N,
