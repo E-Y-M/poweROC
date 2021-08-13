@@ -1318,7 +1318,7 @@ server <- function(input, output, session) {
                    `Estimated time taken (m)`)
         
         data_files$upload_data = rbind(data_files$upload_data, google_sheet) %>% 
-            arrange(sim_id) %>% 
+            arrange(desc(sim_id)) %>%
             sheet_write(google_sheet_id, "Power results")
         
         #sheet_append(google_sheet_id, data_files$upload_data, "Power results")
@@ -1335,7 +1335,8 @@ server <- function(input, output, session) {
     ## render results compendium ----
     output$power_results = renderDataTable({
         input$upload_results
-        as_tibble(read_sheet(google_sheet_id, "Power results"))
+        as_tibble(read_sheet(google_sheet_id, "Power results")) %>% 
+            arrange(desc(sim_id))
     })
     
 }
