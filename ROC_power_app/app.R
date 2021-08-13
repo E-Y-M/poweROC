@@ -17,8 +17,8 @@ source("scripts/gs4.R") # google sheets functions
 
 ## Google Sheets setup ----
 #setwd("./ROC_power_app")
-gs4_deauth()
-#gs4_auth(cache = ".secrets", email = "eric7mah@gmail.com")
+#gs4_deauth()
+gs4_auth(cache = ".secrets", email = "eric7mah@gmail.com")
 google_sheet_id = "12hwA8QHK7D_kgo-OJjGv9xoasgZ2ksChkPtW875aOQQ"
 
 ## read in necessary data files ----
