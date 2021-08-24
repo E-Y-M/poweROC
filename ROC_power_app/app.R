@@ -1344,9 +1344,9 @@ server <- function(input, output, session) {
     
     
     ## Google sheets authorization
-    observeEvent(input$tab, {
-        gs4_auth(cache = ".secrets", email = "eric7mah@gmail.com")
-    })
+    #observeEvent(input$tab, {
+    #    gs4_auth(cache = ".secrets", email = "eric7mah@gmail.com")
+    #})
 }
 
 shinyApp(ui, server)
