@@ -352,11 +352,11 @@ ui <- dashboardPage(
         sidebarMenu(
             id = "tabs",
             menuItem("Introduction", tabName = "intro_tab", icon = icon("info-circle")),
+            menuItem("Previous simulation results", tabName = "previous_tab", icon = icon("history")),
             menuItem("Data Upload", tabName = "data_tab", icon = icon("table")),
             menuItem("Simulation Parameters", tabName = "parameters_tab", icon = icon("gear")),
             #menuItem("Simulation Results", tabName = "results_tab", icon = icon("poll"))
-            sidebarMenuOutput("results_render"),
-            menuItem("Previous simulation results", tabName = "previous_tab", icon = icon("history"))
+            sidebarMenuOutput("results_render")
             #sidebarMenuOutput("trench_toggle"),
             )
     ),
@@ -370,10 +370,10 @@ ui <- dashboardPage(
         ),
         tabItems(
             intro_tab,
+            previous_tab,
             data_tab,
             parameters_tab,
-            results_tab,
-            previous_tab
+            results_tab
         )
     )
 )
