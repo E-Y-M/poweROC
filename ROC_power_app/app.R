@@ -145,6 +145,9 @@ data_tab <- tabItem(
 
 ### simulation parameters tab ----
 parameters_tab = tabItem(tabName = "parameters_tab",
+                         box(width = 12,
+                             title = "Enter simulation parameters below. Mouse over each entry box for an explanation. Once you have entered effect sizes and sample sizes, a plot of hypothetical ROCs will be generated."),
+                             #tags$p(strong("Enter simulation parameters below. Mouse over each entry box for an explanation. Once you have entered effect sizes and sample sizes, a plot of hypothetical ROCs will be generated."))),
                          fluidRow(
                              column(
                                  3,
@@ -333,7 +336,7 @@ results_tab = tabItem(
 previous_tab = tabItem(tabName = "previous_tab",
                        box(width = 12,
                            title = "Previous simulation results",
-                           tags$p("This page shows power analysis results uploaded by other users. Results are anonymously uploaded to a Google Sheet linked to this app."),
+                           tags$p("This page shows power analysis results uploaded by other users. Results are anonymously uploaded to a Google Sheet linked to this app. If you encounter an error on this page and the sheet does not display, refreshing should fix it (But, WARNING: If you have run your simulation and refresh the page, your results will be lost)"),
                            div(style = 'overflow-x: scroll', dataTableOutput("power_results"))))
 
 ## UI ----
@@ -1339,6 +1342,11 @@ server <- function(input, output, session) {
             arrange(desc(sim_id))
     })
     
+    
+    ## Google sheets authorization
+    observeEvent(input$tab, {
+        gs4_auth(cache = ".secrets", email = "eric7mah@gmail.com")
+    })
 }
 
 shinyApp(ui, server)
