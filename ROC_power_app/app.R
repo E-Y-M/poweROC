@@ -309,7 +309,7 @@ results_tab = tabItem(
         collapsible = TRUE,
         textOutput("time_taken"),
         tags$br(),
-        dataTableOutput("pwr_store"),
+        div(style = 'overflow-x: scroll', dataTableOutput("pwr_store")),
         tags$br(),
         tags$p(strong("You can download a summary report of the power analysis by clicking the button below. You can also (anonymously) upload your power analysis results to our compendium--doing so helps other users and provides information I can use to improve this app.")),
         downloadButton("report_dl",
