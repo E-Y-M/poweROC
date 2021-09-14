@@ -868,10 +868,27 @@ server <- function(input, output, session) {
                            ncol = length(parameters$effs))
         auc_store = matrix(nrow = length(parameters$ns),
                            ncol = length(parameters$effs))
+        
+        auc_store_ci_upr = matrix(nrow = length(parameters$ns),
+                           ncol = length(parameters$effs))
+        auc_store_ci_lwr = matrix(nrow = length(parameters$ns),
+                           ncol = length(parameters$effs))
+        
         auc_1_store = matrix(nrow = length(parameters$ns),
                              ncol = length(parameters$effs))
+        
+        auc_1_store_ci_upr = matrix(nrow = length(parameters$ns),
+                                  ncol = length(parameters$effs))
+        auc_1_store_ci_lwr = matrix(nrow = length(parameters$ns),
+                                  ncol = length(parameters$effs))
+        
         auc_2_store = matrix(nrow = length(parameters$ns),
                              ncol = length(parameters$effs))
+        
+        auc_2_store_ci_upr = matrix(nrow = length(parameters$ns),
+                                  ncol = length(parameters$effs))
+        auc_2_store_ci_lwr = matrix(nrow = length(parameters$ns),
+                                  ncol = length(parameters$effs))
         
         show("sim_progress")
         sim_counter = 0
@@ -1142,13 +1159,39 @@ server <- function(input, output, session) {
                         )
                     )
                 }
+                # Store power estimates
                 pwr_store[h, g] = mean(sim_store$sig)
+                
+                # Store AUC difference estimates
                 auc_store[h, g] = mean(sim_store$auc_diff)
+                
+                ## 95% Quantile on the AUC difference estimate
+                auc_store_ci_upr[h, g] = quantile(sim_store$auc_diff,
+                                                  probs = c(.025, .975))[2]
+                auc_store_ci_lwr[h, g] = quantile(sim_store$auc_diff,
+                                                  probs = c(.025, .975))[1]
+                
+                # Store Condition 1 AUC
                 auc_1_store[h, g] = mean(sim_store$auc_1)
+                
+                ## 95% Quantile on the AUC estimate
+                auc_1_store_ci_upr[h, g] = quantile(sim_store$auc_1,
+                                                  probs = c(.025, .975))[2]
+                auc_1_store_ci_lwr[h, g] = quantile(sim_store$auc_1,
+                                                  probs = c(.025, .975))[1]
+                
+                # Store Condition 2 AUC
                 auc_2_store[h, g] = mean(sim_store$auc_2)
+                
+                ## 95% Quantile on the AUC estimate
+                auc_2_store_ci_upr[h, g] = quantile(sim_store$auc_2,
+                                                    probs = c(.025, .975))[2]
+                auc_2_store_ci_lwr[h, g] = quantile(sim_store$auc_2,
+                                                    probs = c(.025, .975))[1]
             }
         }
         ### generate resuts dataframes ----
+        #### AUC difference ----
         auc_store = auc_store %>% 
             as.data.frame() %>% 
             `colnames<-`(parameters$effs) %>% 
@@ -1157,6 +1200,23 @@ server <- function(input, output, session) {
                    value = "Avg. AUC difference",
                    -N)
         
+        auc_store_ci_upr = auc_store_ci_upr %>% 
+            as.data.frame() %>% 
+            `colnames<-`(parameters$effs) %>% 
+            mutate(N = parameters$ns) %>% 
+            gather(key = "Effect size",
+                   value = "AUC difference 95% CI upper",
+                   -N)
+        
+        auc_store_ci_lwr = auc_store_ci_lwr %>% 
+            as.data.frame() %>% 
+            `colnames<-`(parameters$effs) %>% 
+            mutate(N = parameters$ns) %>% 
+            gather(key = "Effect size",
+                   value = "AUC difference 95% CI lower",
+                   -N)
+        
+        #### AUC in Cond 1 ----
         auc_1_store = auc_1_store %>% 
             as.data.frame() %>% 
             `colnames<-`(parameters$effs) %>% 
@@ -1165,6 +1225,23 @@ server <- function(input, output, session) {
                    value = !!paste("Avg. AUC in", parameters$cond1, sep = " "),
                    -N)
         
+        auc_1_store_ci_upr = auc_1_store_ci_upr %>% 
+            as.data.frame() %>% 
+            `colnames<-`(parameters$effs) %>% 
+            mutate(N = parameters$ns) %>% 
+            gather(key = "Effect size",
+                   value = !!paste("AUC", parameters$cond1, "95% CI upper", sep = " "),
+                   -N)
+        
+        auc_1_store_ci_lwr = auc_1_store_ci_lwr %>% 
+            as.data.frame() %>% 
+            `colnames<-`(parameters$effs) %>% 
+            mutate(N = parameters$ns) %>% 
+            gather(key = "Effect size",
+                   value = !!paste("AUC", parameters$cond1, "95% CI lower", sep = " "),
+                   -N)
+        
+        #### AUC in Cond 2 ----
         auc_2_store = auc_2_store %>% 
             as.data.frame() %>% 
             `colnames<-`(parameters$effs) %>% 
@@ -1173,6 +1250,23 @@ server <- function(input, output, session) {
                    value = !!paste("Avg. AUC in", parameters$cond2, sep = " "),
                    -N)
         
+        auc_2_store_ci_upr = auc_2_store_ci_upr %>% 
+            as.data.frame() %>% 
+            `colnames<-`(parameters$effs) %>% 
+            mutate(N = parameters$ns) %>% 
+            gather(key = "Effect size",
+                   value = !!paste("AUC", parameters$cond2, "95% CI upper", sep = " "),
+                   -N)
+        
+        auc_2_store_ci_lwr = auc_2_store_ci_lwr %>% 
+            as.data.frame() %>% 
+            `colnames<-`(parameters$effs) %>% 
+            mutate(N = parameters$ns) %>% 
+            gather(key = "Effect size",
+                   value = !!paste("AUC", parameters$cond2, "95% CI lower", sep = " "),
+                   -N)
+        
+        #### Combine the dataframes ----
         data_files$pwr_store = as.data.frame(pwr_store) %>% 
             `colnames<-`(parameters$effs) %>% 
             mutate(N = parameters$ns) %>% 
@@ -1181,8 +1275,14 @@ server <- function(input, output, session) {
                    -N) %>% 
             select(N, `Effect size`, `Power`) %>% 
             left_join(auc_1_store) %>% 
+            left_join(auc_1_store_ci_lwr) %>% 
+            left_join(auc_1_store_ci_upr) %>% 
             left_join(auc_2_store) %>% 
-            left_join(auc_store)
+            left_join(auc_2_store_ci_lwr) %>% 
+            left_join(auc_2_store_ci_upr) %>% 
+            left_join(auc_store) %>% 
+            left_join(auc_store_ci_lwr) %>% 
+            left_join(auc_store_ci_upr)
             
         end_time = Sys.time()
         other_vars$end_time = Sys.time()
@@ -1300,15 +1400,27 @@ server <- function(input, output, session) {
                    `ROC truncation` = input$roc_trunc,
                    `Type I error rate` = input$alpha_level) %>% 
             rename(`Avg. AUC in Cond A` = !!paste("Avg. AUC in", parameters$cond1, sep = " "),
-                   `Avg. AUC in Cond B` = !!paste("Avg. AUC in", parameters$cond2, sep = " ")) %>% 
+                   `Cond A AUC 95% CI Upper` = !!paste("AUC", parameters$cond1, "95% CI upper", sep = " "),
+                   `Cond A AUC 95% CI Lower` = !!paste("AUC", parameters$cond1, "95% CI lower", sep = " "),
+                   `Avg. AUC in Cond B` = !!paste("Avg. AUC in", parameters$cond2, sep = " "),
+                   `Cond B AUC 95% CI Upper` = !!paste("AUC", parameters$cond2, "95% CI upper", sep = " "),
+                   `Cond B AUC 95% CI Lower` = !!paste("AUC", parameters$cond2, "95% CI lower", sep = " "),
+                   `AUC difference 95% CI Lower` = "AUC difference 95% CI lower",
+                   `AUC difference 95% CI Upper` = "AUC difference 95% CI upper") %>% 
             mutate(`Test tails` = ifelse(grepl("2_tail", `Test tails`), "Two-tailed",
                                          ifelse(grepl(cond_1_greater, `Test tails`), "A > B", "B > A"))) %>% 
             select(sim_id, 
                    N,
                    `Effect size`,
                    `Avg. AUC in Cond A`,
+                   `Cond A AUC 95% CI Lower`,
+                   `Cond A AUC 95% CI Upper`,
                    `Avg. AUC in Cond B`,
+                   `Cond B AUC 95% CI Lower`,
+                   `Cond B AUC 95% CI Upper`,
                    `Avg. AUC difference`,
+                   `AUC difference 95% CI Lower`,
+                   `AUC difference 95% CI Upper`,
                    Power,
                    `Type I error rate`, 
                    `Test tails`,
