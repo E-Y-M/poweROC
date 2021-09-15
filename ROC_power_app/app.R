@@ -265,11 +265,17 @@ parameters_tab = tabItem(tabName = "parameters_tab",
                                      "roc_trunc",
                                      "Partial AUC truncation",
                                      choices = c("Highest false ID rate",
-                                                 "Lowest false ID rate"),
+                                                 "Lowest false ID rate",
+                                                 "Custom"),
                                      selected = "Lowest false ID rate"
                                  ),
+                                 hidden(numericInput("custom_trunc",
+                                                     "Enter the specificity (1 - FAR)",
+                                                     value = NA,
+                                                     min = 0,
+                                                     max = 1)),
                                  bsTooltip("roc_trunc",
-                                           "Specify whether the AUC comparison will occur at the highest or lowest false ID rate between your conditions",
+                                           "Specify whether the AUC comparison will occur at the highest or lowest false ID rate between your conditions, or at a custom specificity level",
                                            placement = "bottom",
                                            trigger = "hover"),
                                  uiOutput("test_tails"),
@@ -386,7 +392,7 @@ server <- function(input, output, session) {
                                 saved_data = NULL,
                                 upload_data = NULL,
                                 pwr_store = NULL,
-                                sim_params = data.frame(Parameter = rep(NA, times = 10)))
+                                sim_params = data.frame(Parameter = rep(NA, times = 11)))
     
     output$example_data = renderDataTable({
         example_data
@@ -403,6 +409,7 @@ server <- function(input, output, session) {
                 "# of simulated samples per effect size/N",
                 "# of bootstraps per AUC test",
                 "Partial AUC truncation",
+                "Custom specificity",
                 "Two-tailed or one-tailed?",
                 "Type I error rate"),
                 Value = c(input$ns,
@@ -413,6 +420,7 @@ server <- function(input, output, session) {
                             input$nsims,
                             input$nboot_iter,
                             input$roc_trunc,
+                            input$custom_trunc,
                             input$test_tails,
                             input$alpha_level))
     })
@@ -587,7 +595,8 @@ server <- function(input, output, session) {
                                 end_time = NA,
                                 avg_n = NA,
                                 end_time_est = NA,
-                                duration_est = NA)
+                                duration_est = NA,
+                                custom_trunc = NA)
     
     ### number of lineups ----
     observeEvent(input$n_total_lineups, {
@@ -666,8 +675,21 @@ server <- function(input, output, session) {
         other_vars$avg_n = mean(parameters$ns)
     })
     
+    ### Custom ROC truncation ----
+    observeEvent(input$roc_trunc, {
+        if (input$roc_trunc == "Custom") {
+            show("custom_trunc") 
+        } else {
+            hide("custom_trunc")
+        }
+    })
+    
+    observeEvent(input$custom_trunc, {
+        other_vars$custom_trunc = input$custom_trunc
+    })
+    
     ### generate hypothetical ROCs before simulation ----
-    observeEvent(c(input$effs, input$ns, input$roc_trunc), {
+    observeEvent(c(input$effs, input$ns, input$roc_trunc, input$custom_trunc), {
         req(data_files$processed_data)
         req(parameters$effs)
         req(parameters$ns)
@@ -813,11 +835,13 @@ server <- function(input, output, session) {
                 filter(criteria == max_criteria) %>% 
                 select(absent) %>% 
                 min() 
-        } else {
+        } else if (input$roc_trunc == "Highest false ID rate") {
             partial_threshold = ROC_data_wide %>% 
                 filter(criteria == max_criteria) %>% 
                 select(absent) %>% 
                 max()
+        } else {
+            partial_threshold = 1 - other_vars$custom_trunc
         }
 
         message("Created data for plotting")
@@ -1112,7 +1136,7 @@ server <- function(input, output, session) {
                             boot.n = input$nboot_iter,
                             progress = "none"
                         )
-                    } else {
+                    } else if (input$roc_trunc == "Highest false ID rate") {
                         #### If truncating at highest false ID rate ----
                         roc_test = roc.test(
                             roc_cond1,
@@ -1121,6 +1145,19 @@ server <- function(input, output, session) {
                             partial.auc = c(1, 1 - max(
                                 cond1_partial, cond2_partial
                             )),
+                            partial.auc.focus = "sp",
+                            method = "bootstrap",
+                            paired = FALSE,
+                            boot.n = input$nboot_iter,
+                            progress = "none"
+                        ) 
+                    } else {
+                        #### If truncating at a custom false ID rate ----
+                        roc_test = roc.test(
+                            roc_cond1,
+                            roc_cond2,
+                            reuse.auc = FALSE,
+                            partial.auc = c(1, other_vars$custom_trunc),
                             partial.auc.focus = "sp",
                             method = "bootstrap",
                             paired = FALSE,
