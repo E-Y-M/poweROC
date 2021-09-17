@@ -65,7 +65,7 @@ intro_tab <- tabItem(
             tags$li("		 Record test significance", style="white-space: pre-wrap"),
             tags$li("Record proportion of significant tests at each effect size/N", style="white-space: pre-wrap")),
         tags$br(),
-        tags$p(strong('NOTE:'), ' Due to the computationally intensive bootstrap resampling involved in ROC analyses, simulations can potentially take a long time (e.g., several hours). Thus, users may want to download a local copy of the app to run in R/RStudio (see link below) to avoid simulation disruption with dropped internet connections. Whether running the web or a local version, it is also recommended that hibernation settings be temporarily disabled.'),
+        tags$p(strong('NOTE:'), ' Due to the computationally intensive bootstrap resampling involved in ROC analyses, some simulations can potentially take a long time (e.g., upwards of an hour if several sample/effect sizes are under consideration). Thus, users may want to download a local copy of the app to run in R/RStudio (see link below) to avoid simulation disruption with dropped internet connections or timeouts. Whether running the web or a local version, it is also recommended that hibernation settings be temporarily disabled.'),
         tags$p('Complete source code for this app can be downloaded from GitHub at ', a(href = 'https://github.com/E-Y-M/poweROC', 'https://github.com/E-Y-M/poweROC', .noWS = "outside"), ', and any issues can be reported at ', a(href = 'https://github.com/E-Y-M/poweROC/issues', 'https://github.com/E-Y-M/poweROC/issues', .noWS = "outside"), '. This app is very much in the beta stage, so feedback/suggestions/bug reports are very much appreciated!', .noWS = c("after-begin", "before-end"))
     )
 )
@@ -874,13 +874,13 @@ server <- function(input, output, session) {
         start_time = Sys.time()
         
         other_vars$sim_total = input$nsims * length(parameters$ns) * length(parameters$effs)
-        duration = (other_vars$avg_n/1000 * input$nboot_iter/1000) * other_vars$sim_total
+        duration = (other_vars$avg_n/1000 * input$nboot_iter/1500) * other_vars$sim_total
         other_vars$duration_est = duration/60
         other_vars$end_time_est = start_time + duration
         
         message(other_vars$end_time_est)
         
-        showModal(modalDialog(HTML(sprintf("Start time: %s <br/>Estimated completion time is %s<br/>Do not close this tab/window until you see the 'Simulation Results' tab appear on the left",
+        showModal(modalDialog(HTML(sprintf("Start time: %s <br/>Estimated completion time is %s<br/>Do not close this tab/window until all simulations are complete",
                             other_vars$start_time,
                             other_vars$end_time_est)),
                     fade = FALSE,
@@ -1325,7 +1325,7 @@ server <- function(input, output, session) {
         other_vars$end_time = Sys.time()
 
         other_vars$time_taken = 
-            paste("Time taken: ", (end_time - start_time)/60, " minutes", sep = "")
+            paste("Time taken: ", (end_time - start_time), " minutes", sep = "")
         
         output$time_taken = renderText({
             other_vars$time_taken

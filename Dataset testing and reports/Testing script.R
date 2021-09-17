@@ -126,6 +126,92 @@ write.csv(colloff,
           row.names = FALSE,
           na = "")
 
+## Colloff et al., 2021b ----
+### Exp 1 ----
+#### Same vs. Different ----
+colloff = read.csv("./Dataset testing and reports/Data/Colloff et al., 2021b/Exp 1/Exp1_Data.csv") %>% 
+    dplyr::select(conditionSameDiff, 
+                  targetPresentRaw,
+                  participantSelection,
+                  confidence) %>% 
+    mutate(cond = ifelse(conditionSameDiff == 1, "Same",
+                         ifelse(conditionSameDiff == 2, "Different", "Same + Different")),
+           culprit_present = ifelse(grepl("Present", targetPresentRaw), "present", "absent"),
+           conf_level = as.numeric(confidence),
+           id_type = ifelse(participantSelection == 1, "suspect",
+                            ifelse(participantSelection == 2, "filler", "reject")),
+           id_type = ifelse(culprit_present == "absent" & id_type == "filler", "suspect", id_type)) %>% 
+    filter(cond != "Same + Different")
+
+write.csv(colloff,
+          "./Dataset testing and reports/Data/Colloff et al., 2021b/Exp 1/Exp1_Data_SameVsDiff.csv",
+          row.names = FALSE,
+          na = "")
+
+# AUC specificity = .618
+
+#### Same + Different vs. Different ----
+colloff = read.csv("./Dataset testing and reports/Data/Colloff et al., 2021b/Exp 1/Exp1_Data.csv") %>% 
+    dplyr::select(conditionSameDiff, 
+                  targetPresentRaw,
+                  participantSelection,
+                  confidence) %>% 
+    mutate(cond = ifelse(conditionSameDiff == 1, "Same",
+                         ifelse(conditionSameDiff == 2, "Different", "Same + Different")),
+           culprit_present = ifelse(grepl("Present", targetPresentRaw), "present", "absent"),
+           conf_level = as.numeric(confidence),
+           id_type = ifelse(participantSelection == 1, "suspect",
+                            ifelse(participantSelection == 2, "filler", "reject")),
+           id_type = ifelse(culprit_present == "absent" & id_type == "filler", "suspect", id_type)) %>% 
+    filter(cond != "Same")
+
+write.csv(colloff,
+          "./Dataset testing and reports/Data/Colloff et al., 2021b/Exp 1/Exp1_Data_SamePlusDiffVsDiff.csv",
+          row.names = FALSE,
+          na = "")
+
+# AUC specificity = .618
+
+### Exp 2 ----
+#### Left encoding vs. Right encoding ----
+colloff = read.csv("./Dataset testing and reports/Data/Colloff et al., 2021b/Exp 2/Exp2_Data.csv") %>% 
+    dplyr::select(EncodingCondition, 
+                  TargetPresent,
+                  ParticipantSelection,
+                  Confidence) %>% 
+    mutate(culprit_present = ifelse(TargetPresent == 0, "absent", "present"),
+           conf_level = as.numeric(Confidence),
+           id_type = ifelse(ParticipantSelection == "target", "suspect",
+                            ifelse(ParticipantSelection == "filler", "filler", "reject")),
+           id_type = ifelse(culprit_present == "absent" & id_type == "filler", "suspect", id_type),
+           cond = EncodingCondition)
+
+write.csv(colloff,
+          "./Dataset testing and reports/Data/Colloff et al., 2021b/Exp 2/Exp2_Data_LeftRight.csv",
+          row.names = FALSE,
+          na = "")
+
+# AUC specificity = .59
+
+## Colloff et al., 2018 ----
+colloff = read.csv("./Dataset testing and reports/Data/Colloff et al., 2018/ColloffWadeStrangeWixtedData.csv") %>% 
+    filter(include == "yes") %>% 
+    mutate(cond = treatmentLabel,
+           conf_level = confidence,
+           id_type = ifelse(faceSelected == "yes", "suspect", "reject"),
+           culprit_present = targetLabel) %>% 
+    dplyr::select(cond,
+                  conf_level,
+                  id_type,
+                  culprit_present)
+
+write.csv(colloff,
+          "./Dataset testing and reports/Data/Colloff et al., 2018/ColloffWadeStrangeWixtedData_Processed.csv",
+          row.names = FALSE,
+          na = "")
+
+# AUC specificity = .77
+
 ## Morgan et al., 2019 ----
 ### Sleep vs. Wake ----
 morgan = read.csv("./Dataset testing and reports/Data/Morgan et al., 2019/RSOS_Data.csv") %>% 

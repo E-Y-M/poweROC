@@ -1,0 +1,14 @@
+﻿dataset,base,Nsims200,Niter2000
+"Morgan et al., 2019 (Sleep vs. Wake)",0.02,0.045,0.05
+"Morgan et al., 2019 (AM vs. PM)",0.09,0.095,0.1
+"Colloff et al., 2021a (Exp. 1; High vs. Low)",0.69,0.6,0.69
+"Colloff et al., 2021a (Exp. 1; High vs. Med)",0.22,0.18,0.28
+"Colloff et al., 2021a (Exp. 2; High vs. Low)",0.74,0.805,0.78
+"Colloff et al., 2021a (Exp. 2; High vs. Med)",0.16,0.2,0.2
+"Akan et al., 2021 (Exp. 1; Showup vs. 6)",0.93,0.9,0.85
+"Akan et al., 2021 (Exp. 2; Showup vs. 3)",0.66,0.585,0.56
+"Akan et al., 2021 (Exp. 2; Showup vs. 6)",0.96,0.96,0.95
+"Colloff et al., 2021b (Exp. 1; Same vs. Different)",1,1,1
+"Colloff et al., 2021b (Exp. 1; Same + Different vs. Different)",1,1,1
+"Colloff et al., 2021b (Exp. 2; Left vs. Right)",0.68,0.71,0.71
+"Colloff et al., 2018 (Block vs. Do-Nothing)",0.96,0.965,0.94
