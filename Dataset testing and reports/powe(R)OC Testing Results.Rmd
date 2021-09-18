@@ -1,0 +1,137 @@
+---
+title: "powe(R)OC Testing Results"
+author: "Eric Mah"
+date: "17/09/2021"
+output: html_document
+---
+
+This document details several tests of simulation validity/performance conducted using real datasets. Data/articles used for testing can all be found in https://github.com/E-Y-M/poweROC/tree/main/Dataset%20testing%20and%20reports, and were obtained from the Open Science Framework. If you have ROC data (along with analysis parameters) you are willing to share for the purposes of simulation testing, feel free to email me at ericmah@uvic.ca. Issues/comments on the app or simulation testing results can be posted on GitHub at https://github.com/E-Y-M/poweROC/issues. 
+```{r include=FALSE, echo=FALSE}
+#* R Setup ----
+library(psych)
+library(tidyverse)
+library(here)
+
+#APA theme for plots
+apatheme <-
+  theme_bw()+                                      #apply ggplot2() black and white theme
+  theme(panel.grid.major = element_blank(),        #eliminate major grid lines
+        panel.grid.minor = element_blank(),        #eliminate minor grid lines
+        panel.background = element_blank(),        #eliminate the square panel background
+        panel.border = element_blank(),            #eliminate the square panel border
+        text=element_text(family="Arial"),         #use arial font
+        #legend.title=element_blank(),              #eliminate lengend title
+        legend.position= "right",                  #position legend to the right of the plot
+        axis.line.x = element_line(color="black"), #include a black border along the x-axis
+        axis.line.y = element_line(color="black")) #include a black border along the y-axis
+
+#* Data files ----
+auc_data = read.csv(here("./Dataset testing and reports/Dataset Testing.csv"), fileEncoding = "UTF-8-BOM") %>% 
+    mutate(`Simulation parameters` = ifelse(sim_n == 200, "NSims X2",
+                        ifelse(boot_n == 2000, "NBootIter X2", "Default")))
+
+pwr_data = read.csv(here("./Dataset testing and reports/Power Estimate Stability.csv"), fileEncoding = "UTF-8-BOM") %>% 
+    gather(key = "sim",
+           value = "pwr",
+           -dataset) %>% 
+    mutate(`Simulation parameters` = ifelse(sim == "Nsims200", "NSims X2",
+                        ifelse(sim == "Niter2000", "NBootIter X2", "Default")))
+```
+
+## AUC Recovery
+At a basic level, simulation validity depends on the ability of the simulations to recover AUC values close to those in the original dataset. The figure below depicts original AUC estimates from various papers with open data (5 papers, 8 experiments, 22 ROC curves computed using the same N's/pAUC cutoffs in the original papers), along with simulated estimates and intervals:
+```{r echo=FALSE, warning=FALSE}
+auc_plot = auc_data %>% 
+    ggplot(aes(x = dataset, y = auc, color = cond, group = cond))+
+    geom_point(position = position_dodge(width = .9), shape = 21, size = 4)+
+    geom_point(aes(x = dataset, y = sim_auc, shape = `Simulation parameters`, color = cond, group = cond), position = position_dodge(width = .9), size = 2)+
+    geom_errorbar(aes(ymin = sim_auc_lwr, ymax = sim_auc_upr, color = cond, group = cond, linetype = `Simulation parameters`), position = position_dodge(width = .9), size = 1)+
+    apatheme+
+    theme(text = element_text(size = 20),
+          axis.text.x = element_text(angle = 90),
+          axis.title.x = element_text(margin = margin(t = 20, r = 0, b = 0, l = 0)),
+          axis.title.y = element_text(margin = margin(t = 0, r = 20, b = 0, l = 0)))+
+    labs(x = "Dataset / Experiment",
+         y = "AUC")+
+    scale_color_discrete(name = "Experiment Condition")
+
+ggsave(here("./Dataset testing and reports/AUCRecovery.png"),
+       dpi = 300,
+       height = 12,
+       width = 16,
+       units = "in")
+
+knitr::include_graphics(here("./Dataset testing and reports/AUCRecovery.png"))
+```
+Testing the ability of the simulation to recover AUC values from experiments. Open circles represent original AUC values, all other points represent simulation estimates under various conditions ("NSims" = Number of simulated datasets per effect size/N, "NBootIter" = Number of bootstrap iterations per AUC comparison). Error bars = 95% quantiles on the mean estimated AUC for the simulations. Overall, simulations demonstrate excellent ability to recover original AUC values, even under default settings.
+
+## Simulation precision under different conditions
+Still, the question remains as to whether increasing the number of simulations or bootstrap iterations increases power. The figure below shows the width of the 95% quantile intervals for the AUC estimates above, as a function of the simulation conditions.
+```{r echo=FALSE, warning=FALSE}
+auc_data = auc_data %>% 
+    mutate(`Simulation parameters` = factor(`Simulation parameters`, levels = c(
+        "NSims X2",
+        "Default",
+        "NBootIter X2")),
+        ci_width = sim_auc_upr - sim_auc_lwr,
+        id = paste(dataset, cond, sep = " "))
+
+ci_plot = auc_data %>% 
+    ggplot(aes(x = `Simulation parameters`, y = ci_width, color = id, group = id))+
+    geom_point(size = 2)+
+    geom_line(size = 1.5)+
+    apatheme+
+    theme(text = element_text(size = 20),
+          axis.text.x = element_text(angle = 90),
+          axis.title.x = element_text(margin = margin(t = 20, r = 0, b = 0, l = 0)),
+          axis.title.y = element_text(margin = margin(t = 0, r = 20, b = 0, l = 0)))+
+    labs(x = "Simulation parameters",
+         y = "95% Quantile Interval Width")+
+    scale_color_discrete(name = "Experiment Condition")+
+    guides(color = FALSE)
+
+ggsave(here("./Dataset testing and reports/CIWidth.png"),
+       dpi = 300,
+       height = 10,
+       width = 10,
+       units = "in")
+
+knitr::include_graphics(here("./Dataset testing and reports/CIWidth.png"))
+```
+Based on these simulations, it does not seem that increasing the number of simulations or bootstrap iterations necessarily or substantially increases the precision of the simulation beyond the default settings, suggesting that the default settings will result in reasonable estimates.
+
+## Power estimates under different conditions
+Finally, it is not clear whether the default simulation settings result in the most accurate power estimates. I simulated power for 13 ROC comparisons from the papers above along with two simulation runs of a dataset with a prespecified null effect (to compare with the normative Type I Error Rate of .05), all under the three different simulation conditions. These power estimates are plotted below:
+```{r echo=FALSE, warning=FALSE}
+pwr_data = pwr_data %>% 
+    mutate(null = ifelse(grepl("Null", dataset), "Null effect", "Real data"),
+           `Simulation parameters` = factor(`Simulation parameters`, levels = c(
+        "NSims X2",
+        "Default",
+        "NBootIter X2")))
+
+pwr_plot = pwr_data %>% 
+    ggplot(aes(x = `Simulation parameters`, y = pwr, color = null, group = dataset))+
+    geom_point(size = 2)+
+    geom_line(size = 1.5)+
+    apatheme+
+    theme(text = element_text(size = 20),
+          axis.text.x = element_text(angle = 90),
+          axis.title.x = element_text(margin = margin(t = 20, r = 0, b = 0, l = 0)),
+          axis.title.y = element_text(margin = margin(t = 0, r = 20, b = 0, l = 0)))+
+    labs(x = "Simulation parameters",
+         y = "Estimated power")+
+    scale_color_discrete(name = "Null effect?")+
+    geom_hline(yintercept = .05,
+               linetype = "dashed",
+               size = 1.5)
+
+ggsave(here("./Dataset testing and reports/PwrPlot.png"),
+       dpi = 300,
+       height = 10,
+       width = 10,
+       units = "in")
+
+knitr::include_graphics(here("./Dataset testing and reports/PwrPlot.png"))
+```
+Power estimates differed slightly across the different simulation conditions, but no clear patterns emerged. In these examples, the maximum range of estimated power was .10. Importantly, power estimates in the two null effect simulations were close to the nominal Type I Error Rate of .05 (though the non-default settings resulted in slightly higher estimates). In light of these results, I recommend that users: a) Use the default simulation parameters, b) Power slightly higher than their target power (e.g., + .05-.10), and c) Conduct a couple simulation runs.

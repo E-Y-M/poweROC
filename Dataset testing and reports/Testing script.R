@@ -16,11 +16,38 @@ source("ROC_power_app/scripts/func.R") # helper functions
 test = "1, 1, 1.25, 1.5"
 test_extract = unique(extract(test))
 
+# Dataset for testing a null effect
+## Colloff et al., 2021 data ----
+### Exp. 1 ----
+#### Medium similarity ----
+colloff = read.csv("./Dataset testing and reports/Data/Colloff et al. 2021a/Exp 1/Experiment1.csv") %>% 
+    filter(include == "yes") %>% 
+    select(condition, targetPresent, participantIDdecision, confidence) %>% 
+    rename(cond = "condition",
+           culprit_present = "targetPresent",
+           id_type = "participantIDdecision",
+           conf_level1 = "confidence") %>% 
+    mutate(id_type = ifelse(grepl("reject", id_type, ignore.case = TRUE), "reject",
+                            ifelse(grepl("filler", id_type, ignore.case = TRUE), "filler", "suspect")),
+           culprit_present = ifelse(culprit_present == 0, "absent", "present")) %>% 
+    ungroup() %>% 
+    mutate(conf_level = round(conf_level1 / 10)+1) %>% 
+    mutate(conf_level_rev = max(conf_level)+1 - conf_level) %>% 
+    mutate(cond = ifelse(cond == 1, "high_similarity",
+                         ifelse(cond == 2, "med_similarity", "low_similarity"))) %>% 
+    filter(cond == "med_similarity") %>% 
+    mutate(cond = as.character(cond))
+
+write.csv(colloff,
+          "./Dataset testing and reports/Data/Colloff et al. 2021a/Exp 1/Null Effect Testing/colloff_2021_processed_med.csv",
+          row.names = FALSE,
+          na = "")
+
 # Processing of other datasets ----
 ## Colloff et al., 2021 data ----
 ### Exp. 1 ----
 #### High similarity vs. Low similarity ----
-colloff = read.csv("./Dataset testing and reports/Data/Colloff et al. 2021/Exp 1/Experiment1.csv") %>% 
+colloff = read.csv("./Dataset testing and reports/Data/Colloff et al. 2021a/Exp 1/Experiment1.csv") %>% 
     filter(include == "yes") %>% 
     select(condition, targetPresent, participantIDdecision, confidence) %>% 
     rename(cond = "condition",
@@ -44,12 +71,12 @@ density(colloff$suspect_prob[!is.na(colloff$suspect_prob)]) %>%
     plot()
 
 write.csv(colloff,
-          "./Dataset testing and reports/Data/Colloff et al. 2021/Exp 1/colloff_2021_processed_high_low.csv",
+          "./Dataset testing and reports/Data/Colloff et al. 2021a/Exp 1/colloff_2021_processed_high_low.csv",
           row.names = FALSE,
           na = "")
 
 #### High similarity vs. Medium similarity ----
-colloff = read.csv("./Dataset testing and reports/Data/Colloff et al. 2021/Exp 1/Experiment1.csv") %>% 
+colloff = read.csv("./Dataset testing and reports/Data/Colloff et al. 2021a/Exp 1/Experiment1.csv") %>% 
     filter(include == "yes") %>% 
     select(condition, targetPresent, participantIDdecision, confidence) %>% 
     rename(cond = "condition",
@@ -68,13 +95,13 @@ colloff = read.csv("./Dataset testing and reports/Data/Colloff et al. 2021/Exp 1
     mutate(cond = as.character(cond))
 
 write.csv(colloff,
-          "./Dataset testing and reports/Data/Colloff et al. 2021/Exp 1/colloff_2021_processed_high_med.csv",
+          "./Dataset testing and reports/Data/Colloff et al. 2021a/Exp 1/colloff_2021_processed_high_med.csv",
           row.names = FALSE,
           na = "")
 
 ### Exp. 2 ----
 #### High similarity vs. Low similarity ----
-colloff = read.csv("./Dataset testing and reports/Data/Colloff et al. 2021/Exp 2/Experiment2.csv") %>% 
+colloff = read.csv("./Dataset testing and reports/Data/Colloff et al. 2021a/Exp 2/Experiment2.csv") %>% 
     filter(include == "yes") %>% 
     select(condition, targetPresent, participantIDdecision, confidence) %>% 
     rename(cond = "condition",
@@ -98,12 +125,12 @@ density(colloff$suspect_prob[!is.na(colloff$suspect_prob)]) %>%
     plot()
 
 write.csv(colloff,
-          "./Dataset testing and reports/Data/Colloff et al. 2021/Exp 2/colloff_2021_processed_high_low.csv",
+          "./Dataset testing and reports/Data/Colloff et al. 2021a/Exp 2/colloff_2021_processed_high_low.csv",
           row.names = FALSE,
           na = "")
 
 #### High similarity vs. Medium similarity ----
-colloff = read.csv("./Dataset testing and reports/Data/Colloff et al. 2021/Exp 2/Experiment2.csv") %>% 
+colloff = read.csv("./Dataset testing and reports/Data/Colloff et al. 2021a/Exp 2/Experiment2.csv") %>% 
     filter(include == "yes") %>% 
     select(condition, targetPresent, participantIDdecision, confidence) %>% 
     rename(cond = "condition",
@@ -122,7 +149,7 @@ colloff = read.csv("./Dataset testing and reports/Data/Colloff et al. 2021/Exp 2
     mutate(cond = as.character(cond))
 
 write.csv(colloff,
-          "./Dataset testing and reports/Data/Colloff et al. 2021/Exp 2/colloff_2021_processed_high_med.csv",
+          "./Dataset testing and reports/Data/Colloff et al. 2021a/Exp 2/colloff_2021_processed_high_med.csv",
           row.names = FALSE,
           na = "")
 
