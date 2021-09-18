@@ -2,7 +2,10 @@
 title: "powe(R)OC Testing Results"
 author: "Eric Mah"
 date: "17/09/2021"
-output: html_document
+output:
+  word_document: default
+  html_document: default
+  pdf_document: default
 ---
 
 This document details several tests of simulation validity/performance conducted using real datasets. Data/articles used for testing can all be found in https://github.com/E-Y-M/poweROC/tree/main/Dataset%20testing%20and%20reports, and were obtained from the Open Science Framework. If you have ROC data (along with analysis parameters) you are willing to share for the purposes of simulation testing, feel free to email me at ericmah@uvic.ca. Issues/comments on the app or simulation testing results can be posted on GitHub at https://github.com/E-Y-M/poweROC/issues. 
@@ -88,7 +91,7 @@ ci_plot = auc_data %>%
     labs(x = "Simulation parameters",
          y = "95% Quantile Interval Width")+
     scale_color_discrete(name = "Experiment Condition")+
-    guides(color = FALSE)
+    guides(color = "none")
 
 ggsave(here("./Dataset testing and reports/CIWidth.png"),
        dpi = 300,
