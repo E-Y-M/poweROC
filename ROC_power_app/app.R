@@ -1323,9 +1323,12 @@ server <- function(input, output, session) {
             
         end_time = Sys.time()
         other_vars$end_time = Sys.time()
+        
+        duration = round(as.numeric(difftime(end_time, start_time,
+                            units = "mins")), 2)
 
         other_vars$time_taken = 
-            paste("Time taken: ", (end_time - start_time), " minutes", sep = "")
+            paste("Time taken: ", duration, " minutes", sep = "")
         
         output$time_taken = renderText({
             other_vars$time_taken

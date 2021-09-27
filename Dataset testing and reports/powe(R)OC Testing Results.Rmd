@@ -1,7 +1,7 @@
 ---
 title: "powe(R)OC Testing Results"
 author: "Eric Mah"
-date: "17/09/2021"
+date: ""
 output:
   word_document: default
   html_document: default
@@ -66,6 +66,7 @@ ggsave(here("./Dataset testing and reports/AUCRecovery.png"),
 
 knitr::include_graphics(here("./Dataset testing and reports/AUCRecovery.png"))
 ```
+
 Testing the ability of the simulation to recover AUC values from experiments. Open circles represent original AUC values, all other points represent simulation estimates under various conditions ("NSims" = Number of simulated datasets per effect size/N, "NBootIter" = Number of bootstrap iterations per AUC comparison). Error bars = 95% quantiles on the mean estimated AUC for the simulations. Overall, simulations demonstrate excellent ability to recover original AUC values, even under default settings (NSims = 100, NBootIter = 1000).
 
 ## Simulation precision under different conditions
@@ -101,6 +102,7 @@ ggsave(here("./Dataset testing and reports/CIWidth.png"),
 
 knitr::include_graphics(here("./Dataset testing and reports/CIWidth.png"))
 ```
+
 Based on these simulations, it does not seem that increasing the number of simulations or bootstrap iterations necessarily or substantially increases the precision of the simulation beyond the default settings, suggesting that the default settings will result in reasonable estimates.
 
 ## Power estimates under different conditions
@@ -137,6 +139,7 @@ ggsave(here("./Dataset testing and reports/PwrPlot.png"),
 
 knitr::include_graphics(here("./Dataset testing and reports/PwrPlot.png"))
 ```
+
 Power estimates differed slightly across the different simulation conditions, but no clear patterns emerged. In these examples, the maximum range of estimated power was .10. Importantly, power estimates in the two null effect simulations were close to the nominal Type I Error Rate of .05 (though the non-default settings resulted in slightly higher estimates). 
 
 ## Power curves in a full simulation example
@@ -155,13 +158,14 @@ pwr_curve_data = read.csv(here("./Dataset testing and reports/Full Simulation Te
                        levels = c("Default",
                                   "NBootIter X2",
                                   "NSims X2",
-                                  "Both")))
+                                  "Both",
+                                  "NSims X3")))
 
 pwr_curve_plot = pwr_curve_data %>% 
     ggplot(aes(x = N, y = Power, color = Effect.size, group = interaction(Effect.size, Run), linetype = Run))+
   facet_wrap(~cond,
              nrow = 2,
-             ncol = 2)+
+             ncol = 3)+
     geom_point(size = 2)+
     geom_line(size = 1.5)+
     apatheme+
@@ -182,8 +186,9 @@ ggsave(here("./Dataset testing and reports/Full Simulation Tests/PwrCurvePlot.pn
 
 knitr::include_graphics(here("./Dataset testing and reports/Full Simulation Tests/PwrCurvePlot.png"))
 ```
-These simulations result in the same general expected pattern, but there are a few things worth noting. First, it appears that the default settings (though the fastest for simulation) result in a good amount of run-to-run variability, and a violation of power simulation expectations (i.e., higher power for a smaller effect size with the same sample size). Between increasing the bootstrap iterations and increasing the # of sims, increasing the # of sims seems to result in more run-to-run consistency while maintaining the expected patterns of results, at the cost of increasing the required simulation time (Default = ~50 minutes, NSims X2 = ~100 minutes). At least in these examples, upping the default values of both NSims and NIter did not seem to offer substantial benefit over increasing NSims.
+
+These simulations result in the same general expected pattern, but there are a few things worth noting. First, it appears that the default settings (though the fastest for simulation) result in a good amount of run-to-run variability, and a violation of power simulation expectations (i.e., higher power for a smaller effect size with the same sample size). Between increasing the bootstrap iterations and increasing the # of sims, increasing the # of sims seems to result in more run-to-run consistency while maintaining the expected patterns of results, at the cost of increasing the required simulation time (Default = ~50 minutes, NSims X2 = ~100 minutes). At least in these examples, upping the default values of both NSims and NIter did not seem to offer substantial benefit over increasing NSims, and increasing NSims beyond 200 did not seem to result in a substantial gain.
 
 ## Recommendations for users
 In light of these testing results, I recommend that users: 
-a) Use the default simulation parameters if analysis time is a concern, but to up the # of simulations per sample/effect size to 200 (or more) if time is not a concern, b) select only a few effect sizes/sample sizes for simulation (e.g., based on prior results documented in the app), c) power slightly higher than their target power (e.g., + .05-.10), and d) conduct a couple simulation runs (e.g., one with default settings to get a general idea of the sample size, then a finer-grained simulation including only a few sample sizes and using more simulations & bootstrap iterations).
+a) Use the default simulation parameters if analysis time is a concern, but to up the # of simulations per sample/effect size to 200 if time is not a concern, b) select only a few effect sizes/sample sizes for simulation (e.g., based on prior results documented in the app), c) set final planned sample size slightly higher than their target power (e.g., + .05-.10), and d) conduct a couple simulation runs (e.g., one with default settings to get a general idea of the sample size, then a finer-grained simulation including only a few sample sizes and using more simulations & bootstrap iterations).

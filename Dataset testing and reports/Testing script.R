@@ -3,14 +3,16 @@ library(tidyverse)
 library(pROC)
 library(lubridate)
 
-end_time = 800
-start_time = 500
-
+start_time = Sys.time()
+end_time = Sys.time()
+duration = difftime(start_time, end_time, units = "min")
+duration
+as.character(duration)
 time_test = paste("Time taken: ", (end_time - start_time)/60, " minutes", sep = "")
 parse_number(time_test)
 source("ROC_power_app/scripts/func.R") # helper functions
-
-
+is.character(duration)
+print(duration)
 (2000*2000)/1000
 
 test = "1, 1, 1.25, 1.5"
