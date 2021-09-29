@@ -110,7 +110,7 @@ knitr::include_graphics(here("./Dataset testing and reports/CIWidth.png"))
 Based on these simulations, it does not seem that increasing the number of simulations or bootstrap iterations necessarily or substantially increases the precision of the simulation beyond the default settings, suggesting that the default settings will result in reasonable estimates.
 
 ## Power estimates under different conditions
-It is not clear whether the default simulation settings result in the most accurate power estimates. I simulated power for 13 ROC comparisons from the papers above. I also conducted two simulation runs of a dataset with a prespecified null effect (using the "Medium Similarity" condition from Colloff et al., 2021 as a base) to compare with the normative Type I Error Rate of .05, all under the three different simulation conditions. These power estimates are plotted below:
+It is not clear whether the default simulation settings result in the most accurate power estimates. I simulated power for 13 ROC comparisons from the papers above. I also conducted two simulation runs of a dataset with a prespecified null effect (using the "Medium Similarity" condition from Colloff et al., 2021a as a base) to compare with the normative Type I Error Rate of .05, all under the three different simulation conditions. These power estimates are plotted below:
 
 ```{r echo=FALSE, out.width = "100%", warning=FALSE}
 pwr_data = pwr_data %>% 
@@ -148,7 +148,7 @@ knitr::include_graphics(here("./Dataset testing and reports/PwrPlot.png"))
 Power estimates differed slightly across the different simulation conditions, but no clear patterns emerged. In these examples, the maximum range of estimated power was .10. Importantly, power estimates in the two null effect simulations were close to the nominal Type I Error Rate of .05 (though the non-default settings resulted in slightly higher estimates). 
 
 ## Power curves in a full simulation example
-Finally, I examined the behaviour of the different simulation settings for a full simulation example (i.e., involving multiple N's/sample sizes). I simulated power for 5 effect sizes and 3 sample sizes, again using the "Medium Similarity" condition data from Colloff et al. (2021) as a base. For each simulation setting I ran two simulations to get a basic idea of run-to-run consistency. First, the hypothetical ROCs that were tested for this analysis:
+Finally, I examined the behaviour of the different simulation settings for a full simulation example (i.e., involving multiple N's/sample sizes). I simulated power for 5 effect sizes and 3 sample sizes (1000, 3000, 5000), again using the "Medium Similarity" condition data from Colloff et al. (2021a) as a base. For each simulation setting I ran two simulations to get a basic idea of run-to-run consistency. First, the hypothetical ROCs that were tested for this analysis:
 
 ```{r echo=FALSE, out.width = "100%", warning=FALSE}
 knitr::include_graphics(here("./Dataset testing and reports/Full Simulation Tests/ROC curves tested.png"))
