@@ -1,14 +1,16 @@
 ---
 title: "powe(R)OC Testing Results"
 author: "Eric Mah"
-date: ""
+date: ''
 output:
   word_document: default
-  html_document: default
+  html_document:
+    df_print: paged
   pdf_document: default
+  html_fragment: default
 ---
 
-This document details several tests of simulation validity/performance conducted using real datasets. Data/articles used for testing can all be found in https://github.com/E-Y-M/poweROC/tree/main/Dataset%20testing%20and%20reports, and were obtained from the Open Science Framework. If you have ROC data (along with analysis parameters) you are willing to share for the purposes of simulation testing, feel free to email me at ericmah@uvic.ca. Issues/comments on the app or simulation testing results can be posted on GitHub at https://github.com/E-Y-M/poweROC/issues. 
+This document details several tests of simulation validity/performance conducted using real datasets. Data/articles used for testing can all be found in the "References" section below and at https://github.com/E-Y-M/poweROC/tree/main/Dataset%20testing%20and%20reports, and were obtained from the Open Science Framework. If you have ROC data (along with analysis parameters) you are willing to share for the purposes of simulation testing, feel free to email me at ericmah@uvic.ca. Issues/comments on the app or simulation testing results can be posted on GitHub at https://github.com/E-Y-M/poweROC/issues. 
 ```{r include=FALSE, echo=FALSE}
 #* R Setup ----
 library(psych)
@@ -43,7 +45,8 @@ pwr_data = read.csv(here("./Dataset testing and reports/Power Estimate Stability
 
 ## AUC Recovery
 At a basic level, simulation validity depends on the ability of the simulations to recover AUC values close to those in the original dataset. The figure below depicts original AUC estimates from various papers with open data (5 papers, 8 experiments, 22 ROC curves computed using the same N's/pAUC cutoffs in the original papers), along with simulated estimates and intervals:
-```{r echo=FALSE, warning=FALSE}
+
+```{r echo=FALSE, out.width = "100%", warning=FALSE}
 auc_plot = auc_data %>% 
     ggplot(aes(x = dataset, y = auc, color = cond, group = cond))+
     geom_point(position = position_dodge(width = .9), shape = 21, size = 4)+
@@ -71,7 +74,8 @@ Testing the ability of the simulation to recover AUC values from experiments. Op
 
 ## Simulation precision under different conditions
 Still, the question remains as to whether increasing the number of simulations or bootstrap iterations increases power. The figure below shows the width of the 95% quantile intervals for the AUC estimates above, as a function of the simulation conditions.
-```{r echo=FALSE, warning=FALSE}
+
+```{r echo=FALSE, out.width = "100%", warning=FALSE}
 auc_data = auc_data %>% 
     mutate(`Simulation parameters` = factor(`Simulation parameters`, levels = c(
         "NSims X2",
@@ -107,7 +111,8 @@ Based on these simulations, it does not seem that increasing the number of simul
 
 ## Power estimates under different conditions
 It is not clear whether the default simulation settings result in the most accurate power estimates. I simulated power for 13 ROC comparisons from the papers above. I also conducted two simulation runs of a dataset with a prespecified null effect (using the "Medium Similarity" condition from Colloff et al., 2021 as a base) to compare with the normative Type I Error Rate of .05, all under the three different simulation conditions. These power estimates are plotted below:
-```{r echo=FALSE, warning=FALSE}
+
+```{r echo=FALSE, out.width = "100%", warning=FALSE}
 pwr_data = pwr_data %>% 
     mutate(null = ifelse(grepl("Null", dataset), "Null effect", "Real data"),
            `Simulation parameters` = factor(`Simulation parameters`, levels = c(
@@ -144,13 +149,15 @@ Power estimates differed slightly across the different simulation conditions, bu
 
 ## Power curves in a full simulation example
 Finally, I examined the behaviour of the different simulation settings for a full simulation example (i.e., involving multiple N's/sample sizes). I simulated power for 5 effect sizes and 3 sample sizes, again using the "Medium Similarity" condition data from Colloff et al. (2021) as a base. For each simulation setting I ran two simulations to get a basic idea of run-to-run consistency. First, the hypothetical ROCs that were tested for this analysis:
-```{r echo=FALSE, warning=FALSE}
+
+```{r echo=FALSE, out.width = "100%", warning=FALSE}
 knitr::include_graphics(here("./Dataset testing and reports/Full Simulation Tests/ROC curves tested.png"))
 ```
 
 
 Next, power curves for these simulations:
-```{r echo=FALSE, warning=FALSE}
+
+```{r echo=FALSE, out.width = "100%", warning=FALSE}
 pwr_curve_data = read.csv(here("./Dataset testing and reports/Full Simulation Tests/Full Simulation Testing Results.csv"), fileEncoding = "UTF-8-BOM") %>% 
   mutate(Effect.size = as.factor(Effect.size),
          Run = as.factor(Run),
@@ -187,8 +194,21 @@ ggsave(here("./Dataset testing and reports/Full Simulation Tests/PwrCurvePlot.pn
 knitr::include_graphics(here("./Dataset testing and reports/Full Simulation Tests/PwrCurvePlot.png"))
 ```
 
-These simulations result in the same general expected pattern, but there are a few things worth noting. First, it appears that the default settings (though the fastest for simulation) result in a good amount of run-to-run variability, and a violation of power simulation expectations (i.e., higher power for a smaller effect size with the same sample size). Between increasing the bootstrap iterations and increasing the # of sims, increasing the # of sims seems to result in more run-to-run consistency while maintaining the expected patterns of results, at the cost of increasing the required simulation time (Default = ~50 minutes, NSims X2 = ~100 minutes). At least in these examples, upping the default values of both NSims and NIter did not seem to offer substantial benefit over increasing NSims, and increasing NSims beyond 200 did not seem to result in a substantial gain.
+These simulations result in the same general expected pattern, but there are a few things worth noting. First, it appears that the default settings (though the fastest for simulation) result in a good amount of run-to-run variability, and a violation of power simulation expectations (i.e., higher power for a smaller effect size with the same sample size). Between increasing the bootstrap iterations and increasing the # of sims, increasing the # of sims seems to result in more run-to-run consistency while maintaining the expected patterns of results, at the cost of increasing the required simulation time. At least in these examples, upping the default values of both NSims and NIter did not seem to offer substantial benefit over increasing NSims, and increasing NSims beyond 200 did not seem to result in a substantial gain.
 
 ## Recommendations for users
 In light of these testing results, I recommend that users: 
 a) Use the default simulation parameters if analysis time is a concern, but to up the # of simulations per sample/effect size to 200 if time is not a concern, b) select only a few effect sizes/sample sizes for simulation (e.g., based on prior results documented in the app), c) set final planned sample size slightly higher than their target power (e.g., + .05-.10), and d) conduct a couple simulation runs (e.g., one with default settings to get a general idea of the sample size, then a finer-grained simulation including only a few sample sizes and using more simulations & bootstrap iterations).
+
+## References
+**Akan, M., Robinson, M.M., Mickes, L., Wixted, J.T., & Benjamin, A.S. (2021).** The effect of lineup size on eyewitness identification. *Journal of Experimental Psychology: Applied, 27*(2), 369-392. https://doi.org/10.1037/xap0000340
+
+**Colloff, M.F., Wade, K.A., Strange, D., & Wixted, J.T. (2018).** Filler-siphoning theory does not predict the effect of lineup fairness on the ability to discriminate innocent from guilty suspects: Reply to Smith, Wells, Smalarz, and Lampinen (2018). *Psychological Science, 29*(9), 1552-1557. DOI: 10.1177/0956797618786459
+
+**Colloff, M.F., Wilson, B.M., Seale-Carlisle, T.M., & Wixted, J.T. (2021a).** Optimizing the selection of fillers in police lineups. *PNAS, 188*(8), e2017292118. DOI: 10.1073/pnas.2017292118
+
+**Colloff, M.F., Seale-Carlise, T.M., Karoğlu, N., Rockey, J.C., Smith, H.M.J., Smith, L., Maltby, J., Yaremenko, S., & Flowe, H.D. (2021b).** Perpetrator pose reinstatement during a lineup test increases discrimination accuracy. *Scientific Reports, 11*(13830). https://doi.org/10.1038/s41598-021-92509-0
+
+**Morgan, D.P., Tamminen, J., Seale-Carlisle, T.M., & Mickes, L. (2019).** The impact of sleep on eyewitness identifications. *R. Soc. Open Sci., 6*(17051). http://dx.doi.org/10.1098/rsos.170501
+
+

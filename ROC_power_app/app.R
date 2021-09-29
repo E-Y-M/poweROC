@@ -66,7 +66,7 @@ intro_tab <- tabItem(
             tags$li("Record proportion of significant tests at each effect size/N", style="white-space: pre-wrap")),
         tags$br(),
         tags$p(strong('NOTE:'), ' Due to the computationally intensive bootstrap resampling involved in ROC analyses, some simulations can potentially take a long time (e.g., upwards of an hour if several sample/effect sizes are under consideration). Thus, users may want to download a local copy of the app to run in R/RStudio (see link below) to avoid simulation disruption with dropped internet connections or timeouts. Whether running the web or a local version, it is also recommended that hibernation settings be temporarily disabled.'),
-        tags$p('Complete source code for this app can be downloaded from GitHub at ', a(href = 'https://github.com/E-Y-M/poweROC', 'https://github.com/E-Y-M/poweROC', .noWS = "outside"), ', and any issues can be reported at ', a(href = 'https://github.com/E-Y-M/poweROC/issues', 'https://github.com/E-Y-M/poweROC/issues', .noWS = "outside"), ". Preliminary app testing/validation results and use recommendations can be downloaded ", a(href = 'https://github.com/E-Y-M/poweROC/blob/main/Dataset%20testing%20and%20reports/powe(R)OC%20Testing%20Results.docx', 'here', .noWS = "outside"), '. This app is very much in the beta stage, so feedback/suggestions/bug reports are very much appreciated!', .noWS = c("after-begin", "before-end"))
+        tags$p('Complete source code for this app can be downloaded from GitHub at ', a(href = 'https://github.com/E-Y-M/poweROC', 'https://github.com/E-Y-M/poweROC', .noWS = "outside"), ', and any issues can be reported at ', a(href = 'https://github.com/E-Y-M/poweROC/issues', 'https://github.com/E-Y-M/poweROC/issues', .noWS = "outside"), ". Preliminary app testing/validation results and use recommendations can be viewed in the 'App validation & testing tab'. This app is very much in the beta stage, so feedback/suggestions/bug reports are very much appreciated!", .noWS = c("after-begin", "before-end"))
     )
 )
 
@@ -146,7 +146,7 @@ data_tab <- tabItem(
 ### simulation parameters tab ----
 parameters_tab = tabItem(tabName = "parameters_tab",
                          box(width = 12,
-                             title = "Enter simulation parameters below. Mouse over each entry box for an explanation. Once you have entered effect sizes and sample sizes, a plot of hypothetical ROCs will be generated."),
+                             title = "Enter simulation parameters below. Mouse over each entry box for an explanation, and see the 'App validation & testing' tab for recommendations. Once you have entered effect sizes and sample sizes, a plot of hypothetical ROCs will be generated."),
                              #tags$p(strong("Enter simulation parameters below. Mouse over each entry box for an explanation. Once you have entered effect sizes and sample sizes, a plot of hypothetical ROCs will be generated."))),
                          fluidRow(
                              column(
@@ -235,7 +235,7 @@ parameters_tab = tabItem(tabName = "parameters_tab",
                                  ),
                                  bsTooltip(
                                      "nsims",
-                                     "Specify the # of samples to simulate for each effect size/N combination. 100 provides relatively stable estimates, but if time is not a concern recommend a larger # (e.g., 500-1000)",
+                                     "Specify the # of samples to simulate for each effect size/N combination. 100 provides relatively stable estimates, but if time is not a concern I recommend upping this to 200 (see the 'App validation & testing' tab for more details)",
                                      placement = "bottom",
                                      trigger = "hover"
                                  ),
@@ -306,6 +306,17 @@ parameters_tab = tabItem(tabName = "parameters_tab",
                              plotOutput("ROC_data_plot")
                          ))
 
+### App validation & testing tab ----
+validation_tab = tabItem(
+    tabName = "validation_tab",
+    box(
+        width = 12,
+        title = "",
+        collapsible = FALSE,
+        includeHTML("./www/App-Testing-Results.html")
+    )
+)
+
 ### simulation results tab ----
 results_tab = tabItem(
     tabName = "results_tab",
@@ -361,6 +372,7 @@ ui <- dashboardPage(
             menuItem("Previous simulation results", tabName = "previous_tab", icon = icon("history")),
             menuItem("Data Upload", tabName = "data_tab", icon = icon("table")),
             menuItem("Simulation Parameters", tabName = "parameters_tab", icon = icon("gear")),
+            menuItem("App validation & testing", tabName = "validation_tab", icon = icon("search")),
             #menuItem("Simulation Results", tabName = "results_tab", icon = icon("poll"))
             sidebarMenuOutput("results_render")
             #sidebarMenuOutput("trench_toggle"),
@@ -379,6 +391,7 @@ ui <- dashboardPage(
             previous_tab,
             data_tab,
             parameters_tab,
+            validation_tab,
             results_tab
         )
     )
