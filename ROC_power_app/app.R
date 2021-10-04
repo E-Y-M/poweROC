@@ -844,15 +844,35 @@ server <- function(input, output, session) {
         max_criteria = as.numeric(length(unique(ROC_data_wide$criteria[!is.na(ROC_data_wide$criteria)])))
         
         if (input$roc_trunc == "Lowest false ID rate") {
-            partial_threshold = ROC_data_wide %>% 
-                filter(criteria == max_criteria) %>% 
-                select(absent) %>% 
-                min() 
+            #partial_threshold = ROC_data_wide %>% 
+            #    filter(criteria == max_criteria) %>% 
+            #    select(absent) %>% 
+            #    min() 
+            
+            partial_threshold = min(
+                data_props$prop[data_props$id_type == "suspect" &
+                                    data_props$culprit_present == "absent" &
+                                    data_props$cond == unique(data_props$cond)[1]],
+                data_props$prop[data_props$id_type == "suspect" &
+                                    data_props$culprit_present == "absent" &
+                                    data_props$cond == unique(data_props$cond)[2]]
+            )
+            
         } else if (input$roc_trunc == "Highest false ID rate") {
-            partial_threshold = ROC_data_wide %>% 
-                filter(criteria == max_criteria) %>% 
-                select(absent) %>% 
-                max()
+            #partial_threshold = ROC_data_wide %>% 
+            #    filter(criteria == max_criteria) %>% 
+            #    select(absent) %>% 
+            #    max()
+            
+            partial_threshold = min(
+                data_props$prop[data_props$id_type == "suspect" &
+                                    data_props$culprit_present == "absent" &
+                                    data_props$cond == unique(data_props$cond)[1]],
+                data_props$prop[data_props$id_type == "suspect" &
+                                    data_props$culprit_present == "absent" &
+                                    data_props$cond == unique(data_props$cond)[2]]
+            )
+            
         } else {
             partial_threshold = 1 - other_vars$custom_trunc
         }
