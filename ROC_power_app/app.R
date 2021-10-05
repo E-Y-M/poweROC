@@ -488,7 +488,7 @@ server <- function(input, output, session) {
                     data_files$processed_data = data_files$user_data %>% 
                         mutate(id_type = tolower(id_type),
                                culprit_present = tolower(culprit_present),
-                               cond = as.character(cond),
+                               cond = as.factor(cond),
                                conf_level = conf_level + 1,
                                conf_level_rev = max(conf_level)+1 - conf_level) %>% 
                         arrange(cond)
@@ -496,7 +496,7 @@ server <- function(input, output, session) {
                     data_files$processed_data = data_files$user_data %>% 
                         mutate(id_type = tolower(id_type),
                                culprit_present = tolower(culprit_present),
-                               cond = as.character(cond),
+                               cond = as.factor(cond),
                                conf_level = conf_level,
                                conf_level_rev = max(conf_level)+1 - conf_level) %>% 
                         arrange(cond)
@@ -511,7 +511,8 @@ server <- function(input, output, session) {
                                id_type = tolower(id_type),
                                culprit_present = tolower(culprit_present),
                                conf_level = conf_level + 1,
-                               conf_level_rev = max(conf_level)+1 - conf_level) %>% 
+                               conf_level_rev = max(conf_level)+1 - conf_level,
+                               cond = as.factor(cond)) %>% 
                         arrange(cond)
                 } else {
                     data_files$processed_data = data_files$user_data %>% 
@@ -520,7 +521,8 @@ server <- function(input, output, session) {
                                id_type = tolower(id_type),
                                culprit_present = tolower(culprit_present),
                                conf_level = conf_level,
-                               conf_level_rev = max(conf_level)+1 - conf_level) %>% 
+                               conf_level_rev = max(conf_level)+1 - conf_level,
+                               cond = as.factor(cond)) %>% 
                         arrange(cond)
                 }
 
@@ -576,7 +578,7 @@ server <- function(input, output, session) {
         #    slice(1) %>% 
         #    as.character()
         
-        parameters$cond1 = as.character(unique(data_files$processed_data$cond)[1])
+        parameters$cond1 = as.character(levels(data_files$processed_data$cond)[1])
         
         #parameters$cond2 = data_files$processed_data %>% 
         #    as.data.frame() %>% 
@@ -585,7 +587,7 @@ server <- function(input, output, session) {
         #    slice(2) %>% 
         #    as.character()
         
-        parameters$cond2 = as.character(unique(data_files$processed_data$cond)[2])
+        parameters$cond2 = as.character(levels(data_files$processed_data$cond)[2])
     })
     
     #observeEvent(input$roc_paired, {
@@ -721,14 +723,14 @@ server <- function(input, output, session) {
         
         ##### Getting TA & TP suspect proportions for Condition 1 ----
         cond1_TA_susp_prop = data_props %>% 
-            filter(cond == unique(data_props$cond)[1] &
+            filter(cond == levels(data_props$cond)[1] &
                        culprit_present == "absent" & 
                        id_type == "suspect") %>% 
             dplyr::select(prop) %>% 
             as.numeric()
         
         cond1_TP_susp_prop = data_props %>% 
-            filter(cond == unique(data_props$cond)[1] &
+            filter(cond == levels(data_props$cond)[1] &
                        culprit_present == "present" & 
                        id_type == "suspect") %>% 
             dplyr::select(prop) %>% 
@@ -736,14 +738,14 @@ server <- function(input, output, session) {
         
         ##### Getting TA & TP suspect proportions for Condition 2 ----
         cond2_TA_susp_prop = data_props %>% 
-            filter(cond == unique(data_props$cond)[2] &
+            filter(cond == levels(data_props$cond)[2] &
                        culprit_present == "absent" & 
                        id_type == "suspect") %>% 
             dplyr::select(prop) %>% 
             as.numeric()
         
         cond2_TP_susp_prop = data_props %>% 
-            filter(cond == unique(data_props$cond)[2] &
+            filter(cond == levels(data_props$cond)[2] &
                        culprit_present == "present" & 
                        id_type == "suspect") %>% 
             dplyr::select(prop) %>% 
@@ -783,7 +785,7 @@ server <- function(input, output, session) {
             data = data_original
             eff = parameters$effs[g]
             for (h in 1:nrow(data)) {
-                if (data$culprit_present[h] == "present" & data$cond[h] == unique(data$cond)[2]) {
+                if (data$culprit_present[h] == "present" & data$cond[h] == levels(data$cond)[2]) {
                     data$n[h] = round(data$n[h]*eff)
                 } else {
                     data$n[h] = data$n[h]
@@ -793,7 +795,7 @@ server <- function(input, output, session) {
             data$prop = data$n / data$total
             
             for (i in 1:length(unique(data$cond))) {
-                curr_cond = unique(data$cond)[i]
+                curr_cond = levels(data$cond)[i]
                 for (j in 1:length(unique(data$culprit_present))) {
                     curr_present = unique(data$culprit_present)[j]
                     for (k in 1:length(unique(data$conf_level_rev))) {
@@ -852,10 +854,10 @@ server <- function(input, output, session) {
             partial_threshold = min(
                 data_props$prop[data_props$id_type == "suspect" &
                                     data_props$culprit_present == "absent" &
-                                    data_props$cond == unique(data_props$cond)[1]],
+                                    data_props$cond == levels(data_props$cond)[1]],
                 data_props$prop[data_props$id_type == "suspect" &
                                     data_props$culprit_present == "absent" &
-                                    data_props$cond == unique(data_props$cond)[2]]
+                                    data_props$cond == levels(data_props$cond)[2]]
             )
             
         } else if (input$roc_trunc == "Highest false ID rate") {
@@ -864,13 +866,13 @@ server <- function(input, output, session) {
             #    select(absent) %>% 
             #    max()
             
-            partial_threshold = min(
+            partial_threshold = max(
                 data_props$prop[data_props$id_type == "suspect" &
                                     data_props$culprit_present == "absent" &
-                                    data_props$cond == unique(data_props$cond)[1]],
+                                    data_props$cond == levels(data_props$cond)[1]],
                 data_props$prop[data_props$id_type == "suspect" &
                                     data_props$culprit_present == "absent" &
-                                    data_props$cond == unique(data_props$cond)[2]]
+                                    data_props$cond == levels(data_props$cond)[2]]
             )
             
         } else {
@@ -973,7 +975,7 @@ server <- function(input, output, session) {
             ### Create the root data file to sample from across the Ns and sims ----
             for (z in 1:nrow(data)) {
                 if (data$culprit_present[z] == "present" &
-                    data$cond[z] == unique(data$cond)[2]) {
+                    data$cond[z] == levels(data$cond)[2]) {
                     data$n[z] = round(data$n[z] * eff)
                 } else {
                     data$n[z] = data$n[z]
@@ -987,7 +989,7 @@ server <- function(input, output, session) {
             ##### TA ----
             TA_data_cond1_root = filter(data,
                                         culprit_present == "absent" &
-                                            cond == unique(data$cond)[1])
+                                            cond == levels(data$cond)[1])
             
             # Empty the root vector
             #TA_ROC_cond1_root = vector()
@@ -999,18 +1001,18 @@ server <- function(input, output, session) {
             ##### TP ----
             TP_data_cond1_root = filter(data,
                                         culprit_present == "present" &
-                                            cond == unique(data$cond)[1])
+                                            cond == levels(data$cond)[1])
             
             #### For Condition 2 ----
             ##### TA ----
             TA_data_cond2_root = filter(data,
                                         culprit_present == "absent" &
-                                            cond == unique(data$cond)[2])
+                                            cond == levels(data$cond)[2])
             
             ##### TP ----
             TP_data_cond2_root = filter(data,
                                         culprit_present == "present" &
-                                            cond == unique(data$cond)[2])
+                                            cond == levels(data$cond)[2])
             
             ### loop over Ns ####
             for (h in 1:length(parameters$ns)) {
@@ -1060,7 +1062,7 @@ server <- function(input, output, session) {
                     TP_data_cond1 = TP_data_cond1[!is.na(TP_data_cond1)]
                     
                     
-                    ###### For Condition 1 ----
+                    ###### For Condition 2 ----
                     ####### TA ----
                     TA_data_cond2 = sample(
                         c(
