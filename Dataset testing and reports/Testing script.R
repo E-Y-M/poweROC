@@ -45,6 +45,23 @@ write.csv(colloff,
           row.names = FALSE,
           na = "")
 
+
+if (!c("id_type") %in% colnames(colloff) | !c("culprit_present") %in% colnames(colloff) | !c("conf_level") %in% colnames(colloff)) {
+    print("Failure!")
+} else {
+    print("Success")
+}
+
+data_test = read.csv("./Dataset testing and reports/Data/ROCeg.csv", fileEncoding = "UTF-8-BOM")
+
+if (!("cond") %in% colnames(data_test)) {
+    data_test$cond = "A"
+} else {
+    data_test$cond = data_test$cond
+}
+
+length(unique(data_test$cond))
+
 # Processing of other datasets ----
 ## Colloff et al., 2021 data ----
 ### Exp. 1 ----

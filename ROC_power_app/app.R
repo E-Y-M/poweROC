@@ -438,9 +438,15 @@ server <- function(input, output, session) {
                             input$alpha_level))
     })
     
-    observeEvent(input$user_data, {
-        data_files$user_data = read_csv(input$user_data$datapath)
-    })
+    #observeEvent(input$user_data, {
+    #    data_files$user_data = read_csv(input$user_data$datapath)
+    #    
+    #    if (!("cond") %in% colnames(data_files$user_data)) {
+    #        data_files$user_data$cond = "A"
+    #    } else {
+    #        data_files$user_data$cond = data_files$user_data$cond
+    #    }
+    #})
     
     observeEvent(input$designated_suspect, {
         req(data_files$processed_data)
@@ -469,7 +475,11 @@ server <- function(input, output, session) {
     })
 
     observeEvent(input$user_data, {
-        if (!c("id_type", "conf_level", "culprit_present") %in% colnames(data_files$user_data)) {
+        data_files$user_data = read_csv(input$user_data$datapath)
+        
+        if (!c("id_type") %in% colnames(data_files$user_data) |
+            !c("culprit_present") %in% colnames(data_files$user_data) |
+            !c("conf_level") %in% colnames(data_files$user_data)) {
             showModal(modalDialog(
                 title = "Warning",
                 "Uploaded data file missing required columns. 
@@ -481,6 +491,14 @@ server <- function(input, output, session) {
                 "Confidence variable must be numeric."
             ))
         } else {
+            if (!("cond") %in% colnames(data_files$user_data)) {
+                data_files$user_data$cond = "A"
+            } else {
+                data_files$user_data$cond = data_files$user_data$cond
+            }
+            
+            message("Created condition variable")
+            
             if (length(unique(data_files$user_data$cond)) > 1) {
                 minimum_conf = min(data_files$user_data$conf_level)
                 
