@@ -497,6 +497,12 @@ server <- function(input, output, session) {
                 data_files$user_data$cond = data_files$user_data$cond
             }
             
+            data_files$user_data = data_files$user_data %>% 
+                filter(str_length(id_type) > 0 &
+                           str_length(culprit_present) > 0 &
+                           str_length(cond) > 0 &
+                           !is.na(conf_level))
+            
             message("Created condition variable")
             
             if (length(unique(data_files$user_data$cond)) > 1) {
@@ -519,6 +525,8 @@ server <- function(input, output, session) {
                                conf_level_rev = max(conf_level)+1 - conf_level) %>% 
                         arrange(cond)
                 }
+                
+            message("Processed data with two conditions")
             } else {
                 minimum_conf = min(data_files$user_data$conf_level)
                 
@@ -543,7 +551,7 @@ server <- function(input, output, session) {
                                cond = as.factor(cond)) %>% 
                         arrange(cond)
                 }
-
+            message("Processed data with one condition")
             }
             data_files$saved_data = data_files$processed_data
             show("designated_suspect")
