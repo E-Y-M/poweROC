@@ -36,6 +36,9 @@ example_data = data.frame(id_type = sample(c("suspect", "filler", "reject"),
                                         replace = TRUE,
                                         prob = c(.5, .5)))
 
+open_data = read.csv("www/combined_open_data.csv", fileEncoding = 'UTF-8-BOM') %>% 
+    filter(exp != "Colloff et al. (2021b): Exp 2: High vs. Low pose reinstatement") # Filter out this dataset for now until I figure out problems
+
 # user interface ----
 shinyjs::useShinyjs()
 
@@ -53,7 +56,7 @@ intro_tab <- tabItem(
     box(width = 12,
         collapsible = TRUE,
         title = "How does it work?",
-        tags$p('This app requires an uploaded data file containing lineup data (see the “Data Upload” tab for instructions). This file can contain a single condition (e.g., pilot data) or data from two conditions (e.g., data from another experiment similar to the one being powered for). If the former, the app will automatically duplicate data from the single provided condition to use as a basis for effect size adjustment and comparison. Before simulating data, various parameters will need to be specified (e.g., effect/sample sizes to test, number of simulation samples, one- or two-tailed testing protocol, etc.). The simulations themselves operate like so:'),
+        tags$p('This app requires a data file containing lineup data (see the “Data Upload” tab for instructions). Users can either upload their own data or use an included open dataset (see the "App validation & testing" tab for references). This file can contain a single condition (e.g., pilot data) or data from two conditions (e.g., data from another experiment similar to the one being powered for). If the former, the app will automatically duplicate data from the single provided condition to use as a basis for effect size adjustment and comparison. Before simulating data, various parameters will need to be specified (e.g., effect/sample sizes to test, number of simulation samples, one- or two-tailed testing protocol, etc.). The simulations themselves operate like so:'),
         tags$ol(
             tags$li("For each specified effect size:"),
             tags$li("   Apply that effect size to the # of correct IDs for the 2nd condition in the data file", style="white-space: pre-wrap"),
@@ -78,7 +81,7 @@ data_tab <- tabItem(
         collapsible = TRUE,
         title = "Instructions",
         tags$p(
-            'Upload your data (.csv format) here. Data files uploaded are NOT saved to the server and are only used for a given session. Data must be formatted so that each row represents a single lineup decision by a single participant. Data files must contain the following (case-sensitive) columns:'
+            'Upload your data (.csv format) here, or choose one of the open datasets included with this app. Data files uploaded are NOT saved to the server and are only used for a given session. Data must be formatted so that each row represents a single lineup decision by a single participant. Data files must contain the following (case-sensitive) columns:'
         ),
         tags$ul(
             tags$li(
@@ -101,12 +104,26 @@ data_tab <- tabItem(
         tags$br(),
         tags$p(strong('NOTE:'), ' While this app is primarily designed for lineup data, it can also be used for general recognition memory experiments where participants study items then are tested for recognition of old/new items. In this case, each row should be a recognition trial with hits and false alarms recoded to "suspect" for id_type (rejections recoded to "reject"), and culprit_present denoting old/new status.'),
         tags$p('See the example data file below for proper formatting'),
-        fileInput(
+        radioButtons(
+            "data_source",
+            "Do you want to upload your own data or use one of the open data files?",
+            choices = c("Upload data",
+                        "Use open data"),
+            selected = "Upload data"
+        ),
+        hidden(fileInput(
             "user_data",
             "Upload your data",
             multiple = FALSE,
             accept = ".csv"
-        ),
+        )),
+        hidden(selectInput(
+               "open_dataset",
+               "Choose the open dataset to use",
+               choices = unique(open_data$exp),
+               selected = NULL
+        )),
+        tags$p(strong("Once you have uploaded or chosen a dataset, ROC curves will be generated below")),
         hidden(radioButtons(
             "designated_suspect",
             "Does your data contain a designated innocent suspect?",
@@ -133,6 +150,11 @@ data_tab <- tabItem(
             min = 1
         ))
     ),
+    box(width = 12,
+        collapsible = TRUE,
+        title = "ROC Curves",
+        plotOutput("hypothetical_ROC_plot"),
+        textOutput("auc_diff_text")),
     box(width = 6,
         collapsible = TRUE,
         title = "Example data",
@@ -448,6 +470,45 @@ server <- function(input, output, session) {
     #    }
     #})
     
+    #** Choose whether to upload data or use an open dataset ----
+    observeEvent(input$data_source, {
+        if (input$data_source == "Upload data") {
+            show("user_data")
+            hide("open_dataset")
+        } else {
+            hide("user_data")
+            show("open_dataset")
+        }
+    })
+    
+    #** If open dataset is selected, create the dataset ----
+    observeEvent(input$open_dataset, {
+        data_files$processed_data = open_data %>% 
+            filter(exp == input$open_dataset)
+        
+        minimum_conf = min(data_files$processed_data$conf_level)
+        
+        if (minimum_conf == 0) {
+            data_files$processed_data = open_data %>% 
+                filter(exp == input$open_dataset) %>% 
+                mutate(id_type = tolower(id_type),
+                       culprit_present = tolower(culprit_present),
+                       cond = as.factor(cond),
+                       conf_level = conf_level + 1,
+                       conf_level_rev = max(conf_level)+1 - conf_level) %>% 
+                arrange(cond)
+        } else {
+            data_files$processed_data = open_data %>% 
+                filter(exp == input$open_dataset) %>% 
+                mutate(id_type = tolower(id_type),
+                       culprit_present = tolower(culprit_present),
+                       cond = as.factor(cond),
+                       conf_level = conf_level,
+                       conf_level_rev = max(conf_level)+1 - conf_level) %>% 
+                arrange(cond)
+        }
+    })
+    
     observeEvent(input$designated_suspect, {
         req(data_files$processed_data)
         if (input$designated_suspect == "Yes") {
@@ -554,6 +615,11 @@ server <- function(input, output, session) {
             message("Processed data with one condition")
             }
             data_files$saved_data = data_files$processed_data
+            
+            data_files$processed_data = data_files$processed %>% 
+                mutate(specificity = NA,
+                       auc_diff = NA)
+            
             show("designated_suspect")
             message("Created processed data")
         }
@@ -567,6 +633,14 @@ server <- function(input, output, session) {
         data_files$processed_data
     })
     
+    output$auc_diff_text = renderText({
+        req(data_files$processed_data)
+        if (is.na(data_files$processed_data$auc_diff[1])) {
+            ""
+        } else {
+            paste("pAUC difference: ", data_files$processed_data$auc_diff[1], sep = "")
+        }
+    })
     
     ## deal with datasets without designated innocent suspects ----
     observeEvent(c(input$designated_suspect, input$lineup_size_1, input$lineup_size_2), {
@@ -585,6 +659,207 @@ server <- function(input, output, session) {
                 }
             }
         }
+    })
+    
+    ### generate hypothetical ROCs upon data load ----
+    observeEvent(data_files$processed_data, {
+        req(data_files$processed_data)
+        
+        #### getting proportion data from each condition ----
+        #data_props = open_data %>% 
+        #    filter(exp == "Akan et al. (2021): Exp 1: Showup vs. 6-person") %>%
+        #    group_by(id_type, culprit_present, cond) %>% 
+        #    count() %>% 
+        #    ungroup() %>% 
+        #    group_by(culprit_present, cond) %>% 
+        #    mutate(total = sum(n),
+        #           prop = n/total,
+        #           cond = as.factor(cond)) %>% 
+        #    ungroup()
+        
+        data_props = data_files$processed_data %>%
+            group_by(id_type, culprit_present, cond) %>% 
+            count() %>% 
+            ungroup() %>% 
+            group_by(culprit_present, cond) %>% 
+            mutate(total = sum(n),
+                   prop = n/total,
+                   cond = as.factor(cond)) %>% 
+            ungroup()
+        
+        message("Processed proportion data")
+        
+        ##### Getting TA & TP suspect proportions for Condition 1 ----
+        cond1_TA_susp_prop = data_props %>% 
+            filter(cond == levels(data_props$cond)[1] &
+                       culprit_present == "absent" & 
+                       id_type == "suspect") %>% 
+            dplyr::select(prop) %>% 
+            as.numeric()
+        
+        cond1_TP_susp_prop = data_props %>% 
+            filter(cond == levels(data_props$cond)[1] &
+                       culprit_present == "present" & 
+                       id_type == "suspect") %>% 
+            dplyr::select(prop) %>% 
+            as.numeric()
+        
+        ##### Getting TA & TP suspect proportions for Condition 2 ----
+        cond2_TA_susp_prop = data_props %>% 
+            filter(cond == levels(data_props$cond)[2] &
+                       culprit_present == "absent" & 
+                       id_type == "suspect") %>% 
+            dplyr::select(prop) %>% 
+            as.numeric()
+        
+        cond2_TP_susp_prop = data_props %>% 
+            filter(cond == levels(data_props$cond)[2] &
+                       culprit_present == "present" & 
+                       id_type == "suspect") %>% 
+            dplyr::select(prop) %>% 
+            as.numeric()
+        
+        message("Processed data for both conditions")
+        
+        #### Getting responses at each confidence level for both conditions ----
+        data_original = data_files$processed_data %>%
+            #mutate(conf_level = as.factor(conf_level)) %>% 
+            group_by(id_type, conf_level_rev, culprit_present, cond) %>% 
+            count() %>% 
+            ungroup() %>% 
+            group_by(culprit_present, cond) %>% 
+            mutate(total = sum(n),
+                   prop = n/total) %>% 
+            ungroup() %>%
+            filter(id_type == "suspect")
+        
+        message("Data processing complete")
+        message(data_original)
+        
+        ROC_data = data.frame(prop = rep(NA, times = length(unique(data_original$cond))*
+                                             length(unique(data_original$culprit_present))*
+                                             length(unique(data_original$conf_level_rev))*
+                                             1),
+                              cond = NA,
+                              presence = NA,
+                              criteria = NA,
+                              eff = NA)
+        
+        row = 1
+        
+        message("Created empty ROC store object for hypothetical plot")
+        
+        for (g in 1:1) {
+            data = data_original
+            eff = 1
+            for (h in 1:nrow(data)) {
+                if (data$culprit_present[h] == "present" & data$cond[h] == levels(data$cond)[2]) {
+                    data$n[h] = round(data$n[h]*eff)
+                } else {
+                    data$n[h] = data$n[h]
+                }
+            }
+            
+            data$prop = data$n / data$total
+            
+            for (i in 1:length(unique(data$cond))) {
+                curr_cond = levels(data$cond)[i]
+                for (j in 1:length(unique(data$culprit_present))) {
+                    curr_present = unique(data$culprit_present)[j]
+                    for (k in 1:length(unique(data$conf_level_rev))) {
+                        curr_conf = unique(data$conf_level_rev)[k]
+                        curr_resps = sum(data$prop[data$cond == curr_cond &
+                                                       data$culprit_present == curr_present &
+                                                       data$conf_level_rev %in% c(1:curr_conf)])
+                        
+                        ROC_data$cond[row] = curr_cond
+                        ROC_data$presence[row] = curr_present
+                        ROC_data$prop[row] = curr_resps
+                        ROC_data$criteria[row] = curr_conf
+                        #ROC_data$eff[row] = eff
+                        row = row + 1
+                    }
+                }
+            }
+        }
+        
+        message("Populated ROC store object")
+        message(ROC_data)
+        
+        ROC_data_wide = spread(ROC_data,
+                               key = "presence",
+                               value = "prop")  %>% 
+            rbind(data.frame(cond = rep(c(levels(data_files$processed_data$cond)[1], 
+                                          levels(data_files$processed_data$cond)[2]), 
+                                        each = 1),
+                             criteria = NA,
+                             eff = rep(1, times = length(unique(data_original$cond))),
+                             present = 0,
+                             absent = 0)) #%>% 
+        #mutate(present = ifelse(present < 0, 0,
+        #                        ifelse(present > 1, 1, present)))
+        
+        
+        partial_threshold = ifelse(is.na(data_files$processed_data$specificity), 0,
+                                   1 - data_files$processed_data$specificity)
+        
+        #max_criteria = as.numeric(length(unique(ROC_data_wide$criteria[!is.na(ROC_data_wide$criteria)])))
+        
+        #if (input$roc_trunc == "Lowest false ID rate") {
+        #    #partial_threshold = ROC_data_wide %>% 
+        #    #    filter(criteria == max_criteria) %>% 
+        #    #    select(absent) %>% 
+        #    #    min() 
+        #    
+        #    partial_threshold = min(
+        #        data_props$prop[data_props$id_type == "suspect" &
+        #                            data_props$culprit_present == "absent" &
+        #                            data_props$cond == levels(data_props$cond)[1]],
+        #        data_props$prop[data_props$id_type == "suspect" &
+        #                            data_props$culprit_present == "absent" &
+        #                            data_props$cond == levels(data_props$cond)[2]]
+        #    )
+        #    
+        #} else if (input$roc_trunc == "Highest false ID rate") {
+        #    #partial_threshold = ROC_data_wide %>% 
+        #    #    filter(criteria == max_criteria) %>% 
+        #    #    select(absent) %>% 
+        #    #    max()
+        #    
+        #    partial_threshold = max(
+        #        data_props$prop[data_props$id_type == "suspect" &
+        #                            data_props$culprit_present == "absent" &
+        #                            data_props$cond == levels(data_props$cond)[1]],
+        #        data_props$prop[data_props$id_type == "suspect" &
+        #                            data_props$culprit_present == "absent" &
+        #                            data_props$cond == levels(data_props$cond)[2]]
+        #    )
+        #    
+        #} else {
+        #    partial_threshold = 1 - other_vars$custom_trunc
+        #}
+        
+        message("Created data for plotting")
+        message(ROC_data_wide)
+        
+        hypothetical_ROC_plot = ROC_data_wide %>% 
+            ggplot(aes(x = absent, y = present, color = cond))+
+            geom_point(alpha = .5)+
+            geom_line()+
+            geom_vline(xintercept = partial_threshold)+
+            apatheme+
+            labs(x = "\nFalse ID rate",
+                 y = "Correct ID rate\n",
+                 linetype = "Effect",
+                 color = "Condition")+
+            theme(text = element_text(size = 20))
+        
+        #plots$hypothetical_plot = ROC_data_plot
+        
+        output$hypothetical_ROC_plot = renderPlot({
+            hypothetical_ROC_plot
+        })
+        
     })
     
     ## simulation parameters ----
@@ -736,13 +1011,25 @@ server <- function(input, output, session) {
         req(parameters$ns)
         
         #### getting proportion data from each condition ----
+        #data_props = open_data %>% 
+        #    filter(exp == "Akan et al. (2021): Exp 1: Showup vs. 6-person") %>%
+        #    group_by(id_type, culprit_present, cond) %>% 
+        #    count() %>% 
+        #    ungroup() %>% 
+        #    group_by(culprit_present, cond) %>% 
+        #    mutate(total = sum(n),
+        #           prop = n/total,
+        #           cond = as.factor(cond)) %>% 
+        #    ungroup()
+        
         data_props = data_files$processed_data %>%
             group_by(id_type, culprit_present, cond) %>% 
             count() %>% 
             ungroup() %>% 
             group_by(culprit_present, cond) %>% 
             mutate(total = sum(n),
-                   prop = n/total) %>% 
+                   prop = n/total,
+                   cond = as.factor(cond)) %>% 
             ungroup()
         
         message("Processed proportion data")

@@ -987,3 +987,153 @@ table(TP_data_cond1)/sum(table(TP_data_cond1))
 TP_simmed_props = as.vector(table(TP_data_cond1)/sum(table(TP_data_cond1)))
 TP_actual_props = TP_data_cond1_root %>% 
     mutate(simmed_props = TP_simmed_props[2:length(TP_simmed_props)])
+
+#* Testing out hypothetical ROC generation after upload ----
+data_test = read.csv("./ROC_power_app/www/combined_open_data.csv", fileEncoding = 'UTF-8-BOM') %>% 
+    filter(exp == "Colloff et al. (2021b): Exp 2: High vs. Low pose reinstatement")
+
+minimum_conf = min(data_test$conf_level)
+
+if (minimum_conf == 0) {
+    data_test = data_test %>% 
+        mutate(id_type = tolower(id_type),
+               culprit_present = tolower(culprit_present),
+               cond = as.factor(cond),
+               conf_level = conf_level + 1,
+               conf_level_rev = max(conf_level)+1 - conf_level) %>% 
+        arrange(cond)
+} else {
+    data_test = data_test %>%
+        mutate(id_type = tolower(id_type),
+               culprit_present = tolower(culprit_present),
+               cond = as.factor(cond),
+               conf_level = conf_level,
+               conf_level_rev = max(conf_level)+1 - conf_level) %>% 
+        arrange(cond)
+}
+
+data_props = data_test %>%
+    group_by(id_type, culprit_present, cond) %>% 
+    count() #%>% 
+    ungroup() %>% 
+    group_by(culprit_present, cond) %>% 
+    mutate(total = sum(n),
+           prop = n/total,
+           cond = as.factor(cond)) %>% 
+    ungroup()
+
+message("Processed proportion data")
+
+##### Getting TA & TP suspect proportions for Condition 1 ----
+cond1_TA_susp_prop = data_props %>% 
+    filter(cond == levels(data_props$cond)[1] &
+               culprit_present == "absent" & 
+               id_type == "suspect") %>% 
+    dplyr::select(prop) %>% 
+    as.numeric()
+
+cond1_TP_susp_prop = data_props %>% 
+    filter(cond == levels(data_props$cond)[1] &
+               culprit_present == "present" & 
+               id_type == "suspect") %>% 
+    dplyr::select(prop) %>% 
+    as.numeric()
+
+##### Getting TA & TP suspect proportions for Condition 2 ----
+cond2_TA_susp_prop = data_props %>% 
+    filter(cond == levels(data_props$cond)[2] &
+               culprit_present == "absent" & 
+               id_type == "suspect") %>% 
+    dplyr::select(prop) %>% 
+    as.numeric()
+
+cond2_TP_susp_prop = data_props %>% 
+    filter(cond == levels(data_props$cond)[2] &
+               culprit_present == "present" & 
+               id_type == "suspect") %>% 
+    dplyr::select(prop) %>% 
+    as.numeric()
+
+message("Processed data for both conditions")
+
+#### Getting responses at each confidence level for both conditions ----
+data_original = data_test %>%
+    #mutate(conf_level = as.factor(conf_level)) %>% 
+    group_by(id_type, conf_level_rev, culprit_present, cond) %>% 
+    count() %>% 
+    ungroup() %>% 
+    group_by(culprit_present, cond) %>% 
+    mutate(total = sum(n),
+           prop = n/total) %>% 
+    ungroup() %>%
+    filter(id_type == "suspect")
+
+message("Data processing complete")
+message(data_original)
+
+ROC_data = data.frame(prop = rep(NA, times = length(unique(data_original$cond))*
+                                     length(unique(data_original$culprit_present))*
+                                     length(unique(data_original$conf_level_rev))*
+                                     1),
+                      cond = NA,
+                      presence = NA,
+                      criteria = NA,
+                      eff = NA)
+
+row = 1
+
+message("Created empty ROC store object for hypothetical plot")
+
+for (g in 1:1) {
+    data = data_original
+    eff = 1
+    for (h in 1:nrow(data)) {
+        if (data$culprit_present[h] == "present" & data$cond[h] == levels(data$cond)[2]) {
+            data$n[h] = round(data$n[h]*eff)
+        } else {
+            data$n[h] = data$n[h]
+        }
+    }
+    
+    data$prop = data$n / data$total
+    
+    for (i in 1:length(unique(data$cond))) {
+        curr_cond = levels(data$cond)[i]
+        for (j in 1:length(unique(data$culprit_present))) {
+            curr_present = unique(data$culprit_present)[j]
+            for (k in 1:length(unique(data$conf_level_rev))) {
+                curr_conf = unique(data$conf_level_rev)[k]
+                curr_resps = sum(data$prop[data$cond == curr_cond &
+                                               data$culprit_present == curr_present &
+                                               data$conf_level_rev %in% c(1:curr_conf)])
+                
+                ROC_data$cond[row] = curr_cond
+                ROC_data$presence[row] = curr_present
+                ROC_data$prop[row] = curr_resps
+                ROC_data$criteria[row] = curr_conf
+                #ROC_data$eff[row] = eff
+                row = row + 1
+            }
+        }
+    }
+}
+
+message("Populated ROC store object")
+message(ROC_data)
+
+ROC_data_wide = spread(ROC_data,
+                       key = "presence",
+                       value = "prop")  %>% 
+    rbind(data.frame(cond = rep(c(levels(as.factor(ROC_data$cond))[1], 
+                                  levels(as.factor(ROC_data$cond))[2]), 
+                                each = 1),
+                     criteria = NA,
+                     eff = rep(1, times = length(unique(data_original$cond))),
+                     present = 0,
+                     absent = 0)) #%>% 
+#mutate(present = ifelse(present < 0, 0,
+#                        ifelse(present > 1, 1, present)))
+
+
+partial_threshold = ifelse(is.na(data_files$processed_data$specificity), 0,
+                           1 - data_files$processed_data$specificity)
