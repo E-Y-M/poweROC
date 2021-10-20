@@ -3,9 +3,9 @@ title: "powe(R)OC Testing Results"
 author: "Eric Mah"
 date: ''
 output:
-  word_document: default
   html_document:
     df_print: paged
+  word_document: default
   pdf_document: default
   html_fragment: default
 ---
@@ -201,14 +201,29 @@ In light of these testing results, I recommend that users:
 a) Use the default simulation parameters if analysis time is a concern, but to up the # of simulations per sample/effect size to 200 if time is not a concern, b) select only a few effect sizes/sample sizes for simulation (e.g., based on prior results documented in the app), c) set final planned sample size slightly higher than their target power (e.g., + .05-.10), and d) conduct a couple simulation runs (e.g., one with default settings to get a general idea of the sample size, then a finer-grained simulation including only a few sample sizes and using more simulations & bootstrap iterations).
 
 ## References
-**Akan, M., Robinson, M.M., Mickes, L., Wixted, J.T., & Benjamin, A.S. (2021).** The effect of lineup size on eyewitness identification. *Journal of Experimental Psychology: Applied, 27*(2), 369-392. https://doi.org/10.1037/xap0000340
+--Akan, M., Robinson, M. M., Mickes, L., Wixted, J. T., & Benjamin, A. S. (2021). The effect of lineup size on eyewitness identification. Journal of Experimental Psychology: Applied, 27(2), 369–392. https://doi.org/10.1037/xap0000340
 
-**Colloff, M.F., Wade, K.A., Strange, D., & Wixted, J.T. (2018).** Filler-siphoning theory does not predict the effect of lineup fairness on the ability to discriminate innocent from guilty suspects: Reply to Smith, Wells, Smalarz, and Lampinen (2018). *Psychological Science, 29*(9), 1552-1557. DOI: 10.1177/0956797618786459
+--Carlson, C. A., & Carlson, M. A. (2014). An evaluation of lineup presentation, weapon presence, and a distinctive feature using ROC analysis. Journal of Applied Research in Memory and Cognition, 3(2), 45–53. https://doi.org/10.1016/j.jarmac.2014.03.004
 
-**Colloff, M.F., Wilson, B.M., Seale-Carlisle, T.M., & Wixted, J.T. (2021a).** Optimizing the selection of fillers in police lineups. *PNAS, 188*(8), e2017292118. DOI: 10.1073/pnas.2017292118
+--Colloff, M. F., Seale-Carlisle, T. M., Karoğlu, N., Rockey, J. C., Smith, H. M. J., Smith, L., Maltby, J., Yaremenko, S., & Flowe, H. D. (2021). Perpetrator pose reinstatement during a lineup test increases discrimination accuracy. Scientific Reports, 11(1), 13830. https://doi.org/10.1038/s41598-021-92509-0
 
-**Colloff, M.F., Seale-Carlise, T.M., Karoğlu, N., Rockey, J.C., Smith, H.M.J., Smith, L., Maltby, J., Yaremenko, S., & Flowe, H.D. (2021b).** Perpetrator pose reinstatement during a lineup test increases discrimination accuracy. *Scientific Reports, 11*(13830). https://doi.org/10.1038/s41598-021-92509-0
+--Colloff, M. F., Wade, K. A., & Strange, D. (2016). Unfair Lineups Make Witnesses More Likely to Confuse Innocent and Guilty Suspects. Psychological Science, 27(9), 1227–1239. https://doi.org/10.1177/0956797616655789
 
-**Morgan, D.P., Tamminen, J., Seale-Carlisle, T.M., & Mickes, L. (2019).** The impact of sleep on eyewitness identifications. *R. Soc. Open Sci., 6*(17051). http://dx.doi.org/10.1098/rsos.170501
+--Colloff, M. F., Wade, K. A., Strange, D., & Wixted, J. T. (2018). Filler-Siphoning Theory Does Not Predict the Effect of Lineup Fairness on the Ability to Discriminate Innocent From Guilty Suspects: Reply to Smith, Wells, Smalarz, and Lampinen (2018). Psychological Science, 29(9), 1552–1557. https://doi.org/10.1177/0956797618786459
+
+--Colloff, M. F., Wilson, B. M., Seale-Carlisle, T. M., & Wixted, J. T. (2021). Optimizing the selection of fillers in police lineups. Proceedings of the National Academy of Sciences, 118(8), e2017292118. https://doi.org/10.1073/pnas.2017292118
+
+--Dobolyi, D. G., & Dodson, C. S. (2013). Eyewitness confidence in simultaneous and sequential lineups: A criterion shift account for sequential mistaken identification overconfidence. Journal of Experimental Psychology: Applied, 19(4), 345–357. https://doi.org/10.1037/a0034596
+
+--Gronlund, S. D., Carlson, C. A., Neuschatz, J. S., Goodsell, C. A., Wetmore, S. A., Wooten, A., & Graham, M. (2012). Showups versus lineups: An evaluation using ROC analysis. Journal of Applied Research in Memory and Cognition, 1(4), 221–228. https://doi.org/10.1016/j.jarmac.2012.09.003
+
+--Mickes, L., Flowe, H. D., & Wixted, J. T. (2012). Receiver operating characteristic analysis of eyewitness memory: Comparing the diagnostic accuracy of simultaneous versus sequential lineups. Journal of Experimental Psychology: Applied, 18(4), 361–376. https://doi.org/10.1037/a0030609
+
+--Morgan, D. P., Tamminen, J., Seale-Carlisle, T. M., & Mickes, L. (2019). The impact of sleep on eyewitness identifications. Royal Society Open Science, 6(12), 170501. https://doi.org/10.1098/rsos.170501
+
+--Seale-Carlisle, T. M., & Mickes, L. (2016). US line-ups outperform UK line-ups. Royal Society Open Science, 3(9), 160300. https://doi.org/10.1098/rsos.160300
+
+--Wetmore, S. A., Neuschatz, J. S., Gronlund, S. D., Wooten, A., Goodsell, C. A., & Carlson, C. A. (2015). Effect of retention interval on showup and lineup performance. Journal of Applied Research in Memory and Cognition, 4(1), 8–14. https://doi.org/10.1016/j.jarmac.2014.07.003
+
 
 

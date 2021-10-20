@@ -1137,3 +1137,18 @@ ROC_data_wide = spread(ROC_data,
 
 partial_threshold = ifelse(is.na(data_files$processed_data$specificity), 0,
                            1 - data_files$processed_data$specificity)
+
+#** Looking at the relationship between effect size and AUC ratio ----
+morgan_sleep = read.csv("./Dataset testing and reports/Data/Morgan et al., 2019/morgan_processed.csv") %>% 
+    filter(cond == "Sleep")
+
+write.csv(morgan_sleep,
+          "./Dataset testing and reports/Data/Morgan et al., 2019/morgan_sleep.csv")
+
+morgan_fake = morgan_sleep %>% 
+    mutate(cond = "Wake")
+
+morgan_sim = bind_rows(morgan_sleep,
+                       morgan_fake)
+
+#*** 

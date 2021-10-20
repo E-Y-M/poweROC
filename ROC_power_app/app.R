@@ -36,8 +36,44 @@ example_data = data.frame(id_type = sample(c("suspect", "filler", "reject"),
                                         replace = TRUE,
                                         prob = c(.5, .5)))
 
+### Compendium of open datasets ----
 open_data = read.csv("www/combined_open_data.csv", fileEncoding = 'UTF-8-BOM') %>% 
     filter(exp != "Colloff et al. (2021b): Exp 2: High vs. Low pose reinstatement") # Filter out this dataset for now until I figure out problems
+
+### AUC effect sizes ----
+#effect_sizes = read.csv("www/auc_ratios.csv", fileEncoding = 'UTF-8-BOM') %>% 
+effect_sizes = read.csv(here::here("./ROC_power_app/www/auc_ratios.csv"), fileEncoding = 'UTF-8-BOM') %>% 
+    rowwise() %>% 
+    mutate(ratio = max(auc1, auc2) / min(auc1, auc2)) %>% 
+    dplyr::select(ratio, dval, pval, exp) %>% 
+    dplyr::rename(`AUC ratio` = "ratio",
+                  D = dval,
+                  p = pval,
+                  Experiment = exp)
+
+#### ...and the corresponding plot ----
+##### Get 33rd, 66th, and 99th quantiles ----
+auc_lit_quantiles = quantile(effect_sizes$`AUC ratio`,
+                             probs = c(.33, .66))
+
+auc_small_x = (1 + auc_lit_quantiles[1]) / 2
+auc_med_x = (auc_lit_quantiles[1] + auc_lit_quantiles[2]) / 2
+auc_large_x = (auc_lit_quantiles[2] + max(effect_sizes$`AUC ratio`)) / 2
+auc_y = max(density(effect_sizes$`AUC ratio`)[["y"]]) + .20*(max(density(effect_sizes$`AUC ratio`)[["y"]]))
+
+##### Plot ----
+auc_lit_plot = effect_sizes %>% 
+    ggplot(aes(x = `AUC ratio`))+
+    geom_density()+
+    geom_vline(xintercept = auc_lit_quantiles)+
+    apatheme+
+    labs(x = "pAUC ratio",
+         y = "Density")+
+    annotate("text", x = auc_small_x, y = auc_y, label = "Small", vjust = .5, size = 11)+
+    annotate("text", x = auc_med_x, y = auc_y, label = "Medium", vjust = .5, size = 11)+
+    annotate("text", x = auc_large_x, y = auc_y, label = "Large", vjust = .5, size = 11)+
+    theme(text = element_text(size = 20))+
+    scale_x_continuous(breaks = seq(1, round(max(effect_sizes$`AUC ratio`), 1), by = .1))
 
 # user interface ----
 shinyjs::useShinyjs()
@@ -165,6 +201,21 @@ data_tab <- tabItem(
         div(style = 'overflow-x: scroll',dataTableOutput("processed_data")))
 )
 
+### effect sizes tab ----
+effects_tab = tabItem(tabName = "effects_tab",
+                      box(width = 12,
+                          title = "pAUC effect sizes in the literature",
+                          tags$p("The effect size metric used by this app is the ratio of two pAUCs. This effect size is more amenable to simulation than D (as D relies on knowing the standard error of the to-be-simulated data), and perhaps more intuitive. How to decide what effect size(s) to simulate? The plot below shows a distribution of pAUC ratios from published eyewitness experiments that used ROC analysis (see the ‘App validation & testing’ tab for references). If you do not have a similar experiment in mind when choosing an effect size, I have delineated some crude conventions for ‘small’, ‘medium’, and ‘large’ effects based on the 33rd and 66th percentiles. However, because my literature review is by no means comprehensive, I instead recommend looking through the table below the figure for an experiment with a similar manipulation to the one you are powering for, and using effect sizes similar to that in the ‘Simulation Parameters’ tab."))
+                      ,
+                      box(width = 12,
+                          collapsible = TRUE,
+                          plotOutput("auc_lit_plot"))
+                      ,
+                      box(width = 12, 
+                          collapsible = TRUE,
+                          dataTableOutput("effect_sizes")))
+                      
+
 ### simulation parameters tab ----
 parameters_tab = tabItem(tabName = "parameters_tab",
                          box(width = 12,
@@ -180,7 +231,7 @@ parameters_tab = tabItem(tabName = "parameters_tab",
                                      placeholder = "0.5, 1.5"
                                  ),
                                  bsTooltip("effs",
-                                           "Specify effect sizes to test in a comma-separated list. In this app, effect sizes are operationalized as a multiplier to apply to the # of correct IDs at each confidence level for the 2nd condition in your data file. E.g., an effect size of 2 means that the 2nd condition results in 2x more correct IDs at each confidence level. If you have data for two conditions and only wish to test the effect size in the data, leave this as 1",
+                                           "Specify effect sizes to test in a comma-separated list. In this app, effect sizes are operationalized as a multiplier to apply to the # of correct IDs at each confidence level for the 2nd condition in your data file. E.g., an effect size of 2 means that the 2nd condition results in 2x more correct IDs at each confidence level, and by extension, 2x the pAUC (holding false IDs constant). Thus, these effect sizes are comparable to the ones in the `pAUC effect sizes` tab. ",
                                            placement = "bottom",
                                            trigger = "hover"),
                                  textInput(
@@ -393,6 +444,7 @@ ui <- dashboardPage(
             menuItem("Introduction", tabName = "intro_tab", icon = icon("info-circle")),
             menuItem("Previous simulation results", tabName = "previous_tab", icon = icon("history")),
             menuItem("Data Upload", tabName = "data_tab", icon = icon("table")),
+            menuItem("pAUC effect sizes", tabName = "effects_tab", icon = icon("book")),
             menuItem("Simulation Parameters", tabName = "parameters_tab", icon = icon("gear")),
             menuItem("App validation & testing", tabName = "validation_tab", icon = icon("search")),
             #menuItem("Simulation Results", tabName = "results_tab", icon = icon("poll"))
@@ -412,6 +464,7 @@ ui <- dashboardPage(
             intro_tab,
             previous_tab,
             data_tab,
+            effects_tab,
             parameters_tab,
             validation_tab,
             results_tab
@@ -431,6 +484,10 @@ server <- function(input, output, session) {
     
     output$example_data = renderDataTable({
         example_data
+    })
+    
+    output$effect_sizes = renderDataTable({
+        effect_sizes
     })
     
     observeEvent(input$sim_start, {
@@ -470,7 +527,7 @@ server <- function(input, output, session) {
     #    }
     #})
     
-    #** Choose whether to upload data or use an open dataset ----
+    ### Choose whether to upload data or use an open dataset ----
     observeEvent(input$data_source, {
         if (input$data_source == "Upload data") {
             show("user_data")
@@ -481,7 +538,7 @@ server <- function(input, output, session) {
         }
     })
     
-    #** If open dataset is selected, create the dataset ----
+    ### If open dataset is selected, create the dataset ----
     observeEvent(input$open_dataset, {
         data_files$processed_data = open_data %>% 
             filter(exp == input$open_dataset)
@@ -616,7 +673,7 @@ server <- function(input, output, session) {
             }
             data_files$saved_data = data_files$processed_data
             
-            data_files$processed_data = data_files$processed %>% 
+            data_files$processed_data = data_files$processed_data %>% 
                 mutate(specificity = NA,
                        auc_diff = NA)
             
@@ -860,6 +917,11 @@ server <- function(input, output, session) {
             hypothetical_ROC_plot
         })
         
+    })
+    
+    
+    output$auc_lit_plot = renderPlot({
+        auc_lit_plot
     })
     
     ## simulation parameters ----

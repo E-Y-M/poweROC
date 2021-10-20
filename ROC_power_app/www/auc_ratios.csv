@@ -1,0 +1,77 @@
+﻿ratio,dval,pval,auc1,auc2,exp
+,2.63,0.008,0.013,0.006,Akan et al. (2021): Exp 1: Showup vs. 6-person
+,1.87,0.06,0.02,0.016,Akan et al. (2021): Exp 2: Showup vs. 3-person
+,3.01,0.003,0.021,0.016,Akan et al. (2021): Exp 2: Showup vs. 6-person
+1,0.14,0.892,0.28,0.28,Morgan et al. (2019): Sleep vs. Wake pre-lineup
+,0.69,0.488,0.278,0.271,Morgan et al. (2019): AM vs. PM lineup
+,5.92,< .001,0.276,0.229,Morgan et al. (2019): Experimental vs. Control
+,3.75,< .001,0.102,0.075,Colloff et al. (2018): Block vs. Do-nothing showups
+,,,0.022,0.02,Colloff et al. (2021a): Exp 1: High- vs. Medium-similarity fillers
+,,0.023,0.023,0.02,Colloff et al. (2021a): Exp 1: High- vs. Low-similarity fillers
+,,,0.023,0.022,Colloff et al. (2021a): Exp 1: Medium- vs. Low-similarity fillers
+,,,0.01,0.008,Colloff et al. (2021a): Exp 2: High- vs. Medium-similarity fillers
+,,0.01,0.01,0.007,Colloff et al. (2021a): Exp 2: High- vs. Low-similarity fillers
+,,,0.008,0.007,Colloff et al. (2021a): Exp 2: Medium- vs. Low-similarity fillers
+,5.43,< .001,0.186,0.117,Colloff et al. (2021b): Exp 1: Same-pose vs. Different-pose encoding-test
+,6.29,< .001,0.194,0.117,Colloff et al. (2021b): Exp 1: Same-plus-additional-pose vs. Different-pose encoding-test
+,0.639,0.523,0.194,0.186,Colloff et al. (2021b): Exp 1: Same-plus-additional-pose vs. Same-pose encoding-test
+,,< .05,0.16,0.08,Colloff et al. (2021b): Exp 1: Frontal encoding Same-pose vs. Different-pose encoding-test
+,,< .05,0.16,0.08,Colloff et al. (2021b): Exp 1: Frontal encoding Same-plus-additional-pose vs. Different-pose encoding-test
+,,> .05,0.16,0.16,Colloff et al. (2021b): Exp 1: Frontal encoding Same-plus-additional-pose vs. Same-pose encoding-test
+,,> .05,0.08,0.06,Colloff et al. (2021b): Exp 1: Right encoding Same-pose vs. Different-pose encoding-test
+,,< .05,0.1,0.06,Colloff et al. (2021b): Exp 1: Right encoding Same-plus-additional-pose vs. Different-pose encoding-test
+,,,0.1,0.08,Colloff et al. (2021b): Exp 1: Right encoding Same-plus-additional-pose vs. Same-pose encoding-test
+,2.148,0.03,0.217,0.184,Colloff et al. (2021b): Exp 2: High vs. Low pose reinstatement
+,1.78,0.08,0.233,0.196,Colloff et al. (2021b): Exp 2: Right-profile encoding High vs. Low pose reinstatement
+,1.01,0.31,0.199,0.176,Colloff et al. (2021b): Exp 2: Left-profile encoding High vs. Low pose reinstatement
+,5.84,< .001,0.29,0.16,Wetmore et al. (2015): Lineups vs. Showups
+,3.31,< .001,0.27,0.18,Wetmore et al. (2015): Delayed lineup vs. Immediate showup
+,4.31,< .001,0.3,0.18,Wetmore et al. (2015): Immediate lineup vs. Immediate showup
+,3.68,< .001,0.27,0.14,Wetmore et al. (2015): Delayed lineup vs. Delayed showup
+,4.31,< .001,0.3,0.14,Wetmore et al. (2015): Immediate lineup vs. Delayed showup
+,1.05,0.29,0.3,0.27,Wetmore et al. (2015): Immediate lineup vs. Delayed lineup
+,1.03,0.3,0.18,0.14,Wetmore et al. (2015): Immediate showup vs. Delayed showup
+,6.13,< .001,0.31,0.17,Wetmore et al. (2015): Fair lineup vs. showup
+,4.51,< .001,0.28,0.17,Wetmore et al. (2015): Biased lineup vs. showup
+,1.22,0.22,0.31,0.28,Wetmore et al. (2015): Fair lineup vs. Biased lineup
+,4.35,< .001,0.016,0.008,Colloff et al. (2016): Block lineups vs. Do-nothing lineups
+,4.11,< .001,0.016,0.008,Colloff et al. (2016): Replication lineups vs. Do-nothing lineups
+,4.17,< .001,0.015,0.008,Colloff et al. (2016): Pixelation lineups vs. Do-nothing lineups
+,0.24,> .25,0.016,0.015,Colloff et al. (2016): Pixelation lineups vs. Block lineups
+,0.32,> .25,0.016,0.015,Colloff et al. (2016): Pixelation lineups vs. Replication lineups
+,0.08,> .25,0.016,0.016,Colloff et al. (2016): Block lineups vs. Replication lineups
+,1.97,0.048,0.032,0.025,Carlson & Carlson (2014): Simultaneous vs. Sequential lineups
+,0.66,0.508,0.026,0.024,Carlson & Carlson (2014): Sequential position 2 vs. Sequential position 5
+,0.59,0.552,0.028,0.026,Carlson & Carlson (2014): Weapon vs. No weapon
+,2.64,0.008,0.031,0.023,Carlson & Carlson (2014): Distinctive feature vs. No distinctive feature
+,,> .05,0.03,0.019,Gronlund et al. (2012): Showup vs. Simultaneous lineup (Specificity = .9)
+,,> .05,0.031,0.019,Gronlund et al. (2012): Showup vs. Sequential lineup (Specificity = .9)
+,,> .05,0.031,0.03,Gronlund et al. (2012): Simultaneous vs. Sequential lineup (Specificity = .9)
+,,< .05,0.13,0.078,Gronlund et al. (2012): Showup vs. Simultaneous lineup (Specificity = .75)
+,,> .05,0.115,0.078,Gronlund et al. (2012): Showup vs. Sequential lineup (Specificity = .75)
+,,> .05,0.13,0.115,Gronlund et al. (2012): Simultaneous vs. Sequential lineup (Specificity = .75)
+,,> .05,0.034,0.019,Gronlund et al. (2012): Showup vs. Simultaneous position 2 (Specificity = .9)
+,,> .05,0.024,0.019,Gronlund et al. (2012): Showup vs. Simutaneous position 5 (Specificity = .9)
+,,> .05,0.023,0.019,Gronlund et al. (2012): Showup vs. Sequential position 2 (Specificity = .9)
+,,< .05,0.043,0.019,Gronlund et al. (2012): Showup vs. Sequential position 5 (Specificity = .9)
+,,> .05,0.034,0.024,Gronlund et al. (2012): Simultaneous position 2 vs. Simultaneous position 5 (Specificity = .9)
+,,> .05,0.034,0.023,Gronlund et al. (2012): Simultaneous position 2 vs. Sequential position 2 (Specificity = .9)
+,,> .05,0.043,0.034,Gronlund et al. (2012): Simultaneous position 2 vs. Sequential position 5 (Specificity = .9)
+,,> .05,0.024,0.023,Gronlund et al. (2012): Simultaneous position 5 vs. Sequential position 2 (Specificity = .9)
+,,> .05,0.043,0.024,Gronlund et al. (2012): Simultaneous position 5 vs. Sequential position 5 (Specificity = .9)
+,,> .05,0.043,0.024,Gronlund et al. (2012): Sequential position 2 vs. Sequential position 5 (Specificity = .9)
+,,< .05,0.142,0.078,Gronlund et al. (2012): Showup vs. Simultaneous position 2 (Specificity = .75)
+,,> .05,0.116,0.078,Gronlund et al. (2012): Showup vs. Simutaneous position 5 (Specificity = .75)
+,,> .05,0.092,0.078,Gronlund et al. (2012): Showup vs. Sequential position 2 (Specificity = .75)
+,,< .05,0.141,0.078,Gronlund et al. (2012): Showup vs. Sequential position 5 (Specificity = .75)
+,,> .05,0.142,0.116,Gronlund et al. (2012): Simultaneous position 2 vs. Simultaneous position 5 (Specificity = .75)
+,,< .05,0.142,0.092,Gronlund et al. (2012): Simultaneous position 2 vs. Sequential position 2 (Specificity = .75)
+,,> .05,0.142,0.141,Gronlund et al. (2012): Simultaneous position 2 vs. Sequential position 5 (Specificity = .75)
+,,> .05,0.116,0.092,Gronlund et al. (2012): Simultaneous position 5 vs. Sequential position 2 (Specificity = .75)
+,,> .05,0.141,0.116,Gronlund et al. (2012): Simultaneous position 5 vs. Sequential position 5 (Specificity = .75)
+,,< .05,0.141,0.092,Gronlund et al. (2012): Sequential position 2 vs. Sequential position 5 (Specificity = .75)
+,2.02,< .05,0.13,0.09,Mickes et al. (2012): Exp. 1a: Simultaneous vs. Sequential lineups
+,0.7,> .05,0.22,0.2,Mickes et al. (2012): Exp. 1b: Simultaneous vs. Sequential lineups
+,4.68,< .001,0.034,0.028,Dobolyi & Dodson (2013): Simultaneous vs. Sequential lineups (2 repetitions)
+,6.24,< .001,0.044,0.037,Dobolyi & Dodson (2013): Simultaneous vs. Sequential lineups (4 repetitions)
+,2.74,0.006,0.17,0.1,Seale-Carlisle & Mickes (2016): US vs. UK lineups
