@@ -41,8 +41,7 @@ open_data = read.csv("www/combined_open_data.csv", fileEncoding = 'UTF-8-BOM') %
     filter(exp != "Colloff et al. (2021b): Exp 2: High vs. Low pose reinstatement") # Filter out this dataset for now until I figure out problems
 
 ### AUC effect sizes ----
-#effect_sizes = read.csv("www/auc_ratios.csv", fileEncoding = 'UTF-8-BOM') %>% 
-effect_sizes = read.csv(here::here("./ROC_power_app/www/auc_ratios.csv"), fileEncoding = 'UTF-8-BOM') %>% 
+effect_sizes = read.csv("www/auc_ratios.csv", fileEncoding = 'UTF-8-BOM') %>% 
     rowwise() %>% 
     mutate(ratio = max(auc1, auc2) / min(auc1, auc2)) %>% 
     dplyr::select(ratio, dval, pval, exp) %>% 
