@@ -18,6 +18,103 @@ print(duration)
 test = "1, 1, 1.25, 1.5"
 test_extract = unique(extract(test))
 
+# Colloff et al., 2021 (Interactive lineups) ----
+interactive = read.csv("./Dataset testing and reports/Data/Colloff et al., 2020/Exp1_osf_data.csv") %>% 
+    dplyr::select(Confidence, Include, TargetPresent, IDResponse, OwnRace, LineupType) %>% 
+    filter(Include == "yes") %>% 
+    dplyr::group_by(Confidence, TargetPresent, IDResponse, OwnRace, LineupType) %>% 
+    count() %>% 
+    mutate(total = ifelse(IDResponse == "foil" & TargetPresent == "no", round(n * 5/6), n))
+
+interactive_suspects = interactive %>% 
+    filter(IDResponse == "foil" & TargetPresent == "no") %>% 
+    mutate(IDResponse = "perpetrator",
+           total = round(n * 1/6))
+
+interactive = rbind(interactive,
+                    interactive_suspects) %>% 
+    mutate(IDResponse = ifelse(IDResponse == "foil", "filler",
+                               ifelse(IDResponse == "perpetrator", "suspect", "reject")),
+           TargetPresent = ifelse(TargetPresent == "no", "absent", "present"))
+
+conf_store = NA
+presence_store = NA
+response_store = NA
+race_store = NA
+cond_store = NA
+
+for (i in 1:nrow(interactive)) {
+    conf_store = append(conf_store, rep(interactive$Confidence[i], times = interactive$total[i]))
+    presence_store = append(presence_store, rep(interactive$TargetPresent[i], times = interactive$total[i]))
+    response_store = append(response_store, rep(interactive$IDResponse[i], times = interactive$total[i]))
+    race_store = append(race_store, rep(interactive$OwnRace[i], times = interactive$total[i]))
+    cond_store = append(cond_store, rep(interactive$LineupType[i], times = interactive$total[i]))
+}
+
+interactive_expand = data.frame(cond = cond_store,
+                                conf_level = conf_store,
+                                culprit_present = presence_store,
+                                id_type = response_store,
+                                race = race_store) %>% 
+    filter(!is.na(cond)) %>% 
+    mutate(conf_level1 = conf_level,
+           conf_level = round(conf_level1 / 10)+1)
+
+write.csv(interactive_expand,
+          "./Dataset testing and reports/Data/Colloff et al., 2020/Exp1_osf_data_processed.csv",
+          row.names = FALSE,
+          na = "")
+
+# Experiment 2
+interactive = read.csv("./Dataset testing and reports/Data/Colloff et al., 2020/Exp2_osf_data.csv") %>% 
+    dplyr::select(Confidence, IncludeFinalSample, TargetPresent, IDResponse, OwnRace, LineupType) %>% 
+    filter(IncludeFinalSample == "yes") %>% 
+    dplyr::group_by(Confidence, TargetPresent, IDResponse, OwnRace, LineupType) %>% 
+    count() %>% 
+    mutate(total = ifelse(IDResponse == "foil" & TargetPresent == "no", round(n * 5/6), n))
+
+interactive_suspects = interactive %>% 
+    filter(IDResponse == "foil" & TargetPresent == "no") %>% 
+    mutate(IDResponse = "perpetrator",
+           total = round(n * 1/6))
+
+interactive = rbind(interactive,
+                    interactive_suspects) %>% 
+    mutate(IDResponse = ifelse(IDResponse == "foil", "filler",
+                               ifelse(IDResponse == "perpetrator", "suspect", "reject")),
+           TargetPresent = ifelse(TargetPresent == "no", "absent", "present"))
+
+conf_store = NA
+presence_store = NA
+response_store = NA
+race_store = NA
+cond_store = NA
+
+for (i in 1:nrow(interactive)) {
+    conf_store = append(conf_store, rep(interactive$Confidence[i], times = interactive$total[i]))
+    presence_store = append(presence_store, rep(interactive$TargetPresent[i], times = interactive$total[i]))
+    response_store = append(response_store, rep(interactive$IDResponse[i], times = interactive$total[i]))
+    race_store = append(race_store, rep(interactive$OwnRace[i], times = interactive$total[i]))
+    cond_store = append(cond_store, rep(interactive$LineupType[i], times = interactive$total[i]))
+}
+
+interactive_expand = data.frame(cond = cond_store,
+                                conf_level = conf_store,
+                                culprit_present = presence_store,
+                                id_type = response_store,
+                                race = race_store) %>% 
+    filter(!is.na(cond)) %>% 
+    mutate(conf_level1 = conf_level,
+           conf_level = round(conf_level1 / 10)+1)
+
+interactive_joint_simultaneous = interactive_expand %>% 
+    filter(cond == "joint_simultaneous")
+
+write.csv(interactive_joint_simultaneous,
+          "./Dataset testing and reports/Data/Colloff et al., 2020/Exp2_osf_data_processed_joint_simultaneous.csv",
+          row.names = FALSE,
+          na = "")
+
 # Dataset for testing a null effect
 ## Colloff et al., 2021 data ----
 ### Exp. 1 ----
@@ -217,6 +314,46 @@ write.csv(colloff,
           na = "")
 
 # AUC specificity = .618
+
+#### Same + Different vs. Same ----
+colloff = read.csv("./Dataset testing and reports/Data/Colloff et al., 2021b/Exp 1/Exp1_Data.csv") %>% 
+    dplyr::select(conditionSameDiff, 
+                  targetPresentRaw,
+                  participantSelection,
+                  confidence) %>% 
+    mutate(cond = ifelse(conditionSameDiff == 1, "Same",
+                         ifelse(conditionSameDiff == 2, "Different", "Same + Different")),
+           culprit_present = ifelse(grepl("Present", targetPresentRaw), "present", "absent"),
+           conf_level = as.numeric(confidence),
+           id_type = ifelse(participantSelection == 1, "suspect",
+                            ifelse(participantSelection == 2, "filler", "reject")),
+           id_type = ifelse(culprit_present == "absent" & id_type == "filler", "suspect", id_type)) %>% 
+    filter(cond != "Different")
+
+write.csv(colloff,
+          "./Dataset testing and reports/Data/Colloff et al., 2021b/Exp 1/Exp1_Data_SamePlusDiffVsSame.csv",
+          row.names = FALSE,
+          na = "")
+
+#### Only Same ----
+colloff = read.csv("./Dataset testing and reports/Data/Colloff et al., 2021b/Exp 1/Exp1_Data.csv") %>% 
+    dplyr::select(conditionSameDiff, 
+                  targetPresentRaw,
+                  participantSelection,
+                  confidence) %>% 
+    mutate(cond = ifelse(conditionSameDiff == 1, "Same",
+                         ifelse(conditionSameDiff == 2, "Different", "Same + Different")),
+           culprit_present = ifelse(grepl("Present", targetPresentRaw), "present", "absent"),
+           conf_level = as.numeric(confidence),
+           id_type = ifelse(participantSelection == 1, "suspect",
+                            ifelse(participantSelection == 2, "filler", "reject")),
+           id_type = ifelse(culprit_present == "absent" & id_type == "filler", "suspect", id_type)) %>% 
+    filter(cond == "Same")
+
+write.csv(colloff,
+          "./Dataset testing and reports/Data/Colloff et al., 2021b/Exp 1/Exp1_Data_Same.csv",
+          row.names = FALSE,
+          na = "")
 
 ### Exp 2 ----
 #### Left encoding vs. Right encoding ----
