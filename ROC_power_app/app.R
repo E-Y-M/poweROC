@@ -43,36 +43,36 @@ open_data = read.csv("www/combined_open_data.csv", fileEncoding = 'UTF-8-BOM') %
 ### AUC effect sizes ----
 effect_sizes = read.csv("www/auc_ratios.csv", fileEncoding = 'UTF-8-BOM') %>% 
     rowwise() %>% 
-    mutate(ratio = max(auc1, auc2) / min(auc1, auc2)) %>% 
+    mutate(ratio = max(auc1, auc2) / min(auc1, auc2) - 1) %>% 
     dplyr::select(ratio, dval, pval, exp) %>% 
-    dplyr::rename(`AUC ratio` = "ratio",
+    dplyr::rename(`Effect size` = "ratio",
                   D = dval,
                   p = pval,
                   Experiment = exp)
 
 #### ...and the corresponding plot ----
 ##### Get 33rd, 66th, and 99th quantiles ----
-auc_lit_quantiles = quantile(effect_sizes$`AUC ratio`,
+auc_lit_quantiles = quantile(effect_sizes$`Effect size`,
                              probs = c(.33, .66))
 
-auc_small_x = (1 + auc_lit_quantiles[1]) / 2
+auc_small_x = (auc_lit_quantiles[1]) / 2
 auc_med_x = (auc_lit_quantiles[1] + auc_lit_quantiles[2]) / 2
-auc_large_x = (auc_lit_quantiles[2] + max(effect_sizes$`AUC ratio`)) / 2
-auc_y = max(density(effect_sizes$`AUC ratio`)[["y"]]) + .20*(max(density(effect_sizes$`AUC ratio`)[["y"]]))
+auc_large_x = (auc_lit_quantiles[2] + max(effect_sizes$`Effect size`)) / 2
+auc_y = max(density(effect_sizes$`Effect size`)[["y"]]) + .20*(max(density(effect_sizes$`Effect size`)[["y"]]))
 
 ##### Plot ----
 auc_lit_plot = effect_sizes %>% 
-    ggplot(aes(x = `AUC ratio`))+
+    ggplot(aes(x = `Effect size`))+
     geom_density()+
     geom_vline(xintercept = auc_lit_quantiles)+
     apatheme+
-    labs(x = "pAUC ratio",
+    labs(x = "Effect size",
          y = "Density")+
     annotate("text", x = auc_small_x, y = auc_y, label = "Small", vjust = .5, size = 11)+
     annotate("text", x = auc_med_x, y = auc_y, label = "Medium", vjust = .5, size = 11)+
     annotate("text", x = auc_large_x, y = auc_y, label = "Large", vjust = .5, size = 11)+
     theme(text = element_text(size = 20))+
-    scale_x_continuous(breaks = seq(1, round(max(effect_sizes$`AUC ratio`), 1), by = .1))
+    scale_x_continuous(breaks = seq(0, round(max(effect_sizes$`Effect size`), 1), by = .1))
 
 # user interface ----
 shinyjs::useShinyjs()
@@ -82,29 +82,74 @@ shinyjs::useShinyjs()
 intro_tab <- tabItem(
     tabName = "intro_tab",
     box(width = 12,
+        collapsible = FALSE,
+        title = "Introduction",
+        tags$p("This R Shiny app allows users to run simulation-based power analysis for ROC curve (partial AUC) analysis of eyewitness data (and certain recognition memory designs). 
+               Use the tabs on the left to navigate. I strongly recommend checking out the 'How this app works' tab before proceeding."),
+        #actionLink("explanation_tab_link", "How this app works"),
+        #tags$br(),
+        #actionLink("previous_tab_link", "View results of previous simulations that other users have uploaded"),
+        #tags$br(),
+        #actionLink("data_tab_link", "Upload data or choose from open datasets to use as the basis for simulation"),
+        #tags$br(),
+        #actionLink("effects_tab_link", "View effect sizes from other eyewitness lineup ROC experiments"),
+        #tags$br(),
+        #actionLink("parameters_tab_link", "Enter simulation parameters and run the analysis"),
+        #tags$br(),
+        #actionLink("results_tab_link", "View simulation analysis results"),
+        #tags$br(),
+        #actionLink("validation_tab_link", "View a summary of app validation/testing"),
+        #tags$br(),
+        tags$br(),
+        tags$p("This program is licensed under the ", a(href = 'https://github.com/E-Y-M/poweROC/blob/main/LICENSE', 'GNU General Public License v3.0. ', .noWS = "outside"), 
+               'Complete source code for this app can be downloaded from GitHub at ', a(href = 'https://github.com/E-Y-M/poweROC', 'https://github.com/E-Y-M/poweROC', .noWS = "outside"), ', and any issues can be reported at ', a(href = 'https://github.com/E-Y-M/poweROC/issues', 'https://github.com/E-Y-M/poweROC/issues', .noWS = "outside"), ". Preliminary app testing/validation results and best-use recommendations can be viewed in the 'App validation & testing tab'.",
+               .noWS = c("after-begin", "before-end")),
+        tags$br(),
+        tags$p("This is beta version 1.0 of an app developed by Eric Mah, a graduate student at the University of Victoria. Feedback/suggestions/bug reports are very much appreciated, and can be added on the linked issues page or addressed to ericmah@uvic.ca. 
+               Thanks to Ryan Fitzgerald, Adam Krawitz, Farouk Nathoo, and Steve Lindsay for their helpful feedback and suggestions in developing this app.")
+    )
+)
+
+### app explanation ----
+explanation_tab <- tabItem(
+    tabName = "explanation_tab",
+    box(width = 12,
         collapsible = TRUE,
         title = "What is this?",
-        tags$p('This R Shiny app allows users to simulate power for ROC curve (partial AUC) analyses of eyewitness lineup data*. This app was heavily inspired by both Boogert et al.`s (2021) ', a(href = 'https://lmickes.github.io/pyWitness/index.html', 'pyWitness', .noWS = "outside"), ' program and Cohen et al.`s (2021) ', a(href = 'https://link.springer.com/article/10.3758%2Fs13428-020-01402-7', 'sdtlu', .noWS = "outside"), ' R package. Both allow for in-depth simulation and analysis of various SDT models from eyewitness lineup data, but simulation for power is not their primary focus. The goal of this app is to provide a simple user-friendly interface for the kinds of ROC analyses commonly conducted in lineup experiments. This app takes as input lineup data with either one condition or two between-subjects conditions, and allows users to specify various simulation/design parameters (sample sizes, effect sizes, alpha level, test tails, AUC specificity, # of TA/TP lineups per participant), visualize hypothetical ROC curves, simulate datasets by repeatedly sampling from the data under different conditions/effect sizes/sample sizes to provide power estimates, download summary reports of power simulations, upload simulation results for other users, and view the results of previous simulations uploaded by other users (see the "Previous simulation results" tab).', .noWS = c("after-begin", "before-end")),
-        tags$br(),
-        tags$p("*And certain recognition memory designs; see the note in the 'Data Upload' tab")
+        tags$p('This app takes as input lineup data with either one condition or two between-subjects conditions (either user-uploaded or selected from a selection of open datasets), and allows users to specify various 
+               simulation/design parameters (sample sizes, effect sizes, alpha level, test tails, AUC specificity, # of TA/TP lineups per participant), 
+               visualize hypothetical ROC curves, simulate datasets by repeatedly sampling from the data under different conditions/effect sizes/sample sizes to provide power estimates, 
+               download summary reports of power simulations, upload simulation results for other users, and view the results of previous simulations uploaded by other users (see the "Previous simulation results" tab).'),
+        tags$p(strong("By using existing data as the basis for simulation, this app avoids assumptions about data-generating process that one would make using other methods (e.g., specifying an SDT model to simulate from). Of course, a critical assumption that this app does make is that the data one uses for simulation will resemble the data one plans to collect. To 
+                      the extent that this assumption does not hold, the power simulation results may not be valid. Any power simulation enterprise requires certain assumptions 
+                      (e.g., about underlying distributions); my aim with this app was to minimize the necessary assumptions and the amount of 
+                      information required (e.g., underlying SDT parameters/processes) for power analyses.")), 
+        tags$p("This app was inspired by both Boogert et al.`s (2021) ", a(href = 'https://lmickes.github.io/pyWitness/index.html', 'pyWitness', .noWS = "outside"), 
+               " program and Cohen et al.`s (2021) ", a(href = "https://link.springer.com/article/10.3758%2Fs13428-020-01402-7", 'sdtlu', .noWS = 'outside'), " R package. 
+               Both use pre-existing data and allow for in-depth simulation and analysis of various SDT models from eyewitness lineup data, but simulation for power is not their primary focus. 
+               The goal of this app is to provide an interface for the kinds of ROC analyses commonly conducted in lineup experiments. 
+               In this app, ROC curves are constructed and AUCs compared via boostrap analysis, using the ", a(href = 'https://cran.r-project.org/web/packages/pROC/pROC.pdf', 'pROC R package', .noWS = "outside"), 
+               ". ROC curves are constructed using the proportion of correct/false IDs at each confidence level (i.e., filler IDs are not counted as false IDs unless recoded in the data file), as per Gronlund et al.`s (2014) ", a(href = 'http://mickeslab.com/handy/roc-tutorial/', 'ROC tutorial.', .noWS = "outside"),
+               .noWS = c("after-begin", "before-end")),
+        tags$br()
     ),
     box(width = 12,
         collapsible = TRUE,
         title = "How does it work?",
         tags$p('This app requires a data file containing lineup data (see the “Data Upload” tab for instructions). Users can either upload their own data or use an included open dataset (see the "App validation & testing" tab for references). This file can contain a single condition (e.g., pilot data) or data from two conditions (e.g., data from another experiment similar to the one being powered for). If the former, the app will automatically duplicate data from the single provided condition to use as a basis for effect size adjustment and comparison. Before simulating data, various parameters will need to be specified (e.g., effect/sample sizes to test, number of simulation samples, one- or two-tailed testing protocol, etc.). The simulations themselves operate like so:'),
-        tags$ol(
-            tags$li("For each specified effect size:"),
-            tags$li("   Apply that effect size to the # of correct IDs for the 2nd condition in the data file", style="white-space: pre-wrap"),
-            tags$li("	Calculate the new proportion of correct IDs at each confidence level", style="white-space: pre-wrap"),
-            tags$li("	For each specified sample size:", style="white-space: pre-wrap"),
-            tags$li("	  For each simulation sample:", style="white-space: pre-wrap"),
-            tags$li("		 Sample lineup outcomes/confidence according to the newly defined proportions", style="white-space: pre-wrap"),
-            tags$li("		 Compute ROC curves for each condition and compare partial AUCs via boostrap analysis, using the ", a(href = 'https://cran.r-project.org/web/packages/pROC/pROC.pdf', 'pROC R package', .noWS = "outside"), ". ROC curves are constructed using the proportion of correct/false IDs at each confidence level (i.e., filler IDs are not counted as false IDs unless recoded in the data file), as per Gronlund et al.`s (2014) ", a(href = 'http://mickeslab.com/handy/roc-tutorial/', 'ROC tutorial', .noWS = "outside"), style="white-space: pre-wrap", .noWS = c("after-begin", "before-end")),
-            tags$li("		 Record test significance", style="white-space: pre-wrap"),
-            tags$li("Record proportion of significant tests at each effect size/N", style="white-space: pre-wrap")),
-        tags$br(),
-        tags$p(strong('NOTE:'), ' Due to the computationally intensive bootstrap resampling involved in ROC analyses, some simulations can potentially take a long time (e.g., upwards of an hour if several sample/effect sizes are under consideration). Thus, users may want to download a local copy of the app to run in R/RStudio (see link below) to avoid simulation disruption with dropped internet connections or timeouts. Whether running the web or a local version, it is also recommended that hibernation settings be temporarily disabled.'),
-        tags$p('Complete source code for this app can be downloaded from GitHub at ', a(href = 'https://github.com/E-Y-M/poweROC', 'https://github.com/E-Y-M/poweROC', .noWS = "outside"), ', and any issues can be reported at ', a(href = 'https://github.com/E-Y-M/poweROC/issues', 'https://github.com/E-Y-M/poweROC/issues', .noWS = "outside"), ". Preliminary app testing/validation results and use recommendations can be viewed in the 'App validation & testing tab'. This app is very much in the beta stage, so feedback/suggestions/bug reports are very much appreciated!", .noWS = c("after-begin", "before-end"))
+        img(src = "SimulationDescription.png", align = "center"),
+        #tags$ol(
+        #    tags$li("For each specified effect size:"),
+        #    tags$li("   Apply that effect size to the # of correct IDs for the 2nd condition in the data file", style="white-space: pre-wrap"),
+        #    tags$li("	Calculate the new proportion of correct IDs at each confidence level", style="white-space: pre-wrap"),
+        #    tags$li("	For each specified sample size:", style="white-space: pre-wrap"),
+        #    tags$li("	  For each simulation sample:", style="white-space: pre-wrap"),
+        #    tags$li("		 Sample lineup outcomes/confidence according to the newly defined proportions", style="white-space: pre-wrap"),
+        #    tags$li("		 Compute ROC curves for each condition and compare partial AUCs via boostrap analysis, using the ", a(href = 'https://cran.r-project.org/web/packages/pROC/pROC.pdf', 'pROC R package', .noWS = "outside"), ". ROC curves are constructed using the proportion of correct/false IDs at each confidence level (i.e., filler IDs are not counted as false IDs unless recoded in the data file), as per Gronlund et al.`s (2014) ", a(href = 'http://mickeslab.com/handy/roc-tutorial/', 'ROC tutorial', .noWS = "outside"), style="white-space: pre-wrap", .noWS = c("after-begin", "before-end")),
+        #    tags$li("		 Record test significance", style="white-space: pre-wrap"),
+        #    tags$li("Record proportion of significant tests at each effect size/N", style="white-space: pre-wrap")),
+        #tags$br(),
+        tags$p(strong('NOTE:'), ' Due to the computationally intensive bootstrap resampling involved in ROC analyses, some simulations can potentially take a long time (e.g., upwards of an hour if several sample/effect sizes are under consideration). Thus, users with access to R/RStudio may want to ', a(href = 'https://github.com/E-Y-M/poweROC', 'download and run a local copy', .noWS = "outside"), " to avoid simulation disruption with dropped internet connections or timeouts. Whether running the web or a local version, it is also recommended that hibernation settings be temporarily disabled.", .noWS = c("after-begin", "before-end"))
     )
 )
 
@@ -204,7 +249,9 @@ data_tab <- tabItem(
 effects_tab = tabItem(tabName = "effects_tab",
                       box(width = 12,
                           title = "pAUC effect sizes in the literature",
-                          tags$p("The effect size metric used by this app is the ratio of two pAUCs. This effect size is more amenable to simulation than D (as D relies on knowing the standard error of the to-be-simulated data), and perhaps more intuitive. How to decide what effect size(s) to simulate? The plot below shows a distribution of pAUC ratios from published eyewitness experiments that used ROC analysis (see the ‘App validation & testing’ tab for references). If you do not have a similar experiment in mind when choosing an effect size, I have delineated some crude conventions for ‘small’, ‘medium’, and ‘large’ effects based on the 33rd and 66th percentiles. However, because my literature review is by no means comprehensive, I instead recommend looking through the table below the figure for an experiment with a similar manipulation to the one you are powering for, and using effect sizes similar to that in the ‘Simulation Parameters’ tab."))
+                          tags$p("The effect size metric used by this app is an adjusted ratio of two pAUCs. For example, an effect size of 0 means that two ROC curves have the same pAUC, an effect size of 0.5 means that the 2nd ROC has 50% more pAUC than the 1st, an effect size of -0.5 means that the 2nd ROC has 50% less pAUC than the 1st, etc. Effect size adjustment in this app occurs by applying the effect size multiplier (e.g., +/- 50%) to the number of hits across all confidence levels, which has the effect of multiplying the pAUC by the same amount. This effect size is more amenable to simulation than D (as D relies on knowing the standard error of the to-be-simulated data), and perhaps more intuitive."),
+                          tags$br(),
+                          tags$p("How to decide what effect size(s) to simulate? The plot below shows a distribution of pAUC effect sizes (absolute value) from published eyewitness experiments that used ROC analysis (see the ‘App validation & testing’ tab for references). If you do not have a similar experiment in mind when choosing an effect size, I have delineated some crude conventions for ‘small’, ‘medium’, and ‘large’ effects based on the 33rd and 66th percentiles. However, because my literature review is by no means comprehensive, I instead recommend looking through the table below the figure for an experiment with a similar manipulation to the one you are powering for, and using effect sizes similar to that in the ‘Simulation Parameters’ tab."))
                       ,
                       box(width = 12,
                           collapsible = TRUE,
@@ -227,10 +274,10 @@ parameters_tab = tabItem(tabName = "parameters_tab",
                                      "effs",
                                      "Effect sizes to test",
                                      value = "",
-                                     placeholder = "0.5, 1.5"
+                                     placeholder = ".1, .4, .8"
                                  ),
                                  bsTooltip("effs",
-                                           "Specify effect sizes to test in a comma-separated list. In this app, effect sizes are operationalized as a multiplier to apply to the # of correct IDs at each confidence level for the 2nd condition in your data file. E.g., an effect size of 2 means that the 2nd condition results in 2x more correct IDs at each confidence level, and by extension, 2x the pAUC (holding false IDs constant). Thus, these effect sizes are comparable to the ones in the `pAUC effect sizes` tab. ",
+                                           "Specify effect sizes to test in a comma-separated list. Effect sizes are applied to the 2nd condition in your dataset (unless only one condition is present). An effect size of 0 does not change the pAUC of the 2nd condition, an effect size of 0.5 increases the pAUC of the 2nd condition by 50%, and an effect size of -0.5 decreases the pAUC of the 2nd condition by 50%. See the `pAUC effect sizes` tab for more details.",
                                            placement = "bottom",
                                            trigger = "hover"),
                                  textInput(
@@ -307,7 +354,7 @@ parameters_tab = tabItem(tabName = "parameters_tab",
                                  ),
                                  bsTooltip(
                                      "nsims",
-                                     "Specify the # of samples to simulate for each effect size/N combination. 100 provides relatively stable estimates, but if time is not a concern I recommend upping this to 200 (see the 'App validation & testing' tab for more details)",
+                                     "Specify the # of samples (and pAUC tests) to simulate for each combination of effect size/N. 100 provides relatively stable estimates, but if time is not a concern I recommend upping this to 200 (see the `App validation & testing` tab for more details)",
                                      placement = "bottom",
                                      trigger = "hover"
                                  ),
@@ -365,15 +412,19 @@ parameters_tab = tabItem(tabName = "parameters_tab",
                                  bsTooltip("alpha_level",
                                            "The desired Type I error rate. Adjustment for one- vs. two-tailed tests occurs automatically",
                                            placement = "bottom",
-                                           trigger = "hover"),
-                                 hidden(actionButton(
-                                     "sim_start",
-                                     "Simulate"
-                                 )),
-                                 textOutput("start_time")
+                                           trigger = "hover")
                              )
                          ),
                          fluidRow(
+                             hidden(actionButton(
+                                 "sim_start",
+                                 "Simulate",
+                                 width = '100%',
+                                 class = "btn-success"
+                             )),
+                         ),
+                         fluidRow(
+                             tags$br(),
                              tags$p(strong("Plot of hypothetical ROCs to test")),
                              plotOutput("ROC_data_plot")
                          ))
@@ -392,10 +443,14 @@ validation_tab = tabItem(
 ### simulation results tab ----
 results_tab = tabItem(
     tabName = "results_tab",
-    box(
+    box(id = "no_results",
         width = 12,
-        title = "Results",
+        tags$h4("Simulation results will appear here")),
+    box(id = "results_box",
+        width = 12,
+        #title = "Results",
         collapsible = TRUE,
+        tags$h1("Results"),
         textOutput("time_taken"),
         tags$br(),
         div(style = 'overflow-x: scroll', dataTableOutput("pwr_store")),
@@ -413,9 +468,10 @@ results_tab = tabItem(
         placement = "bottom",
         trigger = "hover"
     ),
-    box(
+    box(id = "power_curves_box",
         width = 12,
-        title = "Power curves",
+        #title = "Power curves",
+        tags$h1("Power curves"),
         collapsible = TRUE,
         plotOutput("pwr_plot")
     )
@@ -437,18 +493,19 @@ ui <- dashboardPage(
                     titleWidth = "calc(100% - 44px)" # puts sidebar toggle on right
     ),
     dashboardSidebar(
+        useShinyjs(),
         # https://fontawesome.com/icons?d=gallery&m=free
         sidebarMenu(
             id = "tabs",
-            menuItem("Introduction", tabName = "intro_tab", icon = icon("info-circle")),
+            menuItem("Introduction", tabName = "intro_tab", icon = icon("compass")),
+            menuItem("How this app works", tabName = "explanation_tab", icon = icon("info-circle")),
             menuItem("Previous simulation results", tabName = "previous_tab", icon = icon("history")),
             menuItem("Data Upload", tabName = "data_tab", icon = icon("table")),
             menuItem("pAUC effect sizes", tabName = "effects_tab", icon = icon("book")),
             menuItem("Simulation Parameters", tabName = "parameters_tab", icon = icon("gear")),
-            menuItem("App validation & testing", tabName = "validation_tab", icon = icon("search")),
-            #menuItem("Simulation Results", tabName = "results_tab", icon = icon("poll"))
-            sidebarMenuOutput("results_render")
-            #sidebarMenuOutput("trench_toggle"),
+            menuItem("Simulation Results", tabName = "results_tab", icon = icon("poll")),
+            menuItem("App validation & testing", tabName = "validation_tab", icon = icon("search"))
+            #sidebarMenuOutput("results_render")
             )
     ),
     dashboardBody(
@@ -461,18 +518,48 @@ ui <- dashboardPage(
         ),
         tabItems(
             intro_tab,
+            explanation_tab,
             previous_tab,
             data_tab,
             effects_tab,
             parameters_tab,
-            validation_tab,
-            results_tab
+            results_tab,
+            validation_tab
         )
     )
 )
 
 # server ----
 server <- function(input, output, session) {
+    ## tab links ----
+    observeEvent(input$explanation_tab_link, {
+        updateTabItems(session, "tabs", "explanation_tab")
+    })
+    
+    observeEvent(input$previous_tab_link, {
+        updateTabItems(session, "tabs", "previous_tab")
+    })
+    
+    observeEvent(input$data_tab_link, {
+        updateTabItems(session, "tabs", "data_tab")
+    })
+    
+    observeEvent(input$effects_tab_link, {
+        updateTabItems(session, "tabs", "effects_tab")
+    })
+    
+    observeEvent(input$parameters_tab_link, {
+        updateTabItems(session, "tabs", "parameters_tab")
+    })
+    
+    observeEvent(input$results_tab_link, {
+        updateTabItems(session, "tabs", "results_tab")
+    })
+    
+    observeEvent(input$validation_tab_link, {
+        updateTabItems(session, "tabs", "validation_tab")
+    })
+    
     ## data files ----
     data_files = reactiveValues(user_data = NULL,
                                 processed_data = NULL,
@@ -487,6 +574,11 @@ server <- function(input, output, session) {
     
     output$effect_sizes = renderDataTable({
         effect_sizes
+    })
+    
+    observeEvent(input$effects_tab_link, {
+        output$effect_sizes = renderDataTable({
+            effect_sizes})
     })
     
     observeEvent(input$sim_start, {
@@ -918,6 +1010,11 @@ server <- function(input, output, session) {
         
     })
     
+    observeEvent(input$effects_tab_link, {
+        output$auc_lit_plot = renderPlot({
+            auc_lit_plot
+        })
+    })
     
     output$auc_lit_plot = renderPlot({
         auc_lit_plot
@@ -973,7 +1070,8 @@ server <- function(input, output, session) {
                                 avg_n = NA,
                                 end_time_est = NA,
                                 duration_est = NA,
-                                custom_trunc = NA)
+                                custom_trunc = NA,
+                                sims_complete = 0)
     
     ### number of lineups ----
     observeEvent(input$n_total_lineups, {
@@ -1158,9 +1256,10 @@ server <- function(input, output, session) {
         for (g in 1:length(parameters$effs)) {
             data = data_original
             eff = parameters$effs[g]
+            
             for (h in 1:nrow(data)) {
                 if (data$culprit_present[h] == "present" & data$cond[h] == levels(data$cond)[2]) {
-                    data$n[h] = round(data$n[h]*eff)
+                    data$n[h] = round(data$n[h] * (eff + 1))
                 } else {
                     data$n[h] = data$n[h]
                 }
@@ -1196,6 +1295,14 @@ server <- function(input, output, session) {
                 title = "Warning",
                 "One or more effect sizes results in a correct ID proportion > 1. 
                 Change the maximum effect size(s) or the direction of the effect sizes to be tested"
+            ))
+            
+            hide("sim_start")
+        } else if (min(parameters$effs) < -1) {
+            showModal(modalDialog(
+                title = "Warning",
+                "One or more effect sizes is below -1. 
+                Please ensure that all effect sizes are greater than or equal to -1"
             ))
             
             hide("sim_start")
@@ -1289,11 +1396,11 @@ server <- function(input, output, session) {
         
         message(other_vars$end_time_est)
         
-        showModal(modalDialog(HTML(sprintf("Start time: %s <br/>Estimated completion time is %s<br/>Do not close this tab/window until all simulations are complete",
+        showModal(modalDialog(HTML(sprintf("Start time: %s <br/>Estimated completion time is %s<br/>You will be redirected to the results tab once simulations are complete.",
                             other_vars$start_time,
                             other_vars$end_time_est)),
-                    fade = FALSE,
-                    easyClose = FALSE,
+                    fade = TRUE,
+                    easyClose = TRUE,
                     size = "l"))
         
         sim_store = data.frame(auc_p = rep(NA, times = input$nsims))
@@ -1350,7 +1457,7 @@ server <- function(input, output, session) {
             for (z in 1:nrow(data)) {
                 if (data$culprit_present[z] == "present" &
                     data$cond[z] == levels(data$cond)[2]) {
-                    data$n[z] = round(data$n[z] * eff)
+                    data$n[z] = round(data$n[z] * (eff + 1))
                 } else {
                     data$n[z] = data$n[z]
                 }
@@ -1636,7 +1743,7 @@ server <- function(input, output, session) {
                                                     probs = c(.025, .975))[1]
             }
         }
-        ### generate resuts dataframes ----
+        ### generate results dataframes ----
         #### AUC difference ----
         auc_store = auc_store %>% 
             as.data.frame() %>% 
@@ -1742,6 +1849,8 @@ server <- function(input, output, session) {
         output$time_taken = renderText({
             other_vars$time_taken
         })
+        
+        other_vars$sims_complete = 1
             
         #other_vars$time_taken = 
         #    sprintf("Time taken: %s minutes",
@@ -1765,23 +1874,27 @@ server <- function(input, output, session) {
     
     observeEvent(data_files$pwr_store, {
         if (other_vars$sim_counter == other_vars$sim_total) {
+            
             output$results_render = renderMenu({
                 menuItem("Simulation Results", tabName = "results_tab", icon = icon("poll"))
             })
             
             if (length(parameters$ns) == 1) {
-                plots$pwr_plot = 
-                    data_files$pwr_store %>% 
-                    ggplot(aes(x = N,
-                               y = Power,
-                               #linetype = `Effect size`,
-                               color = `Effect size`))+
-                    geom_point(size = 3)+
-                    scale_x_continuous(breaks = parameters$ns)+
-                    apatheme+
-                    labs(x = "\nN",
-                         y = "Power to detect effect\n")+
-                    theme(text = element_text(size = 20))
+                plots$pwr_plot = "Only 1 sample size tested, no curves generated"
+                    #data_files$pwr_store %>% 
+                    #ggplot(aes(x = N,
+                    #           y = Power,
+                    #           #linetype = `Effect size`,
+                    #           color = `Effect size`))+
+                    #geom_point(size = 3)+
+                    #scale_x_continuous(breaks = parameters$ns)+
+                    #apatheme+
+                    #labs(x = "\nN",
+                    #     y = "Power to detect effect\n")+
+                    #theme(text = element_text(size = 20))
+                
+                shinyjs::hide("power_curves_box")
+                
             } else {
                 plots$pwr_plot = 
                     data_files$pwr_store %>% 
@@ -1795,9 +1908,24 @@ server <- function(input, output, session) {
                     labs(x = "\nN",
                          y = "Power to detect effect\n")+
                     theme(text = element_text(size = 20))
+                
+                shinyjs::show("power_curves_box")
             }
+            
+            updateTabItems(session, "tabs", "results_tab")
         } else {
             output$results_render = NULL
+        }
+    })
+    
+    observeEvent(other_vars$sims_complete, {
+        if (other_vars$sims_complete == 0) {
+            shinyjs::show("no_results")
+            shinyjs::hide("results_box")
+            shinyjs::hide("power_curves_box")
+        } else {
+            shinyjs::hide("no_results")
+            shinyjs::show("results_box")
         }
     })
     
