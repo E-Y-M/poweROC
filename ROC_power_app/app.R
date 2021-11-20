@@ -265,7 +265,8 @@ effects_tab = tabItem(tabName = "effects_tab",
 ### simulation parameters tab ----
 parameters_tab = tabItem(tabName = "parameters_tab",
                          box(width = 12,
-                             title = "Enter simulation parameters below. Mouse over each entry box for an explanation, and see the 'App validation & testing' tab for recommendations. Once you have entered effect sizes and sample sizes, a plot of hypothetical ROCs will be generated."),
+                             title = "Enter simulation parameters below. Mouse over each entry box for an explanation, and see the 'App validation & testing' tab for recommendations. 
+                             You can also import simulation parameters from previous simulations uploaded by users (see the 'Previous simulation results' tab). Once you have entered effect sizes and sample sizes, a plot of hypothetical ROCs will be generated."),
                              #tags$p(strong("Enter simulation parameters below. Mouse over each entry box for an explanation. Once you have entered effect sizes and sample sizes, a plot of hypothetical ROCs will be generated."))),
                          fluidRow(
                              column(
@@ -479,10 +480,40 @@ results_tab = tabItem(
 
 ### results compendium tab ----
 previous_tab = tabItem(tabName = "previous_tab",
+                       useShinyjs(),
                        box(width = 12,
                            title = "Previous simulation results",
-                           tags$p("This page shows power analysis results uploaded by other users. Results are anonymously uploaded to a Google Sheet linked to this app. If you encounter an error on this page and the sheet does not display, refreshing should fix it (But, WARNING: If you have run your simulation and refresh the page, your results will be lost)"),
-                           div(style = 'overflow-x: scroll', dataTableOutput("power_results"))))
+                           tags$p("This page shows power analysis results uploaded by other users. You can sort by average AUC difference, effect size, N, etc. Results were anonymously uploaded to a Google Sheet linked to this app. If you encounter an error on this page and the sheet does not display, refreshing should fix it (But, WARNING: If you have run your simulation and refresh the page, your results will be lost)"),
+                           tags$br(),
+                           tags$p("To view power curves and simulation parameters for a given analysis (with the option to use their simulation parameters for your own simulation), copy and paste the sim_id in the box below and press 'Show'"),
+                           textInput("previous_sim_id",
+                                     "Previous sim id"),
+                           actionButton("show_previous_sim",
+                                        "Show")
+                               #        "min_n",
+                               #        "Minimum N",
+                               #        value = 1000,
+                               #        min = 0
+                           ),
+                       box(width = 12,
+                           div(style = 'overflow-x: scroll', dataTableOutput("power_results"))),
+                       box(id = "previous_sim_box",
+                           width = 12,
+                           tags$h4("Previous simulation power curves"),
+                           plotOutput("previous_sim_plot"),
+                           tags$h4("Previous simulation AUC effect sizes"),
+                           dataTableOutput("previous_sim_effs"),
+                           tags$h4("Previous simulation parameters"),
+                           dataTableOutput("previous_sim_params"),
+                           hidden(actionButton("transfer_params",
+                                               "Transfer these parameters to my simulation",
+                                               width = '100%',
+                                               class = "btn-success")),
+                           bsTooltip("transfer_params",
+                                     "Transfer these parameter values to the relevant field in the `Simulation Parameters` tab. Note that you will still need to specify some parameters, like test tails and alpha level",
+                                     placement = "top",
+                                     trigger = "hover")
+                       ))
 
 ## UI ----
 skin_color <- "black"
@@ -493,7 +524,6 @@ ui <- dashboardPage(
                     titleWidth = "calc(100% - 44px)" # puts sidebar toggle on right
     ),
     dashboardSidebar(
-        useShinyjs(),
         # https://fontawesome.com/icons?d=gallery&m=free
         sidebarMenu(
             id = "tabs",
@@ -531,6 +561,9 @@ ui <- dashboardPage(
 
 # server ----
 server <- function(input, output, session) {
+    
+    #shinyjs::hide("previous_sim_box")
+    
     ## tab links ----
     observeEvent(input$explanation_tab_link, {
         updateTabItems(session, "tabs", "explanation_tab")
@@ -566,7 +599,10 @@ server <- function(input, output, session) {
                                 saved_data = NULL,
                                 upload_data = NULL,
                                 pwr_store = NULL,
-                                sim_params = data.frame(Parameter = rep(NA, times = 11)))
+                                sim_params = data.frame(Parameter = rep(NA, times = 11)),
+                                compendium_data = NULL,
+                                previous_sim_params = data.frame(Parameter = rep(NA, times = 8)),
+                                previous_sim_effs = NULL)
     
     output$example_data = renderDataTable({
         example_data
@@ -1059,7 +1095,8 @@ server <- function(input, output, session) {
     
     ## reactive plots ----
     plots = reactiveValues(hypothetical_plot = NULL,
-                           pwr_plot = NULL)
+                           pwr_plot = NULL,
+                           previous_sim_plot = NULL)
     
     ## other reactive variables ----
     other_vars = reactiveValues(sim_counter = 0,
@@ -1164,7 +1201,7 @@ server <- function(input, output, session) {
     })
     
     ### generate hypothetical ROCs before simulation ----
-    observeEvent(c(input$effs, input$ns, input$roc_trunc, input$custom_trunc), {
+    observeEvent(c(input$effs, input$ns, input$roc_trunc, input$custom_trunc, data_files$processed_data), {
         req(data_files$processed_data)
         req(parameters$effs)
         req(parameters$ns)
@@ -2031,6 +2068,203 @@ server <- function(input, output, session) {
             arrange(desc(sim_id))
     })
     
+    ## recovering results from compendium ----
+    ### plotting power curves ----
+    observeEvent(input$show_previous_sim, {
+        
+        data_files$compendium_data = as_tibble(read_sheet(google_sheet_id, "Power results")) %>% 
+            mutate(sim_id = as.character(sim_id),
+                   `Effect size` = as.factor(`Effect size`))
+        
+        message(class(data_files$compendium_data$sim_id))
+        
+        if (length(input$previous_sim_id) == 0) {
+            
+            showModal(modalDialog(
+                title = "Warning",
+                "No sim_id entered"))
+        } else if (length(input$previous_sim_id) > 0 & nrow(data_files$compendium_data  %>% 
+                        filter(sim_id == input$previous_sim_id)) == 0) {
+            
+            showModal(modalDialog(
+                title = "Warning",
+                "Entered sim_id not in database. 
+                Make sure it has been copied correctly"))
+        } else {
+            shinyjs::show("previous_sim_box")
+            
+            showModal(modalDialog(
+                title = "Success",
+                "Scroll down to the bottom of the page to view the selected results,
+                with the option to transfer selected parameter values to your simulation"))
+            
+            data_files$compendium_data = data_files$compendium_data %>% 
+                filter(sim_id == input$previous_sim_id)
+            
+            length_previous_ns = data_files$compendium_data %>% 
+                dplyr::select(N) %>% 
+                distinct() %>% 
+                nrow() %>% 
+                as.numeric()
+            
+            previous_ns = data_files$compendium_data %>%
+                dplyr::select(N) %>%
+                distinct() %>% 
+                unlist() %>% 
+                paste(collapse = ",") %>% 
+                as.character()
+            
+            message(previous_ns)
+            
+            previous_effs = data_files$compendium_data %>% 
+                dplyr::select(`Effect size`) %>% 
+                distinct() %>% 
+                unlist() %>% 
+                paste(collapse = ",") %>% 
+                as.character()
+            
+            message(previous_effs)
+            
+            if (length_previous_ns == 1) {
+                plots$previous_sim_plot = NA
+            } else {
+                plots$previous_sim_plot = data_files$compendium_data %>% 
+                    ggplot(aes(x = N,
+                               y = Power,
+                               linetype = `Effect size`,
+                               color = `Effect size`))+
+                    geom_line()+
+                    scale_x_continuous(breaks = data_files$compendium_data$N)+
+                    apatheme+
+                    labs(x = "\nN",
+                         y = "Power to detect effect\n")+
+                    theme(text = element_text(size = 20))   
+            }
+            
+            message("Created previous sim plot")
+            
+            ### Creating dataframes with effects and parameter values ----
+            data_files$previous_sim_effs = data_files$compendium_data %>% 
+                dplyr::select(N, `Effect size`, `Avg. AUC difference`) %>% 
+                dplyr::group_by(`Effect size`) %>% 
+                dplyr::summarize("Effect size (AUC difference)" = mean(`Avg. AUC difference`))
+            
+            message("Created previous sim effects dataframe")
+            message(data_files$previous_sim_effs)
+            
+            data_files$previous_sim_params = data_files$previous_sim_params %>% 
+                mutate(Parameter = c(
+                    "Ns",
+                    "Effects",
+                    "# of lineups/subject",
+                    "# TA lineups/subject",
+                    "# TP lineups/subject",
+                    "# of simulated samples per effect size/N",
+                    "# of bootstraps per AUC test",
+                    "Partial AUC truncation"),
+                    Value = c(previous_ns,
+                              previous_effs,
+                              data_files$compendium_data$`TA lineups/subj`[1] + data_files$compendium_data$`TP lineups/subj`[1],
+                              data_files$compendium_data$`TA lineups/subj`[1],
+                              data_files$compendium_data$`TP lineups/subj`[1],
+                              data_files$compendium_data$`Simulated samples`[1],
+                              data_files$compendium_data$`AUC bootstraps`[1],
+                              data_files$compendium_data$`ROC truncation`[1]))
+        
+            message("Created previous sim parameters dataframe")
+            
+            output$previous_sim_plot = renderPlot({
+                plots$previous_sim_plot
+            })
+            
+            message("Rendered previous sim plot")
+            
+            ### rendering the dataframes ----
+            output$previous_sim_effs = renderDataTable({
+                data_files$previous_sim_effs
+            })
+            
+            message("Rendered previous effs data")
+            
+            output$previous_sim_params = renderDataTable({
+                data_files$previous_sim_params
+            })
+            
+            message("Rendered previous params data")
+            
+            shinyjs::show("previous_sim_box")
+            show("transfer_params")
+            }
+    })
+    
+    ### Transferring parameter values to main simulation ----
+    observeEvent(input$transfer_params, {
+        updateNumericInput(session,
+                           "n_total_lineups",
+                           value = as.numeric(data_files$previous_sim_params$Value[
+                               data_files$previous_sim_params$Parameter == "# of lineups/subject"
+                           ]))
+        
+        updateNumericInput(session,
+                           "n_TA_lineups",
+                           value = as.numeric(data_files$previous_sim_params$Value[
+                               data_files$previous_sim_params$Parameter == "# TA lineups/subject"
+                           ]))
+        
+        updateNumericInput(session,
+                           "n_TP_lineups",
+                           value = as.numeric(data_files$previous_sim_params$Value[
+                               data_files$previous_sim_params$Parameter == "# TP lineups/subject"
+                           ]))
+        
+        updateNumericInput(session,
+                           "nsims",
+                           value = as.numeric(data_files$previous_sim_params$Value[
+                               data_files$previous_sim_params$Parameter == "# of simulated samples per effect size/N"
+                           ]))
+        
+        updateNumericInput(session,
+                           "nboot_iter",
+                           value = as.numeric(data_files$previous_sim_params$Value[
+                               data_files$previous_sim_params$Parameter == "# of bootstraps per AUC test"
+                           ]))
+        
+        updateTextInput(session,
+                        "effs",
+                        value = data_files$previous_sim_params$Value[
+                            data_files$previous_sim_params$Parameter == "Effects"
+                        ])
+        
+        updateTextInput(session,
+                        "ns",
+                        value = data_files$previous_sim_params$Value[
+                            data_files$previous_sim_params$Parameter == "Ns"
+                        ])
+        
+        updateRadioButtons(session,
+                           "roc_trunc",
+                           selected = data_files$previous_sim_params$Value[
+                               data_files$previous_sim_params$Parameter == "Partial AUC truncation"
+                           ])
+    })
+    
+    ### rendering the plot ----
+    #output$previous_sim_plot = renderPlot({
+    #    plots$previous_sim_plot
+    #})
+    #
+    #### rendering the dataframes ----
+    #output$previous_sim_effs = renderDataTable({
+    #    data_files$previous_sim_effs
+    #})
+    #
+    #output$previous_sim_params = renderDataTable({
+    #    data_files$previous_sim_params
+    #})
+    
+    #output$test = renderText({
+    #    "Testing this"
+    #})
     
     ## Google sheets authorization
     #observeEvent(input$tab, {

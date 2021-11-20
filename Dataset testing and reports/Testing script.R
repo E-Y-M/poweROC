@@ -1288,4 +1288,11 @@ morgan_fake = morgan_sleep %>%
 morgan_sim = bind_rows(morgan_sleep,
                        morgan_fake)
 
-#*** 
+#** Transforming df column to vector for previous parameter recovery ----
+test_data = data.frame(N = c(100, 200, 300))
+
+test_vector = test_data %>% 
+    dplyr::select(N) %>%
+    unlist() %>% 
+    paste(collapse = ",") %>% 
+    as.character()
