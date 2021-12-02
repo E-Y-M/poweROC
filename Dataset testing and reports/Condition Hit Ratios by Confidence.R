@@ -36,7 +36,7 @@ max_confs = open_data %>%
 combined_data = data.frame()
 
 nboots = 500
-
+i = 1
 for (i in 1:length(exps_list)) {
     curr_exp = exps_list[i]
     
@@ -283,4 +283,59 @@ ggsave("./Dataset testing and reports/HitRatios.png",
        width = 20,
        units = "in")
 
+#** Getting the proportion of hits and FAs at each confidence level ----
+designated = open_data %>% 
+    filter(culprit_present == "absent" & id_type == "suspect") %>% 
+    select(exp) %>% 
+    distinct()
 
+exps_list = open_data %>% 
+    select(exp) %>% 
+    distinct()
+
+conf_data = open_data %>% 
+    mutate(designated = ifelse(exp %in% designated$exp, "Yes", "No")) %>% 
+    mutate(id_type = ifelse(designated == "No" & culprit_present == "absent" & id_type == "filler", "suspect", id_type)) %>% 
+    group_by(exp, cond, culprit_present, id_type, conf_level) %>% 
+    summarize(n_resps = length(id_type)) %>% 
+    ungroup() %>% 
+    group_by(exp, cond, culprit_present, id_type) %>% 
+    mutate(n_total = sum(n_resps)) %>% 
+    ungroup() %>% 
+    distinct(cond, culprit_present, id_type, conf_level, n_resps, n_total, .keep_all = TRUE) %>% 
+    group_by(exp) %>% 
+    mutate(max_conf = max(conf_level)) %>% 
+    ungroup() %>% 
+    mutate(conf_new = ifelse(max_conf > 20, (conf_level/10)+1, conf_level),
+           prop = n_resps/n_total) %>% 
+    filter(id_type == "suspect" & max_conf > 3) %>% 
+    rowwise() %>% 
+    mutate(exp_label = paste(exp, cond, sep = " "),
+           culprit_present = ifelse(culprit_present == "present", 
+                                    "Culprit-present",
+                                    "Culprit-absent"))
+
+conf_plot = conf_data %>% 
+    ggplot(aes(x = conf_new, y = prop, color = exp, group = exp_label))+
+    facet_grid(cols = vars(culprit_present))+
+    geom_point()+
+    geom_smooth(aes(x = conf_new, y = prop, color = NULL, group = NULL), 
+                color = "black",
+                size = 1.5)+
+    geom_line()+
+    apatheme+
+    scale_color_discrete(guide = FALSE)+
+    labs(x = "Confidence",
+         y = "Proportion of suspect IDs")+
+    theme(text = element_text(size = 30),
+          axis.title.y = element_text(size = 30,
+                                      margin = margin(t = 0, r = 30, b = 0, l = 0)),
+          axis.title.x = element_text(margin = margin(t = 30, r = 0, b = 0, l = 0)))+
+    scale_x_continuous(breaks = seq(1, 11, by = 1))
+    
+conf_plot
+ggsave("./Dataset testing and reports/SuspectIDsByConfidence.png",
+       dpi = 300,
+       height = 12,
+       width = 15,
+       units = "in")
