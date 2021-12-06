@@ -3,8 +3,22 @@ library(tidyverse)
 library(pROC)
 library(lubridate)
 library(here)
+library(DirichletReg)
 
 source("ROC_power_app/scripts/func.R") # helper functions
+
+#APA theme for plots
+apatheme <-
+    theme_bw()+                                      #apply ggplot2() black and white theme
+    theme(panel.grid.major = element_blank(),        #eliminate major grid lines
+          panel.grid.minor = element_blank(),        #eliminate minor grid lines
+          panel.background = element_blank(),        #eliminate the square panel background
+          panel.border = element_blank(),            #eliminate the square panel border
+          text=element_text(family="Arial"),         #use arial font
+          #legend.title=element_blank(),              #eliminate lengend title
+          legend.position= "right",                  #position legend to the right of the plot
+          axis.line.x = element_line(color="black"), #include a black border along the x-axis
+          axis.line.y = element_line(color="black")) #include a black border along the y-axis
 
 #** Looking at ratios of hits/FAs across confidence levels for the open datasets ----
 setwd(here::here())
@@ -335,6 +349,41 @@ conf_plot = conf_data %>%
     
 conf_plot
 ggsave("./Dataset testing and reports/SuspectIDsByConfidence.png",
+       dpi = 300,
+       height = 12,
+       width = 15,
+       units = "in")
+
+#** Dirichlet distribution ----
+nsims = 10
+draw = 10
+alpha = c(1,2,3)
+dimension = 3
+x = rdirichlet(nsims, c(1, 1, 2, 2, 2, 3, 3, 6, 6, 7, 8))
+
+dirichlet_data = x %>% 
+    t() %>% 
+    as.data.frame() %>% 
+    mutate(conf_level = c(1:11)) %>% 
+    pivot_longer(!conf_level,
+                 names_to = "sim", 
+                 values_to = "prop")
+
+dirichlet_data %>% 
+    ggplot(aes(x = conf_level, y = prop, color = sim, group = sim))+
+    geom_point()+
+    geom_line()+
+    apatheme+
+    labs(x = "Confidence",
+         y = "Proportion of IDs")+
+    theme(text = element_text(size = 30),
+          axis.title.y = element_text(size = 30,
+                                      margin = margin(t = 0, r = 30, b = 0, l = 0)),
+          axis.title.x = element_text(margin = margin(t = 30, r = 0, b = 0, l = 0)))+
+    scale_x_continuous(breaks = seq(1, 11, by = 1))+
+    scale_color_discrete(name = "none",
+                         guide = "none")
+ggsave("./Dataset testing and reports/Dirichlet_Example.png",
        dpi = 300,
        height = 12,
        width = 15,
