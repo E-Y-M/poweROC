@@ -18,4 +18,4 @@ This app is in the beta stage so feedback/comments are greatly appreciated (thes
 
 
 
-*ROC curves constructed using data from Colloff, M. F., Wilson, B. M., Seale-Carlisle, T. M., & Wixted, J. T. (2021). Optimizing the selection of fillers in police lineups. Proceedings of the National Academy of Sciences, 118(8), e2017292118. https://doi.org/10.1073/pnas.2017292118
+*ROC curves depicted in the example figure constructed using data from Colloff, M. F., Wilson, B. M., Seale-Carlisle, T. M., & Wixted, J. T. (2021). Optimizing the selection of fillers in police lineups. Proceedings of the National Academy of Sciences, 118(8), e2017292118. https://doi.org/10.1073/pnas.2017292118
