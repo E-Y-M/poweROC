@@ -1298,4 +1298,11 @@ test_vector = test_data %>%
     paste(collapse = ",") %>% 
     as.character()
 
+# Making sure custom effect sizes per confidence level get ordered correctly ----
+conf_test_data = data.frame(
+    conf_level = c(1, 5, 3, 4, 2)) %>% 
+    arrange(conf_level)
 
+conf_levs = as.list(conf_test_data$conf_level) %>% 
+    paste(collapse = ",")
+conf_levs

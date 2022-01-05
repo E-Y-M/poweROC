@@ -251,7 +251,19 @@ effects_tab = tabItem(tabName = "effects_tab",
                           title = "pAUC effect sizes in the literature",
                           tags$p("The effect size metric used by this app is an adjusted ratio of two pAUCs. For example, an effect size of 0 means that two ROC curves have the same pAUC, an effect size of 0.5 means that the 2nd ROC has 50% more pAUC than the 1st, an effect size of -0.5 means that the 2nd ROC has 50% less pAUC than the 1st, etc. Effect size adjustment in this app occurs by applying the effect size multiplier (e.g., +/- 50%) to the number of hits across all confidence levels, which has the effect of multiplying the pAUC by the same amount. This effect size is more amenable to simulation than D (as D relies on knowing the standard error of the to-be-simulated data), and perhaps more intuitive."),
                           tags$br(),
-                          tags$p("How to decide what effect size(s) to simulate? The plot below shows a distribution of pAUC effect sizes (absolute value) from published eyewitness experiments that used ROC analysis (see the ‘App validation & testing’ tab for references). If you do not have a similar experiment in mind when choosing an effect size, I have delineated some crude conventions for ‘small’, ‘medium’, and ‘large’ effects based on the 33rd and 66th percentiles. However, because my literature review is by no means comprehensive, I instead recommend looking through the table below the figure for an experiment with a similar manipulation to the one you are powering for, and using effect sizes similar to that in the ‘Simulation Parameters’ tab."))
+                          tags$b("An important caveat/caution regarding effect sizes: The above relies on the assumption that when two ROC curves differ, the difference will be constant across confidence levels/operating points. This assumption may not be valid (indeed, an examination of hit ratios across confidence levels in the open datasets revealed substantial variability in the differences). There may also be theoretical reasons to predict varying effects at different confidence levels (e.g., one condition increases hits, but only at higher confidence levels). As such, this app also allows the specification of separate effect sizes at each confidence level in the base data. In this case, the ratio effect size does not translate directly into a ratio of AUCs, and should be interpreted as applying to the # of hits at each confidence level. This trade-off in interpretability allows additional flexibility in specifying ROC curves."),
+                          tags$br(),
+                          tags$br(),
+                          tags$p("How to decide what effect size(s) to simulate? The plot below shows a distribution of pAUC effect sizes (absolute value) from published eyewitness experiments that used ROC analysis (see the ‘App validation & testing’ tab for references). If you do not have a similar experiment in mind when choosing an effect size, I have delineated some crude conventions for ‘small’, ‘medium’, and ‘large’ effects based on the 33rd and 66th percentiles. However, because my literature review is by no means comprehensive, I instead recommend looking through the table below the figure for an experiment with a similar manipulation to the one you are powering for, and using effect sizes similar to that in the ‘Simulation Parameters’ tab."),
+                          tags$br(),
+                          tags$p("My recommendations for simulation re:effect sizes are as follows, in order from most to least ideal:"),
+                          tags$ol(
+                              tags$li("Using data from a pilot experiment with two conditions and a decent sample size"),
+                              tags$li("Using data from a similar prior experiment with two conditions and a decent sample size"),
+                              tags$li("Using single-condition data from a pilot or prior experiment and applying differing effect sizes to each confidence level (requires having a good idea of what the differing effect sizes will be)",
+                              tags$li("Using single-condition data from a pilot or prior experiment and applying the same effect size to each confidence level (if you don't have a good idea of how effect sizes might differ across confidence levels)")
+                          )
+                      ))
                       ,
                       box(width = 12,
                           collapsible = TRUE,
@@ -266,11 +278,23 @@ effects_tab = tabItem(tabName = "effects_tab",
 parameters_tab = tabItem(tabName = "parameters_tab",
                          box(width = 12,
                              title = "Enter simulation parameters below. Mouse over each entry box for an explanation, and see the 'App validation & testing' tab for recommendations. 
-                             You can also import simulation parameters from previous simulations uploaded by users (see the 'Previous simulation results' tab). Once you have entered effect sizes and sample sizes, a plot of hypothetical ROCs will be generated."),
+                             You can also import simulation parameters from previous simulations uploaded by users (see the 'Previous simulation results' tab). Once you have entered all parameters, press the `Check parameters and generate hypothetical ROC curves` button to check whether the entered parameters are valid and view 
+                             hypothetical ROC curves (Note that you will need to do this any time you change a parameter value). If the check succeeds, a `Simulate` button will appear."),
                              #tags$p(strong("Enter simulation parameters below. Mouse over each entry box for an explanation. Once you have entered effect sizes and sample sizes, a plot of hypothetical ROCs will be generated."))),
                          fluidRow(
                              column(
-                                 3,
+                                 4,
+                                 radioButtons(
+                                     "eff_type",
+                                     "Use the same effect size for all confidence levels or differing effect sizes?",
+                                     choices = c("Same effect" = "constant",
+                                                 "Different effects" = "different"),
+                                     selected = "constant"
+                                 ),
+                                 bsTooltip("eff_type",
+                                           "Specify how effect sizes are to be applied to the 2nd (or only) condition in the data. Refer to the `pAUC effect sizes` tab for more information",
+                                           placement = "bottom",
+                                           trigger = "hover"),
                                  textInput(
                                      "effs",
                                      "Effect sizes to test",
@@ -279,6 +303,18 @@ parameters_tab = tabItem(tabName = "parameters_tab",
                                  ),
                                  bsTooltip("effs",
                                            "Specify effect sizes to test in a comma-separated list. Effect sizes are applied to the 2nd condition in your dataset (unless only one condition is present). An effect size of 0 does not change the pAUC of the 2nd condition, an effect size of 0.5 increases the pAUC of the 2nd condition by 50%, and an effect size of -0.5 decreases the pAUC of the 2nd condition by 50%. See the `pAUC effect sizes` tab for more details.",
+                                           placement = "bottom",
+                                           trigger = "hover"),
+                                 textInput(
+                                     "effs_different",
+                                     "Effect sizes to test, specified for each confidence level (lowest to highest)",
+                                     value = "",
+                                     placeholder = "e.g., .1, .2, .1, .4, .5, etc."
+                                 ),
+                                 textOutput("n_confs_message"),
+                                 tags$br(),
+                                 bsTooltip("effs_different",
+                                           "Specify effect sizes to test in a comma-separated list, with one effect size per confidence level in your data. Effect sizes are applied to the 2nd condition in your dataset (unless only one condition is present). An effect size of 0 does not change the # of hits at that confidence level in the 2nd condition, an effect size of 0.5 increases the # of hits in the 2nd condition by 50%, and an effect size of -0.5 decreases the # of hits in the 2nd condition by 50%. See the `pAUC effect sizes` tab for more details.",
                                            placement = "bottom",
                                            trigger = "hover"),
                                  textInput(
@@ -314,7 +350,7 @@ parameters_tab = tabItem(tabName = "parameters_tab",
                              #    )
                              #),
                              column(
-                                 3,
+                                 4,
                                  numericInput("n_total_lineups",
                                               "# of lineups/subject",
                                               value = 2,
@@ -343,10 +379,7 @@ parameters_tab = tabItem(tabName = "parameters_tab",
                                  bsTooltip("n_TP_lineups",
                                            "Specify the # of target-present lineups each subject will complete. If you have an odd # of total lineups (e.g., each subject completes either 2 TA and 1 TP lineup or 1 TA and 2 TP lineups), then divide the total # of lineups by 2 and the program will adjust for this in sampling.",
                                            placement = "bottom",
-                                           trigger = "hover")
-                             ),
-                             column(
-                                 3,
+                                           trigger = "hover"),
                                  numericInput(
                                      "nsims",
                                      "# of simulated samples per effect size/N",
@@ -372,9 +405,37 @@ parameters_tab = tabItem(tabName = "parameters_tab",
                                      placement = "bottom",
                                      trigger = "hover"
                                  )
-                             ), 
+                             ),
+                             #column(
+                             #    3,
+                             #    numericInput(
+                             #        "nsims",
+                             #        "# of simulated samples per effect size/N",
+                             #        value = 100,
+                             #        min = 1
+                             #    ),
+                             #    bsTooltip(
+                             #        "nsims",
+                             #        "Specify the # of samples (and pAUC tests) to simulate for each combination of effect size/N. 100 provides relatively stable estimates, but if time is not a concern I recommend upping this to 200 (see the `App validation & testing` tab for more details)",
+                             #        placement = "bottom",
+                             #        trigger = "hover"
+                             #    ),
+                             #    numericInput(
+                             #        "nboot_iter",
+                             #        "# of bootstraps per AUC test",
+                             #        value = 1000,
+                             #        min = 1
+                             #    ),
+                             #    bsTooltip(
+                             #        "nboot_iter",
+                             #        "Specify the # of bootstrap iterations per pROC AUC test. 1000 provides relatively stable estimates, but if time is not a concern or if the AUC difference in question is small, recommend upping to the pROC default of 2000",
+                             #        #"Specify the # of bootstrap iterations per pROC AUC test. 1000 provides relatively stable estimates, but if time is not a concern recommend upping to pROC's default of 2000",
+                             #        placement = "bottom",
+                             #        trigger = "hover"
+                             #    )
+                             #), 
                              column(
-                                 3,
+                                 4,
                                  #radioButtons(
                                  #    "roc_paired",
                                  #    "Paired ROCs (i.e., within-subjects comparison)?",
@@ -417,6 +478,19 @@ parameters_tab = tabItem(tabName = "parameters_tab",
                              )
                          ),
                          fluidRow(
+                             actionButton(
+                                 "generate_hypothetical",
+                                 "Check parameters and generate hypothetical ROC curves",
+                                 width = '100%',
+                                 class = "btn-info"
+                             ),
+                             bsTooltip(
+                                 "generate_hypothetical",
+                                 "Check whether the entered parameters are valid and plot hypothetical ROC curves based on the parameters. If you change any parameter values, you will need to click this again before running the simulations.",
+                                 #"Specify the # of bootstrap iterations per pROC AUC test. 1000 provides relatively stable estimates, but if time is not a concern recommend upping to pROC's default of 2000",
+                                 placement = "bottom",
+                                 trigger = "hover"
+                             ),
                              hidden(actionButton(
                                  "sim_start",
                                  "Simulate",
@@ -564,6 +638,8 @@ server <- function(input, output, session) {
     
     #shinyjs::hide("previous_sim_box")
     
+    hide("effs_different")
+    
     ## tab links ----
     observeEvent(input$explanation_tab_link, {
         updateTabItems(session, "tabs", "explanation_tab")
@@ -596,10 +672,11 @@ server <- function(input, output, session) {
     ## data files ----
     data_files = reactiveValues(user_data = NULL,
                                 processed_data = NULL,
+                                conf_effs_data = NULL,
                                 saved_data = NULL,
                                 upload_data = NULL,
                                 pwr_store = NULL,
-                                sim_params = data.frame(Parameter = rep(NA, times = 11)),
+                                sim_params = data.frame(Parameter = rep(NA, times = 13)),
                                 compendium_data = NULL,
                                 previous_sim_params = data.frame(Parameter = rep(NA, times = 8)),
                                 previous_sim_effs = NULL)
@@ -618,10 +695,22 @@ server <- function(input, output, session) {
     })
     
     observeEvent(input$sim_start, {
+        
+        if (input$eff_type == "constant") {
+            other_vars$effs_report = input$effs
+            other_vars$effs_different_report = "N/A"
+        } else {
+            other_vars$effs_different_report = as.list(data_files$conf_effs_data$conf_effs) %>% 
+                paste(collapse = ",")
+            other_vars$effs_report = "N/A"
+        }
+        
         data_files$sim_params = data_files$sim_params %>% 
             mutate(Parameter = c(
                 "Ns",
                 "Effects",
+                "Confidence levels",
+                "Effects by confidence level",
                 "# of lineups/subject",
                 "# TA lineups/subject",
                 "# TP lineups/subject",
@@ -632,7 +721,9 @@ server <- function(input, output, session) {
                 "Two-tailed or one-tailed?",
                 "Type I error rate"),
                 Value = c(input$ns,
-                            input$effs,
+                            other_vars$effs_report,
+                            parameters$n_confs,
+                            other_vars$effs_different_report,
                             input$n_total_lineups,
                             input$n_TA_lineups,
                             input$n_TP_lineups,
@@ -1058,6 +1149,8 @@ server <- function(input, output, session) {
     
     ## simulation parameters ----
     parameters = reactiveValues(effs = vector(),
+                                effs_different = vector(),
+                                n_confs = NA,
                                 ns = vector(),
                                 n_TA_lineups = NA,
                                 n_TP_lineups = NA,
@@ -1072,6 +1165,8 @@ server <- function(input, output, session) {
         #    unique() %>% 
         #    slice(1) %>% 
         #    as.character()
+        
+        parameters$n_confs = length(unique(data_files$processed_data$conf_level))
         
         parameters$cond1 = as.character(levels(data_files$processed_data$cond)[1])
         
@@ -1108,7 +1203,10 @@ server <- function(input, output, session) {
                                 end_time_est = NA,
                                 duration_est = NA,
                                 custom_trunc = NA,
-                                sims_complete = 0)
+                                sims_complete = 0,
+                                #n_confs_report = NA,
+                                effs_report = NA,
+                                effs_different_report = NA)
     
     ### number of lineups ----
     observeEvent(input$n_total_lineups, {
@@ -1173,6 +1271,44 @@ server <- function(input, output, session) {
             unique(extract(input$effs))
     })
     
+    observeEvent(c(input$effs_different), {
+        req(input$effs_different)
+        
+        parameters$effs_different = 
+            extract(input$effs_different)
+        
+        message(parameters$effs_different)
+    })
+    
+    #### show/hide effect size input based on effect size type selected ----
+    observeEvent(input$eff_type, {
+        
+        req(data_files$processed_data)
+        
+        if (input$eff_type == "constant") {
+            hide("effs_different")
+            show("effs")
+            
+            parameters$effs_different = rep(0, times = parameters$n_confs)
+            
+        } else {
+            show("effs_different")
+            hide("effs")
+            
+            parameters$effs = 0
+        }
+    })
+    
+    output$n_confs_message = renderText({
+        
+        if (input$eff_type == "constant") {
+            ""
+        } else {
+            sprintf("Your data has %i confidence levels",
+                    parameters$n_confs) 
+        }
+    })
+    
     #output$effs = renderText({
     #    parameters$effs
     #})
@@ -1201,10 +1337,35 @@ server <- function(input, output, session) {
     })
     
     ### generate hypothetical ROCs before simulation ----
-    observeEvent(c(input$effs, input$ns, input$roc_trunc, input$custom_trunc, data_files$processed_data), {
+    observeEvent(input$generate_hypothetical, {
         req(data_files$processed_data)
         req(parameters$effs)
         req(parameters$ns)
+        req(parameters$effs_different)
+        
+        if (length(parameters$effs_different) != parameters$n_confs) {
+            showModal(modalDialog(
+                title = "Warning",
+                "# of entered effect sizes does not match # of confidence levels in the data. 
+                Please enter the correct # of effect sizes."
+            ))
+            
+            data_files$conf_effs_data = data.frame(
+                conf_level = unique(data_files$processed_data$conf_level)) %>% 
+                mutate(conf_level_rev = max(conf_level)+1 - conf_level) %>% 
+                arrange(conf_level) %>% 
+                mutate(conf_effs = 1)
+            
+            hide("sim_start")
+        } else {
+            data_files$conf_effs_data = data.frame(
+                conf_level = unique(data_files$processed_data$conf_level)) %>% 
+                mutate(conf_level_rev = max(conf_level)+1 - conf_level) %>% 
+                arrange(conf_level) %>% 
+                mutate(conf_effs = parameters$effs_different)
+            
+            show("sim_start")
+        }
         
         #### getting proportion data from each condition ----
         #data_props = open_data %>% 
@@ -1291,12 +1452,14 @@ server <- function(input, output, session) {
         message("Created empty ROC store object for hypothetical plot")
         
         for (g in 1:length(parameters$effs)) {
-            data = data_original
+            data = data_original %>% 
+                left_join(data_files$conf_effs_data)
+            
             eff = parameters$effs[g]
             
             for (h in 1:nrow(data)) {
                 if (data$culprit_present[h] == "present" & data$cond[h] == levels(data$cond)[2]) {
-                    data$n[h] = round(data$n[h] * (eff + 1))
+                    data$n[h] = round(data$n[h] * (eff + 1) * (data$conf_effs[h] + 1))
                 } else {
                     data$n[h] = data$n[h]
                 }
@@ -1423,6 +1586,9 @@ server <- function(input, output, session) {
     
     ## main simulation loop ----
     observeEvent(input$sim_start, {
+        
+        message(data_files$conf_effs_data)
+        
         other_vars$start_time = Sys.time()
         start_time = Sys.time()
         
@@ -1471,7 +1637,6 @@ server <- function(input, output, session) {
         sim_counter = 0
         other_vars$sim_counter = 0
         
-        
         ### loop over effect sizes ----
         for (g in 1:length(parameters$effs)) {
             eff = parameters$effs[g]
@@ -1488,13 +1653,14 @@ server <- function(input, output, session) {
                 mutate(conf_level_rev = (max(as.numeric(conf_level)) + 1) - as.numeric(conf_level)) %>%
                 filter(id_type == "suspect")
             
-            data = data_original
+            data = data_original %>% 
+                left_join(data_files$conf_effs_data)
             
             ### Create the root data file to sample from across the Ns and sims ----
             for (z in 1:nrow(data)) {
                 if (data$culprit_present[z] == "present" &
                     data$cond[z] == levels(data$cond)[2]) {
-                    data$n[z] = round(data$n[z] * (eff + 1))
+                    data$n[z] = round(data$n[z] * (eff + 1) * (data$conf_effs[z] + 1))
                 } else {
                     data$n[z] = data$n[z]
                 }
@@ -2004,6 +2170,10 @@ server <- function(input, output, session) {
         data_files$upload_data = data_files$pwr_store %>% 
             as_tibble() %>% 
             mutate(sim_id = Sys.time(),
+                   `Effect size type` = ifelse(input$eff_type == "constant",
+                                               "Constant across confidence levels",
+                                               "Different across confience levels"),
+                   `Differing effect sizes` = other_vars$effs_different_report,
                    `TA lineups/subj` = input$n_TA_lineups,
                    `TP lineups/subj` = input$n_TP_lineups,
                    `Simulated samples` = input$nsims,
@@ -2014,28 +2184,50 @@ server <- function(input, output, session) {
                    `ROC truncation` = input$roc_trunc,
                    `Type I error rate` = input$alpha_level) %>% 
             rename(`Avg. AUC in Cond A` = !!paste("Avg. AUC in", parameters$cond1, sep = " "),
-                   `Cond A AUC 95% QI Upper` = !!paste("AUC", parameters$cond1, "95% QI upper", sep = " "),
-                   `Cond A AUC 95% QI Lower` = !!paste("AUC", parameters$cond1, "95% QI lower", sep = " "),
+                   `Cond A AUC 95% CI Upper` = !!paste("AUC", parameters$cond1, "95% CI upper", sep = " "),
+                   `Cond A AUC 95% CI Lower` = !!paste("AUC", parameters$cond1, "95% CI lower", sep = " "),
                    `Avg. AUC in Cond B` = !!paste("Avg. AUC in", parameters$cond2, sep = " "),
-                   `Cond B AUC 95% QI Upper` = !!paste("AUC", parameters$cond2, "95% QI upper", sep = " "),
-                   `Cond B AUC 95% QI Lower` = !!paste("AUC", parameters$cond2, "95% QI lower", sep = " "),
-                   `AUC difference 95% QI Lower` = "AUC difference 95% QI lower",
-                   `AUC difference 95% QI Upper` = "AUC difference 95% QI upper") %>% 
+                   `Cond B AUC 95% CI Upper` = !!paste("AUC", parameters$cond2, "95% CI upper", sep = " "),
+                   `Cond B AUC 95% CI Lower` = !!paste("AUC", parameters$cond2, "95% CI lower", sep = " "),
+                   `AUC difference 95% CI Lower` = "AUC difference 95% CI lower",
+                   `AUC difference 95% CI Upper` = "AUC difference 95% CI upper",
+                   `Power (AUC)` = "Power",
+                   `Avg. DPP in Cond A` = !!paste("Avg. DPP in", parameters$cond1, sep = " "),
+                   `Cond A DPP 95% CI Upper` = !!paste("DPP", parameters$cond1, "95% CI upper", sep = " "),
+                   `Cond A DPP 95% CI Lower` = !!paste("DPP", parameters$cond1, "95% CI lower", sep = " "),
+                   `Avg. DPP in Cond B` = !!paste("Avg. DPP in", parameters$cond2, sep = " "),
+                   `Cond B DPP 95% CI Upper` = !!paste("DPP", parameters$cond2, "95% CI upper", sep = " "),
+                   `Cond B DPP 95% CI Lower` = !!paste("DPP", parameters$cond2, "95% CI lower", sep = " "),
+                   `DPP difference 95% CI Lower` = "DPP difference 95% CI lower",
+                   `DPP difference 95% CI Upper` = "DPP difference 95% CI upper",
+                   `Power (DPP)` = "Power") %>% 
             mutate(`Test tails` = ifelse(grepl("2_tail", `Test tails`), "Two-tailed",
                                          ifelse(grepl(cond_1_greater, `Test tails`), "A > B", "B > A"))) %>% 
             select(sim_id, 
                    N,
                    `Effect size`,
+                   `Effect size type`,
+                   `Differing effect sizes`,
                    `Avg. AUC in Cond A`,
-                   `Cond A AUC 95% QI Lower`,
-                   `Cond A AUC 95% QI Upper`,
+                   `Cond A AUC 95% CI Lower`,
+                   `Cond A AUC 95% CI Upper`,
                    `Avg. AUC in Cond B`,
-                   `Cond B AUC 95% QI Lower`,
-                   `Cond B AUC 95% QI Upper`,
+                   `Cond B AUC 95% CI Lower`,
+                   `Cond B AUC 95% CI Upper`,
                    `Avg. AUC difference`,
-                   `AUC difference 95% QI Lower`,
-                   `AUC difference 95% QI Upper`,
-                   Power,
+                   `AUC difference 95% CI Lower`,
+                   `AUC difference 95% CI Upper`,
+                   `Power (AUC)`,
+                   `Avg. DPP in Cond A`,
+                   `Cond A DPP 95% CI Lower`,
+                   `Cond A DPP 95% CI Upper`,
+                   `Avg. DPP in Cond B`,
+                   `Cond B DPP 95% CI Lower`,
+                   `Cond B DPP 95% CI Upper`,
+                   `Avg. DPP difference`,
+                   `DPP difference 95% CI Lower`,
+                   `DPP difference 95% CI Upper`,
+                   `Power (DPP)`,
                    `Type I error rate`, 
                    `Test tails`,
                    `ROC truncation`,
