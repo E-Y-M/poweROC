@@ -388,19 +388,19 @@ parameters_tab = tabItem(tabName = "parameters_tab",
                                  ),
                                  bsTooltip(
                                      "nsims",
-                                     "Specify the # of samples (and pAUC tests) to simulate for each combination of effect size/N. 100 provides relatively stable estimates, but if time is not a concern I recommend upping this to 200 (see the `App validation & testing` tab for more details)",
+                                     "Specify the # of samples (and pAUC/DPP tests) to simulate for each combination of effect size/N. 100 provides relatively stable estimates, but if time is not a concern I recommend upping this to 200 (see the `App validation & testing` tab for more details)",
                                      placement = "bottom",
                                      trigger = "hover"
                                  ),
                                  numericInput(
                                      "nboot_iter",
-                                     "# of bootstraps per AUC test",
+                                     "# of bootstraps per AUC/DPP test",
                                      value = 1000,
                                      min = 1
                                  ),
                                  bsTooltip(
                                      "nboot_iter",
-                                     "Specify the # of bootstrap iterations per pROC AUC test. 1000 provides relatively stable estimates, but if time is not a concern or if the AUC difference in question is small, recommend upping to the pROC default of 2000",
+                                     "Specify the # of bootstrap iterations per pROC AUC test and/or DPP bootstrapping. For pAUC analyses, 1000 provides relatively stable estimates, but if time is not a concern or if the AUC difference in question is small, recommend upping to the pROC default of 2000. For DPP, the minimum # of iterations is equal to the total sample size X the # of lineups (this value is automatically adujusted if DPP is selected).",
                                      #"Specify the # of bootstrap iterations per pROC AUC test. 1000 provides relatively stable estimates, but if time is not a concern recommend upping to pROC's default of 2000",
                                      placement = "bottom",
                                      trigger = "hover"
@@ -443,6 +443,18 @@ parameters_tab = tabItem(tabName = "parameters_tab",
                                  #    selected = "No"
                                  #),
                                  radioButtons(
+                                     "measure",
+                                     "Measure(s) to compute power for",
+                                     choices = c("pAUC",
+                                                 "DPP",
+                                                 "Both"),
+                                     selected = "pAUC"
+                                 ),
+                                 bsTooltip("measure",
+                                           "Specify whether to compute power for pAUC comparison, DPP (deviation from perfect performance) comparison, or both. Note that including DPP substantially increases the simulation time.",
+                                           placement = "bottom",
+                                           trigger = "hover"),
+                                 radioButtons(
                                      "roc_trunc",
                                      "Partial AUC truncation",
                                      choices = c("Highest false ID rate",
@@ -456,12 +468,12 @@ parameters_tab = tabItem(tabName = "parameters_tab",
                                                      min = 0,
                                                      max = 1)),
                                  bsTooltip("roc_trunc",
-                                           "Specify whether the AUC comparison will occur at the highest or lowest false ID rate between your conditions, or at a custom specificity level",
+                                           "Specify whether the pAUC comparison will occur at the highest or lowest false ID rate between your conditions, or at a custom specificity level",
                                            placement = "bottom",
                                            trigger = "hover"),
                                  uiOutput("test_tails"),
                                  bsTooltip("test_tails",
-                                           "If the AUC comparison will be one-sided, select the test direction",
+                                           "If the pAUC/DPP comparison will be one-sided, select the test direction. Note that because pAUC and DPP are directionally opposite `>` here means higher pAUC but lower DPP (i.e., the superior condition).",
                                            placement = "bottom",
                                            trigger = "hover"),
                                  numericInput(
@@ -638,7 +650,63 @@ server <- function(input, output, session) {
     
     #shinyjs::hide("previous_sim_box")
     
+    ## initial setup ----
     hide("effs_different")
+    
+    ## function for computing average DPP ----
+    # Authors: Andrew M. Smith, James M. Lampinen, Gary L. Wells, Laura Smalarz, & Simona Mackovichova 
+    # Title: Deviation from Perfect Performance Measures the Diagnostic Utility of Eyewitness Lineups but Partial Area Under the ROC Curve Does Not
+    # Status: Accepted
+    # Journal: Journal of Applied Research in Memory and Cognition
+    # Average DPP
+    
+    DPP_difference = function(data, indices) {
+        d=data[indices,]
+        
+        ### Get confidence levels (MUST ENSURE THAT MINIMUM CONFIDENCE IN THE DATASET IS 1)
+        conf_breaks = c(c(0, 0.5, 1), seq(from = 2, to = max(d$conf), by = 1))
+        
+        ###binning cond1 true positive proportions by cumulating confidence levels
+        cond1_data<-subset(d,cond==levels(d$cond)[1])
+        culprit1<-subset(cond1_data,tpORta==1)
+        histinfo1<-hist(culprit1$conf,breaks=conf_breaks,plot=FALSE)->h1
+        h1$percents<-cumsum(h1$counts)/sum(h1$counts)
+        tps1 <- 1-h1$percents
+        tps1=tps1[1:length(tps1)-1] ##drop last element of vector (it equals 0) to avoid bias in performance estimates
+        
+        ###binning cond1_data false positive proportions by cumulating confidence levels
+        innocent1<-subset(cond1_data,tpORta==0)
+        histinfo1i<-hist(innocent1$conf,breaks=conf_breaks,plot=FALSE)->h1i
+        h1i$percents<-cumsum(h1i$counts)/sum(h1i$counts)
+        fps1 <- 1-h1i$percents
+        fps1=fps1[1:length(fps1)-1] ##drop last element of vector (it equals 0) to avoid bias in performance estimates
+        
+        ###compute DPP for cond1_data lineup - this is our measure of performance
+        DPP1<-mean((1-tps1)+fps1)
+        
+        ###binning cond2_data true positive proportions by cumulating confidence levels
+        cond2_data<-subset(d,cond==levels(d$cond)[2])
+        culprit2<-subset(cond2_data,tpORta==1)
+        histinfo2<-hist(culprit2$conf,breaks=conf_breaks,plot=FALSE)->h2
+        h2$percents<-cumsum(h2$counts)/sum(h2$counts)
+        tps2 <- 1-h2$percents
+        tps2=tps2[1:length(tps2)-1] ##drop last element of vector (it equals 0) to avoid bias in performance estimates
+        
+        ###binning cond2_data false positive proportions by cumulating confidence levels
+        innocent2<-subset(cond2_data,tpORta==0)
+        histinfo2i<-hist(innocent2$conf,breaks=conf_breaks,plot=FALSE)->h2i
+        h2i$percents<-cumsum(h2i$counts)/sum(h2i$counts)
+        fps2 <- 1-h2i$percents
+        fps2=fps2[1:length(fps2)-1] ##drop last element of vector (it equals 0) to avoid bias in performance estimates
+        
+        ###compute DPP for dataset 2 - this is our measure of performance
+        DPP2<-mean((1-tps2)+fps2)
+        
+        ###compue DPP difference...positive values mean procedure 1 is worse (it has a higher dpp or less utility)
+        diff<-DPP1-DPP2
+        stats_DPP = c(DPP1,DPP2,diff)
+        return(stats_DPP)
+    }
     
     ## tab links ----
     observeEvent(input$explanation_tab_link, {
@@ -715,7 +783,7 @@ server <- function(input, output, session) {
                 "# TA lineups/subject",
                 "# TP lineups/subject",
                 "# of simulated samples per effect size/N",
-                "# of bootstraps per AUC test",
+                "# of bootstraps per AUC/DPP test",
                 "Partial AUC truncation",
                 "Custom specificity",
                 "Two-tailed or one-tailed?",
@@ -1168,6 +1236,8 @@ server <- function(input, output, session) {
         
         parameters$n_confs = length(unique(data_files$processed_data$conf_level))
         
+        parameters$effs_different = rep(0, times = parameters$n_confs)
+        
         parameters$cond1 = as.character(levels(data_files$processed_data$cond)[1])
         
         #parameters$cond2 = data_files$processed_data %>% 
@@ -1238,6 +1308,27 @@ server <- function(input, output, session) {
 
     })
     
+    ### measure to include ----
+    observeEvent(input$measure, {
+        if (input$measure == "DPP") {
+            hide("roc_trunc")
+        } else {
+            show("roc_trunc")
+        }
+    })
+    
+    ### update bootstrap iterations depending on whether DPP is to be computed ----
+    observeEvent(c(input$measure, input$n_lineups, input$ns), {
+        max_n = max(unique(extract(input$ns)))
+        max_boot_iter = max_n * input$n_total_lineups
+        
+        if (input$measure != "pAUC") {
+            updateNumericInput(session,
+                               "nboot_iter",
+                               value = max_boot_iter)
+        }
+    })
+    
     ### one- or two-tailed test ----
     output$test_tails = renderUI({
         opt = c("Two-tailed" = "2_tail",
@@ -1276,8 +1367,6 @@ server <- function(input, output, session) {
         
         parameters$effs_different = 
             extract(input$effs_different)
-        
-        message(parameters$effs_different)
     })
     
     #### show/hide effect size input based on effect size type selected ----
@@ -1291,11 +1380,19 @@ server <- function(input, output, session) {
             
             parameters$effs_different = rep(0, times = parameters$n_confs)
             
+            updateTextInput(session,
+                            "effs_different",
+                            value = parameters$effs_different)
+            
         } else {
             show("effs_different")
             hide("effs")
             
             parameters$effs = 0
+            
+            updateTextInput(session,
+                            "effs",
+                            value = parameters$effs)
         }
     })
     
@@ -1341,7 +1438,6 @@ server <- function(input, output, session) {
         req(data_files$processed_data)
         req(parameters$effs)
         req(parameters$ns)
-        req(parameters$effs_different)
         
         if (length(parameters$effs_different) != parameters$n_confs) {
             showModal(modalDialog(
@@ -1607,8 +1703,14 @@ server <- function(input, output, session) {
                     size = "l"))
         
         sim_store = data.frame(auc_p = rep(NA, times = input$nsims))
+        
         pwr_store = matrix(nrow = length(parameters$ns),
                            ncol = length(parameters$effs))
+        
+        pwr_store_dpp = matrix(nrow = length(parameters$ns),
+                               ncol = length(parameters$effs))
+        
+        ### matrices to store AUC values ----
         auc_store = matrix(nrow = length(parameters$ns),
                            ncol = length(parameters$effs))
         
@@ -1632,6 +1734,31 @@ server <- function(input, output, session) {
                                   ncol = length(parameters$effs))
         auc_2_store_ci_lwr = matrix(nrow = length(parameters$ns),
                                   ncol = length(parameters$effs))
+        
+        ### matrices to store DPP values ----
+        dpp_store = matrix(nrow = length(parameters$ns),
+                           ncol = length(parameters$effs))
+        
+        dpp_store_ci_upr = matrix(nrow = length(parameters$ns),
+                                  ncol = length(parameters$effs))
+        dpp_store_ci_lwr = matrix(nrow = length(parameters$ns),
+                                  ncol = length(parameters$effs))
+        
+        dpp_1_store = matrix(nrow = length(parameters$ns),
+                             ncol = length(parameters$effs))
+        
+        dpp_1_store_ci_upr = matrix(nrow = length(parameters$ns),
+                                    ncol = length(parameters$effs))
+        dpp_1_store_ci_lwr = matrix(nrow = length(parameters$ns),
+                                    ncol = length(parameters$effs))
+        
+        dpp_2_store = matrix(nrow = length(parameters$ns),
+                             ncol = length(parameters$effs))
+        
+        dpp_2_store_ci_upr = matrix(nrow = length(parameters$ns),
+                                    ncol = length(parameters$effs))
+        dpp_2_store_ci_lwr = matrix(nrow = length(parameters$ns),
+                                    ncol = length(parameters$effs))
         
         show("sim_progress")
         sim_counter = 0
@@ -1782,6 +1909,9 @@ server <- function(input, output, session) {
                     TP_data_cond2 = TP_data_cond2[!is.na(TP_data_cond2)]
                     
                     ##### Generate the ROCs ----
+                    
+                    if (input$measure != "DPP") {
+                    
                     ###### Condition 1 ----
                     
                     
@@ -1838,70 +1968,142 @@ server <- function(input, output, session) {
                         #    cond1_partial, cond2_partial
                     )
                     
-                    ### ROC test ----
+                    ##### ROC test ----
                     
-                    if (input$roc_trunc == "Lowest false ID rate") {
-                        #### If truncating at lowest false ID rate ----
-                        roc_test = roc.test(
-                            roc_cond1,
-                            roc_cond2,
-                            reuse.auc = FALSE,
-                            partial.auc = c(1, 1 - min(
-                                cond1_partial, cond2_partial
-                            )),
-                            partial.auc.focus = "sp",
-                            method = "bootstrap",
-                            paired = FALSE,
-                            boot.n = input$nboot_iter,
-                            progress = "none"
-                        )
-                    } else if (input$roc_trunc == "Highest false ID rate") {
-                        #### If truncating at highest false ID rate ----
-                        roc_test = roc.test(
-                            roc_cond1,
-                            roc_cond2,
-                            reuse.auc = FALSE,
-                            partial.auc = c(1, 1 - max(
-                                cond1_partial, cond2_partial
-                            )),
-                            partial.auc.focus = "sp",
-                            method = "bootstrap",
-                            paired = FALSE,
-                            boot.n = input$nboot_iter,
-                            progress = "none"
-                        ) 
-                    } else {
-                        #### If truncating at a custom false ID rate ----
-                        roc_test = roc.test(
-                            roc_cond1,
-                            roc_cond2,
-                            reuse.auc = FALSE,
-                            partial.auc = c(1, other_vars$custom_trunc),
-                            partial.auc.focus = "sp",
-                            method = "bootstrap",
-                            paired = FALSE,
-                            boot.n = input$nboot_iter,
-                            progress = "none"
-                        ) 
+                        if (input$roc_trunc == "Lowest false ID rate") {
+                            ##### If truncating at lowest false ID rate ----
+                            roc_test = roc.test(
+                                roc_cond1,
+                                roc_cond2,
+                                reuse.auc = FALSE,
+                                partial.auc = c(1, 1 - min(
+                                    cond1_partial, cond2_partial
+                                )),
+                                partial.auc.focus = "sp",
+                                method = "bootstrap",
+                                paired = FALSE,
+                                boot.n = input$nboot_iter,
+                                progress = "none"
+                            )
+                        } else if (input$roc_trunc == "Highest false ID rate") {
+                            ##### If truncating at highest false ID rate ----
+                            roc_test = roc.test(
+                                roc_cond1,
+                                roc_cond2,
+                                reuse.auc = FALSE,
+                                partial.auc = c(1, 1 - max(
+                                    cond1_partial, cond2_partial
+                                )),
+                                partial.auc.focus = "sp",
+                                method = "bootstrap",
+                                paired = FALSE,
+                                boot.n = input$nboot_iter,
+                                progress = "none"
+                            ) 
+                        } else {
+                            ##### If truncating at a custom false ID rate ----
+                            roc_test = roc.test(
+                                roc_cond1,
+                                roc_cond2,
+                                reuse.auc = FALSE,
+                                partial.auc = c(1, other_vars$custom_trunc),
+                                partial.auc.focus = "sp",
+                                method = "bootstrap",
+                                paired = FALSE,
+                                boot.n = input$nboot_iter,
+                                progress = "none"
+                            ) 
+                        }
+                        
+                        sim_store$auc_diff[i] = roc_test$estimate[1] - roc_test$estimate[2]
+                        sim_store$auc_1[i] = roc_test$estimate[1]
+                        sim_store$auc_2[i] = roc_test$estimate[2]
+                        sim_store$auc_p[i] = roc_test$p.value
+                        
+                        if (input$test_tails == "2_tail") {
+                            sim_store$sig[i] = ifelse(sim_store$auc_p[i] < input$alpha_level, 1, 0)
+                        } else if (input$test_tails == sprintf("%s > %s",
+                                                               parameters$cond1,
+                                                               parameters$cond2)) {
+                            sim_store$sig[i] = ifelse(sim_store$auc_p[i] < input$alpha_level * 2 &
+                                                          sim_store$auc_diff[i] > 0, 1, 0)
+                        } else {
+                            sim_store$sig[i] = ifelse(sim_store$auc_p[i] < input$alpha_level * 2 &
+                                                          sim_store$auc_diff[i] < 0, 1, 0)
+                        }
                     }
                     
-                    sim_store$auc_diff[i] = roc_test$estimate[1] - roc_test$estimate[2]
-                    sim_store$auc_1[i] = roc_test$estimate[1]
-                    sim_store$auc_2[i] = roc_test$estimate[2]
-                    sim_store$auc_p[i] = roc_test$p.value
                     
-                    if (input$test_tails == "2_tail") {
-                        sim_store$sig[i] = ifelse(sim_store$auc_p[i] < input$alpha_level, 1, 0)
-                    } else if (input$test_tails == sprintf("%s > %s",
-                                                           parameters$cond1,
-                                                           parameters$cond2)) {
-                        sim_store$sig[i] = ifelse(sim_store$auc_p[i] < input$alpha_level * 2 &
-                                                      sim_store$auc_diff[i] > 0, 1, 0)
-                    } else {
-                        sim_store$sig[i] = ifelse(sim_store$auc_p[i] < input$alpha_level * 2 &
-                                                      sim_store$auc_diff[i] < 0, 1, 0)
+                    #### Generate data for DPP function ----
+                    if (input$measure != "pAUC") {
+                        TA_dataframe_cond1 = data.frame(conf = TA_data_cond1,
+                                                        tpORta = 0,
+                                                        cond = levels(data$cond)[1])
+                        
+                        TP_dataframe_cond1 = data.frame(conf = TP_data_cond1,
+                                                        tpORta = 1,
+                                                        cond = levels(data$cond)[1])
+                        
+                        TA_dataframe_cond2 = data.frame(conf = TA_data_cond2,
+                                                        tpORta = 0,
+                                                        cond = levels(data$cond)[2])
+                        
+                        TP_dataframe_cond2 = data.frame(conf = TP_data_cond2,
+                                                        tpORta = 1,
+                                                        cond = levels(data$cond)[2])
+                        
+                        data_DPP = rbind(TA_dataframe_cond1,
+                                         TP_dataframe_cond1,
+                                         TA_dataframe_cond2,
+                                         TP_dataframe_cond2) %>% 
+                            mutate(cond = as.factor(cond))
+                        
+                        ##### Bootstrap the DPP values and the difference ----
+                        DPP_results = boot(data = data_DPP, 
+                                           statistic = DPP_difference,
+                                           R = input$nboot_iter)
+                        
+                        sim_store$dpp_diff[i] = DPP_results$t0[3]
+                        sim_store$dpp_1[i] = DPP_results$t0[1]
+                        sim_store$dpp_2[i] = DPP_results$t0[2]
+                        
+                        ###### Adjusting the difference confidence interval based on alpha level/test ----
+                        if (input$test_tails == "2_tail") {
+                            #generate 95% CIs Bias Corrected and Accelerated
+                            confidence_interval_diff = boot.ci(DPP_results, index=3, conf=(1-input$alpha_level), type='bca')
+                            ci_diff=confidence_interval_diff$bca[,c(4,5)]
+                            
+                            
+                            sim_store$sig_dpp[i] = ifelse(ci_diff[1] < 0 & ci_diff[2] < 0, 1, 
+                                                          ifelse(ci_diff[1] > 0 & ci_diff[2] > 0, 1, 
+                                                                 ifelse(is.na(ci_diff[1]) | is.na(ci_diff[2]), NA, 0)))
+                            
+                        } else if (input$test_tails == sprintf("%s > %s",
+                                                               parameters$cond1,
+                                                               parameters$cond2)) {
+                            
+                            confidence_interval_diff = boot.ci(results, index=3, conf=(1-(input$alpha_level*2)), type='bca')
+                            ci_diff=confidence_interval_diff$bca[,c(4,5)]
+                            
+                            sim_store$sig_dpp[i] = ifelse(ci_diff[2] < 0, 1, 
+                                                          ifelse(is.na(ci_diff[1]) | is.na(ci_diff[2]), NA, 0))
+                        } else {
+                            confidence_interval_diff = boot.ci(results, index=3, conf=(1-(input$alpha_level*2)), type='bca')
+                            ci_diff=confidence_interval_diff$bca[,c(4,5)]
+                            
+                            sim_store$sig_dpp[i] = ifelse(ci_diff[1] > 0, 1, 
+                                                          ifelse(is.na(ci_diff[1]) | is.na(ci_diff[2]), NA, 0))
+                        }
                     }
                     
+                    #### Insert NAs for power estimates if only one measure is chosen ----
+                    if (input$measure == "DPP") {
+                        sim_store$sig[i] = NA
+                    }
+                    
+                    if (input$measure == "pAUC") {
+                        sim_store$sig_dpp[i] = NA
+                    }
                     
                     sim_counter = sim_counter + 1
                     
@@ -1916,36 +2118,78 @@ server <- function(input, output, session) {
                     )
                 }
                 # Store power estimates
-                pwr_store[h, g] = mean(sim_store$sig)
+                pwr_store[h, g] = mean(sim_store$sig, na.rm = TRUE)
+                
+                pwr_store_dpp[h, g] = mean(sim_store$sig_dpp, na.rm = TRUE)
                 
                 # Store AUC difference estimates
-                auc_store[h, g] = mean(sim_store$auc_diff)
+                auc_store[h, g] = mean(sim_store$auc_diff, na.rm = TRUE)
                 
                 ## 95% Quantile on the AUC difference estimate
                 auc_store_ci_upr[h, g] = quantile(sim_store$auc_diff,
-                                                  probs = c(.025, .975))[2]
+                                                  probs = c(.025, .975),
+                                                  na.rm = TRUE)[2]
                 auc_store_ci_lwr[h, g] = quantile(sim_store$auc_diff,
-                                                  probs = c(.025, .975))[1]
+                                                  probs = c(.025, .975),
+                                                  na.rm = TRUE)[1]
                 
                 # Store Condition 1 AUC
-                auc_1_store[h, g] = mean(sim_store$auc_1)
+                auc_1_store[h, g] = mean(sim_store$auc_1, na.rm = TRUE)
                 
                 ## 95% Quantile on the AUC estimate
                 auc_1_store_ci_upr[h, g] = quantile(sim_store$auc_1,
-                                                  probs = c(.025, .975))[2]
+                                                  probs = c(.025, .975),
+                                                  na.rm = TRUE)[2]
                 auc_1_store_ci_lwr[h, g] = quantile(sim_store$auc_1,
-                                                  probs = c(.025, .975))[1]
+                                                  probs = c(.025, .975),
+                                                  na.rm = TRUE)[1]
                 
                 # Store Condition 2 AUC
-                auc_2_store[h, g] = mean(sim_store$auc_2)
+                auc_2_store[h, g] = mean(sim_store$auc_2, na.rm = TRUE)
                 
                 ## 95% Quantile on the AUC estimate
                 auc_2_store_ci_upr[h, g] = quantile(sim_store$auc_2,
-                                                    probs = c(.025, .975))[2]
+                                                    probs = c(.025, .975),
+                                                    na.rm = TRUE)[2]
                 auc_2_store_ci_lwr[h, g] = quantile(sim_store$auc_2,
-                                                    probs = c(.025, .975))[1]
+                                                    probs = c(.025, .975),
+                                                    na.rm = TRUE)[1]
+                
+                # Store DPP difference estimates
+                dpp_store[h, g] = mean(sim_store$dpp_diff, na.rm = TRUE)
+                
+                ## 95% Quantile on the DPP difference estimate
+                dpp_store_ci_upr[h, g] = quantile(sim_store$dpp_diff,
+                                                  probs = c(.025, .975),
+                                                  na.rm = TRUE)[2]
+                dpp_store_ci_lwr[h, g] = quantile(sim_store$dpp_diff,
+                                                  probs = c(.025, .975),
+                                                  na.rm = TRUE)[1]
+                
+                # Store Condition 1 DPP
+                dpp_1_store[h, g] = mean(sim_store$dpp_1, na.rm = TRUE)
+                
+                ## 95% Quantile on the DPP estimate
+                dpp_1_store_ci_upr[h, g] = quantile(sim_store$dpp_1,
+                                                    probs = c(.025, .975),
+                                                    na.rm = TRUE)[2]
+                dpp_1_store_ci_lwr[h, g] = quantile(sim_store$dpp_1,
+                                                    probs = c(.025, .975),
+                                                    na.rm = TRUE)[1]
+                
+                # Store Condition 2 DPP
+                dpp_2_store[h, g] = mean(sim_store$dpp_2, na.rm = TRUE)
+                
+                ## 95% Quantile on the DPP estimate
+                dpp_2_store_ci_upr[h, g] = quantile(sim_store$dpp_2,
+                                                    probs = c(.025, .975),
+                                                    na.rm = TRUE)[2]
+                dpp_2_store_ci_lwr[h, g] = quantile(sim_store$dpp_2,
+                                                    probs = c(.025, .975),
+                                                    na.rm = TRUE)[1]
             }
         }
+        
         ### generate results dataframes ----
         #### AUC difference ----
         auc_store = auc_store %>% 
@@ -2022,14 +2266,98 @@ server <- function(input, output, session) {
                    value = !!paste("AUC", parameters$cond2, "95% CI lower", sep = " "),
                    -N)
         
+        #### DPP difference ----
+        dpp_store = dpp_store %>% 
+            as.data.frame() %>% 
+            `colnames<-`(parameters$effs) %>% 
+            mutate(N = parameters$ns) %>% 
+            gather(key = "Effect size",
+                   value = "Avg. DPP difference",
+                   -N)
+        
+        dpp_store_ci_upr = dpp_store_ci_upr %>% 
+            as.data.frame() %>% 
+            `colnames<-`(parameters$effs) %>% 
+            mutate(N = parameters$ns) %>% 
+            gather(key = "Effect size",
+                   value = "DPP difference 95% CI upper",
+                   -N)
+        
+        dpp_store_ci_lwr = dpp_store_ci_lwr %>% 
+            as.data.frame() %>% 
+            `colnames<-`(parameters$effs) %>% 
+            mutate(N = parameters$ns) %>% 
+            gather(key = "Effect size",
+                   value = "DPP difference 95% CI lower",
+                   -N)
+        
+        #### DPP in Cond 1 ----
+        dpp_1_store = dpp_1_store %>% 
+            as.data.frame() %>% 
+            `colnames<-`(parameters$effs) %>% 
+            mutate(N = parameters$ns) %>% 
+            gather(key = "Effect size",
+                   value = !!paste("Avg. DPP in", parameters$cond1, sep = " "),
+                   -N)
+        
+        dpp_1_store_ci_upr = dpp_1_store_ci_upr %>% 
+            as.data.frame() %>% 
+            `colnames<-`(parameters$effs) %>% 
+            mutate(N = parameters$ns) %>% 
+            gather(key = "Effect size",
+                   value = !!paste("DPP", parameters$cond1, "95% CI upper", sep = " "),
+                   -N)
+        
+        dpp_1_store_ci_lwr = dpp_1_store_ci_lwr %>% 
+            as.data.frame() %>% 
+            `colnames<-`(parameters$effs) %>% 
+            mutate(N = parameters$ns) %>% 
+            gather(key = "Effect size",
+                   value = !!paste("DPP", parameters$cond1, "95% CI lower", sep = " "),
+                   -N)
+        
+        #### DPP in Cond 2 ----
+        dpp_2_store = dpp_2_store %>% 
+            as.data.frame() %>% 
+            `colnames<-`(parameters$effs) %>% 
+            mutate(N = parameters$ns) %>% 
+            gather(key = "Effect size",
+                   value = !!paste("Avg. DPP in", parameters$cond2, sep = " "),
+                   -N)
+        
+        dpp_2_store_ci_upr = dpp_2_store_ci_upr %>% 
+            as.data.frame() %>% 
+            `colnames<-`(parameters$effs) %>% 
+            mutate(N = parameters$ns) %>% 
+            gather(key = "Effect size",
+                   value = !!paste("DPP", parameters$cond2, "95% CI upper", sep = " "),
+                   -N)
+        
+        dpp_2_store_ci_lwr = dpp_2_store_ci_lwr %>% 
+            as.data.frame() %>% 
+            `colnames<-`(parameters$effs) %>% 
+            mutate(N = parameters$ns) %>% 
+            gather(key = "Effect size",
+                   value = !!paste("DPP", parameters$cond2, "95% CI lower", sep = " "),
+                   -N)
+        
         #### Combine the dataframes ----
+        pwr_store_dpp = as.data.frame(pwr_store_dpp) %>%
+            `colnames<-`(parameters$effs) %>% 
+            mutate(N = parameters$ns) %>% 
+            gather(key = "Effect size",
+                   value = "Power (DPP)",
+                   -N) %>% 
+            select(N, `Effect size`, `Power (DPP)`)
+        
         data_files$pwr_store = as.data.frame(pwr_store) %>% 
             `colnames<-`(parameters$effs) %>% 
             mutate(N = parameters$ns) %>% 
             gather(key = "Effect size",
-                   value = "Power",
+                   value = "Power (pAUC)",
                    -N) %>% 
-            select(N, `Effect size`, `Power`) %>% 
+            select(N, `Effect size`, `Power (pAUC)`) %>% 
+            left_join(pwr_store_dpp) %>% 
             left_join(auc_1_store) %>% 
             left_join(auc_1_store_ci_lwr) %>% 
             left_join(auc_1_store_ci_upr) %>% 
@@ -2038,7 +2366,16 @@ server <- function(input, output, session) {
             left_join(auc_2_store_ci_upr) %>% 
             left_join(auc_store) %>% 
             left_join(auc_store_ci_lwr) %>% 
-            left_join(auc_store_ci_upr)
+            left_join(auc_store_ci_upr) %>% 
+            left_join(dpp_1_store) %>% 
+            left_join(dpp_1_store_ci_lwr) %>% 
+            left_join(dpp_1_store_ci_upr) %>% 
+            left_join(dpp_2_store) %>% 
+            left_join(dpp_2_store_ci_lwr) %>% 
+            left_join(dpp_2_store_ci_upr) %>% 
+            left_join(dpp_store) %>% 
+            left_join(dpp_store_ci_lwr) %>% 
+            left_join(dpp_store_ci_upr)
             
         end_time = Sys.time()
         other_vars$end_time = Sys.time()
@@ -2101,9 +2438,13 @@ server <- function(input, output, session) {
             } else {
                 plots$pwr_plot = 
                     data_files$pwr_store %>% 
+                    dplyr::select(N, `Power (pAUC)`, `Power (DPP)`, `Effect size`) %>% 
+                    gather(key = "Measure",
+                           value = "Power",
+                           -c(N, `Effect size`)) %>% 
                     ggplot(aes(x = N,
                                y = Power,
-                               linetype = `Effect size`,
+                               linetype = Measure,
                                color = `Effect size`))+
                     geom_line()+
                     scale_x_continuous(breaks = parameters$ns)+
@@ -2177,7 +2518,7 @@ server <- function(input, output, session) {
                    `TA lineups/subj` = input$n_TA_lineups,
                    `TP lineups/subj` = input$n_TP_lineups,
                    `Simulated samples` = input$nsims,
-                   `AUC bootstraps` = input$nboot_iter,
+                   `AUC/DPP bootstraps` = input$nboot_iter,
                    `Time taken (m)` = parse_number(other_vars$time_taken),
                    `Estimated time taken (m)` = other_vars$duration_est,
                    `Test tails` = input$test_tails,
@@ -2191,7 +2532,7 @@ server <- function(input, output, session) {
                    `Cond B AUC 95% CI Lower` = !!paste("AUC", parameters$cond2, "95% CI lower", sep = " "),
                    `AUC difference 95% CI Lower` = "AUC difference 95% CI lower",
                    `AUC difference 95% CI Upper` = "AUC difference 95% CI upper",
-                   `Power (AUC)` = "Power",
+                   `Power (pAUC)` = "Power (pAUC)",
                    `Avg. DPP in Cond A` = !!paste("Avg. DPP in", parameters$cond1, sep = " "),
                    `Cond A DPP 95% CI Upper` = !!paste("DPP", parameters$cond1, "95% CI upper", sep = " "),
                    `Cond A DPP 95% CI Lower` = !!paste("DPP", parameters$cond1, "95% CI lower", sep = " "),
@@ -2200,7 +2541,7 @@ server <- function(input, output, session) {
                    `Cond B DPP 95% CI Lower` = !!paste("DPP", parameters$cond2, "95% CI lower", sep = " "),
                    `DPP difference 95% CI Lower` = "DPP difference 95% CI lower",
                    `DPP difference 95% CI Upper` = "DPP difference 95% CI upper",
-                   `Power (DPP)` = "Power") %>% 
+                   `Power (DPP)` = "Power (DPP)") %>% 
             mutate(`Test tails` = ifelse(grepl("2_tail", `Test tails`), "Two-tailed",
                                          ifelse(grepl(cond_1_greater, `Test tails`), "A > B", "B > A"))) %>% 
             select(sim_id, 
@@ -2217,7 +2558,7 @@ server <- function(input, output, session) {
                    `Avg. AUC difference`,
                    `AUC difference 95% CI Lower`,
                    `AUC difference 95% CI Upper`,
-                   `Power (AUC)`,
+                   `Power (pAUC)`,
                    `Avg. DPP in Cond A`,
                    `Cond A DPP 95% CI Lower`,
                    `Cond A DPP 95% CI Upper`,
@@ -2352,7 +2693,7 @@ server <- function(input, output, session) {
                     "# TA lineups/subject",
                     "# TP lineups/subject",
                     "# of simulated samples per effect size/N",
-                    "# of bootstraps per AUC test",
+                    "# of bootstraps per AUC/DPP test",
                     "Partial AUC truncation"),
                     Value = c(previous_ns,
                               previous_effs,
@@ -2418,7 +2759,7 @@ server <- function(input, output, session) {
         updateNumericInput(session,
                            "nboot_iter",
                            value = as.numeric(data_files$previous_sim_params$Value[
-                               data_files$previous_sim_params$Parameter == "# of bootstraps per AUC test"
+                               data_files$previous_sim_params$Parameter == "# of bootstraps per AUC/DPP test"
                            ]))
         
         updateTextInput(session,
