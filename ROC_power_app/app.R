@@ -9,6 +9,7 @@ suppressPackageStartupMessages({
     library(pROC)
     library(shinyBS)
     library(googlesheets4)
+    library(boot)
 })
 
 ## functions ----
@@ -203,7 +204,7 @@ data_tab <- tabItem(
                choices = unique(open_data$exp),
                selected = NULL
         )),
-        tags$p(strong("Once you have uploaded or chosen a dataset, ROC curves will be generated below")),
+        tags$p(strong("Once you have uploaded or chosen a dataset and specified whether your data has a designated innocent suspect, click `Check data` to check your data and generate ROC curves")),
         hidden(radioButtons(
             "designated_suspect",
             "Does your data contain a designated innocent suspect?",
@@ -219,16 +220,28 @@ data_tab <- tabItem(
         hidden(numericInput(
             "lineup_size_1",
             "",
-            value = 6,
+            value = NA,
             min = 1
         )),
         htmlOutput("cond2_lineup_text"),
         hidden(numericInput(
             "lineup_size_2",
             "",
-            value = 6,
+            value = NA,
             min = 1
-        ))
+        )),
+        actionButton(
+            "check_data",
+            "Check data and generate hypothetical ROC curves",
+            width = '100%',
+            class = "btn-info"
+        ),
+        bsTooltip(
+            "check_data",
+            "Check whether the uploaded data is the correct format (and if so, generate hypothetical ROC curves).",
+            placement = "bottom",
+            trigger = "hover"
+        )
     ),
     box(width = 12,
         collapsible = TRUE,
@@ -862,7 +875,7 @@ server <- function(input, output, session) {
             
             hide("lineup_size_1")
             hide("lineup_size_2")
-        } else {
+        } else if (input$designated_suspect == "No") {
             ### lineup size ----
             output$cond1_lineup_text = renderPrint({
                 HTML(paste0("<b>", "Lineup size for ", parameters$cond1, "</b>"))
@@ -986,10 +999,56 @@ server <- function(input, output, session) {
     })
     
     ## deal with datasets without designated innocent suspects ----
-    observeEvent(c(input$designated_suspect, input$lineup_size_1, input$lineup_size_2), {
+    #observeEvent(c(input$designated_suspect), {
+    #    if (input$designated_suspect == "Yes") {
+    #        data_files$processed_data = data_files$saved_data
+    #        
+    #        updateNumericInput(session,
+    #                           "lineup_size_1",
+    #                           value = 6)
+    #        
+    #        updateNumericInput(session,
+    #                           "lineup_size_2",
+    #                           value = 6)
+    #    }
+    #    })
+    
+    #observeEvent(c(input$lineup_size_1, input$lineup_size_2), {
+    #    req(input$lineup_size_1)
+    #    req(input$lineup_size_2)
+    #    
+    #    if (input$designated_suspect == "No") {
+    #        data_files$processed_data = data_files$saved_data %>% 
+    #            mutate(lineup_size = ifelse(cond == parameters$cond1, input$lineup_size_1, input$lineup_size_2),
+    #                   suspect_prob = 1/lineup_size)
+    #        
+    #        for (i in 1:nrow(data_files$processed_data)) {
+    #            if (data_files$processed_data$culprit_present[i] == "absent" & data_files$processed_data$id_type[i] == "filler") {
+    #                data_files$processed_data$id_type[i] = sample(c("filler", "suspect"), 1, prob = c(1-data_files$processed_data$suspect_prob[i], data_files$processed_data$suspect_prob[i]))
+    #            } else {
+    #                data_files$processed_data$id_type[i] = data_files$processed_data$id_type[i]
+    #            }
+    #        }
+    #}
+    #    })
+    
+    ### generate hypothetical ROCs upon data load ----
+    observeEvent(input$check_data, {
+        req(data_files$processed_data)
+        req(input$designated_suspect)
+        
         if (input$designated_suspect == "Yes") {
             data_files$processed_data = data_files$saved_data
-        } else {
+            
+            updateNumericInput(session,
+                               "lineup_size_1",
+                               value = 6)
+            
+            updateNumericInput(session,
+                               "lineup_size_2",
+                               value = 6)
+            
+        } else if (input$designated_suspect == "No") {
             data_files$processed_data = data_files$saved_data %>% 
                 mutate(lineup_size = ifelse(cond == parameters$cond1, input$lineup_size_1, input$lineup_size_2),
                        suspect_prob = 1/lineup_size)
@@ -1002,11 +1061,6 @@ server <- function(input, output, session) {
                 }
             }
         }
-    })
-    
-    ### generate hypothetical ROCs upon data load ----
-    observeEvent(data_files$processed_data, {
-        req(data_files$processed_data)
         
         #### getting proportion data from each condition ----
         #data_props = open_data %>% 
@@ -1131,7 +1185,7 @@ server <- function(input, output, session) {
         
         ROC_data_wide = spread(ROC_data,
                                key = "presence",
-                               value = "prop")  %>% 
+                               value = "prop")  %>%
             rbind(data.frame(cond = rep(c(levels(data_files$processed_data$cond)[1], 
                                           levels(data_files$processed_data$cond)[2]), 
                                         each = 1),
@@ -2575,7 +2629,7 @@ server <- function(input, output, session) {
                    `TA lineups/subj`,
                    `TP lineups/subj`,
                    `Simulated samples`,
-                   `AUC bootstraps`,
+                   `AUC/DPP bootstraps`,
                    `Time taken (m)`,
                    `Estimated time taken (m)`)
         

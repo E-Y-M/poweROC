@@ -19,17 +19,17 @@ colloff_data = read.csv("./Dataset testing and reports/DPP/ColloffWadeStrangeDat
            face4,
            face5,
            faceSelected) %>% 
-    mutate(perpetrator = ifelse(targetLabel == "absent", "notpresent",
-                                ifelse(grepl("perpetrator", face0), "face0div",
-                                             ifelse(grepl("perpetrator", face1), "face1div",
-                                                          ifelse(grepl("perpetrator", face2), "face2div",
-                                                                       ifelse(grepl("perpetrator", face3), "face3div",
-                                                                                    ifelse(grepl("perpetrator", face4), "face4div",
-                                                                                           "face5div"))))))) %>% 
-    mutate(response_type = case_when(faceSelected == perpetrator & targetLabel == "present" ~ "correctID",
-                                     faceSelected == perpetrator & targetLabel == "absent" ~ "correctRej",
+    mutate(perpetrator = ifelse(grepl("perpetrator", face0) | grepl("replication", face0), "face0div",
+                                             ifelse(grepl("perpetrator", face1) | grepl("replication", face1), "face1div",
+                                                          ifelse(grepl("perpetrator", face2) | grepl("replication", face2), "face2div",
+                                                                       ifelse(grepl("perpetrator", face3) | grepl("replication", face3), "face3div",
+                                                                                    ifelse(grepl("perpetrator", face4) | grepl("replication", face4), "face4div",
+                                                                                           "face5div")))))) %>% 
+    mutate(response_type = case_when(faceSelected == perpetrator & targetLabel == "present" ~ "suspect",
+                                     faceSelected == perpetrator & targetLabel == "absent" & treatmentLabel == "nothing" ~ "suspect",
+                                     faceSelected == perpetrator & targetLabel == "absent" & treatmentLabel != "nothing" ~ "filler",
                                      faceSelected != perpetrator & faceSelected != "notpresent" ~ "filler",
-                                     faceSelected == "notpresent" & targetLabel == "present" ~ "miss"),
+                                     faceSelected == "notpresent" ~ "reject"),
            cond = treatmentLabel)
 
 colloff_props = colloff_data %>% 
@@ -72,16 +72,17 @@ colloff_data_write = colloff_data %>%
            conf_level,
            culprit_present,
            cond) %>% 
-    mutate(id_type = ifelse(id_type == "miss" | id_type == "correctRej", "reject",
-                            ifelse(id_type == "correctID", "suspect", id_type)))
+    ungroup() %>% 
+    rowwise() %>% 
+    mutate(id_type = ifelse(cond == "concealment" & id_type == "filler" & culprit_present == "absent",
+                            sample(c("suspect", "filler"), 1, prob = c(1/6, 5/6)), id_type))
            
 
 colloff_data_test = colloff_data_write %>% 
-    mutate(id_type = ifelse(id_type == "filler" & culprit_present == "absent", "suspect", id_type)) %>% 
-    mutate(conf_level = (conf_level/10)+1)
+    filter(id_type != id_type2)
 
-write.csv(colloff_data_test,
-          "./Dataset testing and reports/DPP/ColloffWadeStrange_2016_processed_test.csv",
+write.csv(colloff_data_write,
+          "./Dataset testing and reports/DPP/ColloffWadeStrange_2016_processed.csv",
           row.names = FALSE,
           na = "")
 
@@ -103,9 +104,11 @@ colnames(biased)<-c("tpORta","conf") #labelling variables in biased lineup data 
 
 #Combining all data into a single dataset
 DPP_data <-rbind(fair,biased)
-DPP_data$fORb <-rep(1:0,c(2264,2127))#adding variable coding as Fair (1) or Biased (0)
+DPP_data$cond <-rep(1:0,c(2264,2127))
+DPP_data$cond = as.factor(DPP_data$cond)
+#adding variable coding as Fair (1) or Biased (0)
 ##--------Everything above is just creating a dataset based on two conditions from Colloff et al.
-d = data
+
 ####---------below is Deviation from Perfect Performance Function which uses
 ### a nonparametric bootstrapping routine to build inferential confidence intervals
 ### around the DPP difference for two lineup procedures
@@ -164,7 +167,7 @@ DPP_difference = function(data, indices) {
 }
 
 #print bootstrap results
-results = boot(data = data_DPP, statistic = DPP_difference,R=1000)
+results = boot(data = DPP_data, statistic = DPP_difference,R=10000)
 
 results$t0[2]
 
