@@ -244,35 +244,37 @@ for (i in 1:length(exps_list)) {
 }
 
 #*** Plotting hits and FA ratios by confidence and experiment ----
-combined_data = combined_data %>% 
-    mutate(TP_sd_stats = sprintf("SD = %.2f [95%% QI: %.2f, %.2f]",
+combined_data2 = combined_data %>% 
+    mutate(TP_sd_stats = sprintf("SD = %.2f [95%% CI: %.2f, %.2f]",
                                  TP_sd,
                                  TP_sd_lwr,
                                  TP_sd_upr),
            n_lineups_text = sprintf("%g lineups",
-                                    n_lineups))
+                                    n_lineups)) %>% 
+    mutate(exp = ifelse(grepl("Same-plus-additional-pose", exp), "Colloff et al. (2021b): Exp 1: Same-plus-additional vs. Different", exp))
 
-combined_data$exp = reorder(combined_data$exp, -combined_data$n_lineups)
+combined_data2$exp = reorder(combined_data2$exp, -combined_data2$n_lineups)
 
-combined_data$TP_sd_stats = reorder(combined_data$TP_sd_stats, -combined_data$n_lineups)
+combined_data2$TP_sd_stats = reorder(combined_data2$TP_sd_stats, -combined_data2$n_lineups)
 
-unique_exps = combined_data %>% 
+unique_exps = combined_data2 %>% 
     select(exp, n_lineups) %>% 
     distinct()
 
 ratio_names = unique_exps$exp
 names(ratio_names) = unique_exps$n_lineups
 
-ratio_plot = combined_data %>% 
+ratio_plot = combined_data2 %>% 
     mutate(TP_upr = ifelse(is.na(TP_ratio), NA, TP_upr),
            TP_lwr = ifelse(is.na(TP_ratio), NA, TP_lwr)) %>% 
+    
     #filter(culprit_present == "hit") %>% 
     ggplot(aes(x = conf_level,
                y = TP_ratio))+
     facet_grid(cols = NULL,
-               rows = vars(exp, n_lineups_text, TP_sd_stats),
+               rows = vars(exp, n_lineups_text),
                scales = "free_y",
-               labeller = label_wrap_gen())+
+               labeller = label_wrap_gen(20))+
     geom_line(size = 1.5)+
     geom_hline(yintercept = 1, linetype = "dashed")+
     geom_ribbon(aes(ymax = TP_upr,
@@ -280,18 +282,18 @@ ratio_plot = combined_data %>%
                 alpha = .5)+
     guides(color = FALSE)+
     apatheme+
-    theme(text = element_text(size = 15),
+    theme(text = element_text(size = 20),
           axis.text = element_text(size = 35),
           axis.title = element_text(size = 35),
           panel.spacing = unit(3, "lines"))+
     scale_x_continuous(breaks = seq(1, max_confs, by = 1))+
     labs(x = " 
-         Confidence",
+         Confidence (Lowest-to-highest)",
          y = "Condition ratio of correct IDs
          ")
 
 ratio_plot
-ggsave("./Dataset testing and reports/HitRatios.png",
+ggsave("./Dataset testing and reports/HitRatios_Large.png",
        dpi = 300,
        height = 40,
        width = 20,
@@ -330,6 +332,7 @@ conf_data = open_data %>%
                                     "Culprit-absent"))
 
 conf_plot = conf_data %>% 
+    mutate(conf_new = (conf_new - 1)*10) %>% 
     ggplot(aes(x = conf_new, y = prop, color = exp, group = exp_label))+
     facet_grid(cols = vars(culprit_present))+
     geom_point()+
@@ -345,7 +348,7 @@ conf_plot = conf_data %>%
           axis.title.y = element_text(size = 30,
                                       margin = margin(t = 0, r = 30, b = 0, l = 0)),
           axis.title.x = element_text(margin = margin(t = 30, r = 0, b = 0, l = 0)))+
-    scale_x_continuous(breaks = seq(1, 11, by = 1))
+    scale_x_continuous(breaks = seq(0, 100, by = 10))
     
 conf_plot
 ggsave("./Dataset testing and reports/SuspectIDsByConfidence.png",
@@ -364,7 +367,7 @@ x = rdirichlet(nsims, c(1, 1, 2, 2, 2, 3, 3, 6, 6, 7, 8))
 dirichlet_data = x %>% 
     t() %>% 
     as.data.frame() %>% 
-    mutate(conf_level = c(1:11)) %>% 
+    mutate(conf_level = seq(0, 100, by = 10)) %>% 
     pivot_longer(!conf_level,
                  names_to = "sim", 
                  values_to = "prop")
@@ -380,7 +383,7 @@ dirichlet_data %>%
           axis.title.y = element_text(size = 30,
                                       margin = margin(t = 0, r = 30, b = 0, l = 0)),
           axis.title.x = element_text(margin = margin(t = 30, r = 0, b = 0, l = 0)))+
-    scale_x_continuous(breaks = seq(1, 11, by = 1))+
+    scale_x_continuous(breaks = seq(0, 100, by = 10))+
     scale_color_discrete(name = "none",
                          guide = "none")
 ggsave("./Dataset testing and reports/Dirichlet_Example.png",

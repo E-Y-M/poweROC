@@ -3,9 +3,9 @@ title: "powe(R)OC Testing Results"
 author: "Eric Mah"
 date: ''
 output:
-  word_document: default
   html_document:
     df_print: paged
+  word_document: default
   pdf_document: default
   html_fragment: default
 ---
@@ -196,6 +196,34 @@ knitr::include_graphics(here("./Dataset testing and reports/Full Simulation Test
 
 These simulations result in the same general expected pattern, but there are a few things worth noting. First, it appears that the default settings (though the fastest for simulation) result in a good amount of run-to-run variability, and a violation of power simulation expectations (i.e., higher power for a smaller effect size with the same sample size). Between increasing the bootstrap iterations and increasing the # of sims, increasing the # of sims seems to result in more run-to-run consistency while maintaining the expected patterns of results, at the cost of increasing the required simulation time. At least in these examples, upping the default values of both NSims and NIter did not seem to offer substantial benefit over increasing NSims, and increasing NSims beyond 200 did not seem to result in a substantial gain.
 
+## DPP testing
+I tested a) the ability of the app to recover published DPP values (from Smith et al., 2019, who used the "concealment" and "nothing" condition data from Colloff et al., 2016). The reported DPP values in Smith et al., 2019 were .86 and .82 respectively, with a DPP difference of .04 (95% CI [.007, .087]). In an initial simulation run using the same data and sample size (and using 100 simulated samples and 2200 bootstraps per DPP test), the simulation DPPs were .87 and .82, with an estimated DPP difference of .05 (95% CI [-.008, .10]). In a second simulation run, the simulation DPPs were .87 and .82, with an estimated DPP difference of .05 (95% CI [-.006, .11]). Aside from some discrepancies with the DPP difference CIs due to slightly different calculation methods, powe(R)OC recovered the DPP values accurately and consistently across different simulation runs.
+
+In a test of long-run Type I error rates, across two simulations using base data with a null effect the DPP Type I error rate was .04 and .03 (slightly outperforming pAUC, which had a Type I error rate of .07 in both cases).
+
+Finally, I conducted two runs of a full power simulation with both AUC and DPP. The hypothetical ROC curves were again constructed using the "Medium Similarity" condition data from Colloff et al. (2021a) as a base:
+
+```{r echo=FALSE, out.width = "100%", warning=FALSE}
+
+knitr::include_graphics(here("./Dataset testing and reports/DPP/Sim testing results/AUC_DPP_ROCs.png"))
+```
+
+The resulting power curves for Run 1:
+
+```{r echo=FALSE, out.width = "100%", warning=FALSE}
+
+knitr::include_graphics(here("./Dataset testing and reports/DPP/Sim testing results/AUC_DPP_Run_1.png"))
+```
+
+...and for Run 2:
+
+```{r echo=FALSE, out.width = "100%", warning=FALSE}
+
+knitr::include_graphics(here("./Dataset testing and reports/DPP/Sim testing results/AUC_DPP_Run_2.png"))
+```
+
+Again, power estimates differed slightly across runs (mostly at smaller sample sizes), but results were consistent overall. Interestingly, in this case it appears that power to detect the differences is substantially higher for DPP than for pAUC. I hesitate to draw any general conclusions, given that this is a single simulation (and additionally, in the validation using the data from Colloff et al., 2016, pAUC held a power advantage over DPP). However, this does suggest that power can differ substantially depending on the measure used, and suggests some further avenues for testing when one measure provides more power than the other.
+
 ## Recommendations for users
 In light of these testing results, I recommend that users: 
 a) Use the default simulation parameters if analysis time is a concern, but to up the # of simulations per sample/effect size to 200 if time is not a concern, b) select only a few effect sizes/sample sizes for simulation (e.g., based on prior results documented in the app), c) set final planned sample size slightly higher than their target power (e.g., + .05-.10), and d) conduct a couple simulation runs (e.g., one with default settings to get a general idea of the sample size, then a finer-grained simulation including only a few sample sizes and using more simulations & bootstrap iterations).
@@ -222,6 +250,8 @@ a) Use the default simulation parameters if analysis time is a concern, but to u
 --Morgan, D. P., Tamminen, J., Seale-Carlisle, T. M., & Mickes, L. (2019). The impact of sleep on eyewitness identifications. Royal Society Open Science, 6(12), 170501. https://doi.org/10.1098/rsos.170501
 
 --Seale-Carlisle, T. M., & Mickes, L. (2016). US line-ups outperform UK line-ups. Royal Society Open Science, 3(9), 160300. https://doi.org/10.1098/rsos.160300
+
+--Smith, A. M., Lampinen, J. M., Wells, G. L., Smalarz, L., & Mackovichova, S. (2019). Deviation from Perfect Performance Measures the Diagnostic Utility of Eyewitness Lineups but Partial Area Under the ROC Curve Does Not. Journal of Applied Research in Memory and Cognition, 8(1), 50–59. https://doi.org/10.1016/j.jarmac.2018.09.003
 
 --Wetmore, S. A., Neuschatz, J. S., Gronlund, S. D., Wooten, A., Goodsell, C. A., & Carlson, C. A. (2015). Effect of retention interval on showup and lineup performance. Journal of Applied Research in Memory and Cognition, 4(1), 8–14. https://doi.org/10.1016/j.jarmac.2014.07.003
 
