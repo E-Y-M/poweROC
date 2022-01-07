@@ -85,7 +85,7 @@ intro_tab <- tabItem(
     box(width = 12,
         collapsible = FALSE,
         title = "Introduction",
-        tags$p("This R Shiny app allows users to run simulation-based power analysis for ROC curve (partial AUC) analysis of eyewitness data (and certain recognition memory designs). 
+        tags$p("This R Shiny app allows users to run simulation-based power analysis for ROC curve (partial AUC and deviation from perfect performance/DPP) analysis of eyewitness data (and certain recognition memory designs). 
                Use the tabs on the left to navigate. I strongly recommend checking out the 'How this app works' tab before proceeding."),
         #actionLink("explanation_tab_link", "How this app works"),
         #tags$br(),
@@ -131,6 +131,7 @@ explanation_tab <- tabItem(
                The goal of this app is to provide an interface for the kinds of ROC analyses commonly conducted in lineup experiments. 
                In this app, ROC curves are constructed and AUCs compared via boostrap analysis, using the ", a(href = 'https://cran.r-project.org/web/packages/pROC/pROC.pdf', 'pROC R package', .noWS = "outside"), 
                ". ROC curves are constructed using the proportion of correct/false IDs at each confidence level (i.e., filler IDs are not counted as false IDs unless recoded in the data file), as per Gronlund et al.`s (2014) ", a(href = 'http://mickeslab.com/handy/roc-tutorial/', 'ROC tutorial.', .noWS = "outside"),
+               " Deviation from perfect performance is computed using the bootstrap method described in ", a(href = "https://doi.org/10.1016/j.jarmac.2018.09.003", 'Smith et al. (2019)', .noWS = 'outside'), ".",
                .noWS = c("after-begin", "before-end")),
         tags$br()
     ),
@@ -991,7 +992,7 @@ server <- function(input, output, session) {
     
     output$auc_diff_text = renderText({
         req(data_files$processed_data)
-        if (is.na(data_files$processed_data$auc_diff[1])) {
+        if (("auc_diff" %nin% colnames(data_files$processed_data))) {
             ""
         } else {
             paste("pAUC difference: ", data_files$processed_data$auc_diff[1], sep = "")
@@ -1749,9 +1750,8 @@ server <- function(input, output, session) {
         
         message(other_vars$end_time_est)
         
-        showModal(modalDialog(HTML(sprintf("Start time: %s <br/>Estimated completion time is %s<br/>You will be redirected to the results tab once simulations are complete.",
-                            other_vars$start_time,
-                            other_vars$end_time_est)),
+        showModal(modalDialog(HTML(sprintf("Start time: %s <br/>You will be redirected to the results tab once simulations are complete.",
+                            other_vars$start_time)),
                     fade = TRUE,
                     easyClose = TRUE,
                     size = "l"))
@@ -2574,7 +2574,7 @@ server <- function(input, output, session) {
                    `Simulated samples` = input$nsims,
                    `AUC/DPP bootstraps` = input$nboot_iter,
                    `Time taken (m)` = parse_number(other_vars$time_taken),
-                   `Estimated time taken (m)` = other_vars$duration_est,
+                   `Estimated time taken (m)` = NA,
                    `Test tails` = input$test_tails,
                    `ROC truncation` = input$roc_trunc,
                    `Type I error rate` = input$alpha_level) %>% 
