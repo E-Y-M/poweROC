@@ -11,5 +11,6 @@ pacman::p_load(
     readr,
     pROC,
     shinyBS,
-    googlesheets4
+    googlesheets4,
+    boot
 )
