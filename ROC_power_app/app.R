@@ -1398,8 +1398,8 @@ server <- function(input, output, session) {
     
     ### update bootstrap iterations depending on whether DPP is to be computed ----
     observeEvent(c(input$measure, input$n_lineups, input$ns), {
-        req(input$ns)
-        req(input$n_lineups)
+        #req(input$ns)
+        #req(input$n_lineups)
         
         max_n = max(unique(extract(input$ns)))
         max_boot_iter = max_n * input$n_total_lineups
