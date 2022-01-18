@@ -117,7 +117,7 @@ explanation_tab <- tabItem(
     box(width = 12,
         collapsible = TRUE,
         title = "What is this?",
-        tags$p('This app takes as input lineup data with either one condition or two between-subjects conditions (either user-uploaded or selected from a selection of open datasets), and allows users to specify various 
+        tags$p('This app takes as input lineup data with either one condition or two between- or within-subjects conditions (either user-uploaded or selected from a selection of open datasets), and allows users to specify various 
                simulation/design parameters (sample sizes, effect sizes, alpha level, test tails, AUC specificity, # of TA/TP lineups per participant), 
                visualize hypothetical ROC curves, simulate datasets by repeatedly sampling from the data under different conditions/effect sizes/sample sizes to provide power estimates, 
                download summary reports of power simulations, upload simulation results for other users, and view the results of previous simulations uploaded by other users (see the "Previous simulation results" tab).'),
@@ -180,7 +180,7 @@ data_tab <- tabItem(
             ),
             tags$li(
                 strong('cond'),
-                ': The between-subjects condition for that participant/lineup. Only necessary to include if you have data with two pre-existing conditions (which is recommended), otherwise the variable will be created and populated automatically. Note that the condition that comes 2nd alphabetically will be the one that effect sizes are applied to.'
+                ': The between- or within-subjects condition for that participant/lineup (e.g., Simultaneous vs. Sequential). Only necessary to include if you have data with two pre-existing conditions (which is recommended), otherwise the variable will be created and populated automatically. Note that the condition that comes 2nd alphabetically will be the one that effect sizes are applied to.'
             )
         ),
         tags$br(),
@@ -299,6 +299,13 @@ parameters_tab = tabItem(tabName = "parameters_tab",
                              column(
                                  4,
                                  radioButtons(
+                                     "between_within",
+                                     "Between- or within-subjects analysis?",
+                                     choices = c("Between-subjects",
+                                                 "Within-subjects"),
+                                     selected = "Between-subjects"
+                                 ),
+                                 radioButtons(
                                      "eff_type",
                                      "Use the same effect size for all confidence levels or differing effect sizes?",
                                      choices = c("Same effect" = "constant",
@@ -366,32 +373,32 @@ parameters_tab = tabItem(tabName = "parameters_tab",
                              column(
                                  4,
                                  numericInput("n_total_lineups",
-                                              "# of lineups/subject",
+                                              "# of lineups per subject per condition",
                                               value = 2,
                                               min = 1,
                                               step = 1),
                                  bsTooltip("n_total_lineups",
-                                           "Specify the total # of lineups each subject will complete. Note that because lineups will be generated at the sample level, no correlation between lineup performance at the subject level is assumed.",
+                                           "Specify the total # of lineups each subject will complete. If using a between-subjects design, this is the total # of lineups per subject. If using a within-subjects design, this is the # of lineups in each condition (e.g., Simultaneous vs. Sequential) that each subject will complete. Note that because lineups will be generated at the sample level, no correlation between lineup performance at the subject level is assumed.",
                                            placement = "bottom",
                                            trigger = "hover"),
                                  hidden(numericInput(
                                      "n_TA_lineups",
-                                     "# of TA lineups/subject",
+                                     "# of TA lineups per subject per condition",
                                      value = .5,
                                      min = 0
                                  )),
                                  bsTooltip("n_TA_lineups",
-                                           "Specify the # of target-absent lineups each subject will complete. If you have an odd # of total lineups (e.g., each subject completes either 2 TA and 1 TP lineup or 1 TA and 2 TP lineups), then divide the total # of lineups by 2 and the program will adjust for this in sampling.",
+                                           "Specify the # of target-absent lineups each subject will complete (again in each condition). If you have an odd # of total lineups (e.g., each subject completes either 2 TA and 1 TP lineup or 1 TA and 2 TP lineups), then divide the total # of lineups by 2 and the program will adjust for this in sampling.",
                                            placement = "bottom",
                                            trigger = "hover"),
                                  hidden(numericInput(
                                      "n_TP_lineups",
-                                     "# of TP lineups/subject",
+                                     "# of TP lineups per subject per condition",
                                      value = .5,
                                      min = 0
                                  )),
                                  bsTooltip("n_TP_lineups",
-                                           "Specify the # of target-present lineups each subject will complete. If you have an odd # of total lineups (e.g., each subject completes either 2 TA and 1 TP lineup or 1 TA and 2 TP lineups), then divide the total # of lineups by 2 and the program will adjust for this in sampling.",
+                                           "Specify the # of target-present lineups each subject will complete (again in each condition). If you have an odd # of total lineups (e.g., each subject completes either 2 TA and 1 TP lineup or 1 TA and 2 TP lineups), then divide the total # of lineups by 2 and the program will adjust for this in sampling.",
                                            placement = "bottom",
                                            trigger = "hover"),
                                  numericInput(
@@ -758,7 +765,7 @@ server <- function(input, output, session) {
                                 saved_data = NULL,
                                 upload_data = NULL,
                                 pwr_store = NULL,
-                                sim_params = data.frame(Parameter = rep(NA, times = 13)),
+                                sim_params = data.frame(Parameter = rep(NA, times = 14)),
                                 compendium_data = NULL,
                                 previous_sim_params = data.frame(Parameter = rep(NA, times = 8)),
                                 previous_sim_effs = NULL)
@@ -778,6 +785,12 @@ server <- function(input, output, session) {
     
     observeEvent(input$sim_start, {
         
+        if (input$between_within == "Between-subjects") {
+            parameters$between_within = "Between-subjects"
+        } else {
+            parameters$between_within = "Within-subjects"
+        }
+        
         if (input$eff_type == "constant") {
             other_vars$effs_report = input$effs
             other_vars$effs_different_report = "N/A"
@@ -791,11 +804,12 @@ server <- function(input, output, session) {
             mutate(Parameter = c(
                 "Ns",
                 "Effects",
+                "Between- or within-subjects",
                 "Confidence levels",
                 "Effects by confidence level",
-                "# of lineups/subject",
-                "# TA lineups/subject",
-                "# TP lineups/subject",
+                "# of lineups/subject per condition",
+                "# TA lineups/subject per condition",
+                "# TP lineups/subject per condition",
                 "# of simulated samples per effect size/N",
                 "# of bootstraps per AUC/DPP test",
                 "Partial AUC truncation",
@@ -804,6 +818,7 @@ server <- function(input, output, session) {
                 "Type I error rate"),
                 Value = c(input$ns,
                             other_vars$effs_report,
+                            parameters$between_within,
                             parameters$n_confs,
                             other_vars$effs_different_report,
                             input$n_total_lineups,
@@ -843,6 +858,11 @@ server <- function(input, output, session) {
         data_files$processed_data = open_data %>% 
             filter(exp == input$open_dataset)
         
+        updateRadioButtons(session,
+                           "designated_suspect",
+                           selected = "Yes"
+                           )
+        
         minimum_conf = min(data_files$processed_data$conf_level)
         
         if (minimum_conf == 0) {
@@ -864,6 +884,8 @@ server <- function(input, output, session) {
                        conf_level_rev = max(conf_level)+1 - conf_level) %>% 
                 arrange(cond)
         }
+        
+        data_files$saved_data = data_files$processed_data
     })
     
     observeEvent(input$designated_suspect, {
@@ -1075,6 +1097,8 @@ server <- function(input, output, session) {
         #           cond = as.factor(cond)) %>% 
         #    ungroup()
         
+        message("Pre-group by")
+        
         data_props = data_files$processed_data %>%
             group_by(id_type, culprit_present, cond) %>% 
             count() %>% 
@@ -1278,8 +1302,8 @@ server <- function(input, output, session) {
                                 n_TA_lineups = NA,
                                 n_TP_lineups = NA,
                                 cond1 = NA,
-                                cond2 = NA)
-                                #roc_paired = NA)
+                                cond2 = NA,
+                                between_within = NA)
     
     observeEvent(data_files$processed_data, {
         #parameters$cond1 = data_files$processed_data %>% 
@@ -1374,6 +1398,9 @@ server <- function(input, output, session) {
     
     ### update bootstrap iterations depending on whether DPP is to be computed ----
     observeEvent(c(input$measure, input$n_lineups, input$ns), {
+        req(input$ns)
+        req(input$n_lineups)
+        
         max_n = max(unique(extract(input$ns)))
         max_boot_iter = max_n * input$n_total_lineups
         
@@ -1740,15 +1767,16 @@ server <- function(input, output, session) {
         
         message(data_files$conf_effs_data)
         
+        
         other_vars$start_time = Sys.time()
         start_time = Sys.time()
         
         other_vars$sim_total = input$nsims * length(parameters$ns) * length(parameters$effs)
-        duration = (other_vars$avg_n/1000 * input$nboot_iter/1500) * other_vars$sim_total
-        other_vars$duration_est = duration/60
-        other_vars$end_time_est = start_time + duration
-        
-        message(other_vars$end_time_est)
+        #duration = (other_vars$avg_n/1000 * input$nboot_iter/1500) * other_vars$sim_total
+        #other_vars$duration_est = duration/60
+        #other_vars$end_time_est = start_time + duration
+        #
+        #message(other_vars$end_time_est)
         
         showModal(modalDialog(HTML(sprintf("Start time: %s <br/>You will be redirected to the results tab once simulations are complete.",
                             other_vars$start_time)),
@@ -1881,12 +1909,14 @@ server <- function(input, output, session) {
             
             ### loop over Ns ####
             for (h in 1:length(parameters$ns)) {
-                curr_n = parameters$ns[h]
-                #if (parameters$roc_paired == FALSE) {
-                #    curr_n = parameters$ns[h]
-                #} else {
-                #    curr_n = parameters$ns[h] * 2
-                #}
+                
+                #curr_n = parameters$ns[h]
+                
+                if (input$between_within == "Between-subjects") {
+                    curr_n = parameters$ns[h]
+                } else {
+                    curr_n = parameters$ns[h] * 2
+                }
                 
                 #### Loop over sims ----
                 for (i in 1:input$nsims) {
@@ -2023,7 +2053,7 @@ server <- function(input, output, session) {
                     )
                     
                     ##### ROC test ----
-                    
+                    if (input$between_within == "Between") {
                         if (input$roc_trunc == "Lowest false ID rate") {
                             ##### If truncating at lowest false ID rate ----
                             roc_test = roc.test(
@@ -2068,6 +2098,53 @@ server <- function(input, output, session) {
                                 progress = "none"
                             ) 
                         }
+                    } else {
+                        if (input$roc_trunc == "Lowest false ID rate") {
+                            ##### If truncating at lowest false ID rate ----
+                            roc_test = roc.test(
+                                roc_cond1,
+                                roc_cond2,
+                                reuse.auc = FALSE,
+                                partial.auc = c(1, 1 - min(
+                                    cond1_partial, cond2_partial
+                                )),
+                                partial.auc.focus = "sp",
+                                method = "bootstrap",
+                                paired = TRUE,
+                                boot.n = input$nboot_iter,
+                                progress = "none"
+                            )
+                        } else if (input$roc_trunc == "Highest false ID rate") {
+                            ##### If truncating at highest false ID rate ----
+                            roc_test = roc.test(
+                                roc_cond1,
+                                roc_cond2,
+                                reuse.auc = FALSE,
+                                partial.auc = c(1, 1 - max(
+                                    cond1_partial, cond2_partial
+                                )),
+                                partial.auc.focus = "sp",
+                                method = "bootstrap",
+                                paired = TRUE,
+                                boot.n = input$nboot_iter,
+                                progress = "none"
+                            ) 
+                        } else {
+                            ##### If truncating at a custom false ID rate ----
+                            roc_test = roc.test(
+                                roc_cond1,
+                                roc_cond2,
+                                reuse.auc = FALSE,
+                                partial.auc = c(1, other_vars$custom_trunc),
+                                partial.auc.focus = "sp",
+                                method = "bootstrap",
+                                paired = TRUE,
+                                boot.n = input$nboot_iter,
+                                progress = "none"
+                            ) 
+                        }
+                    }
+                        
                         
                         sim_store$auc_diff[i] = roc_test$estimate[1] - roc_test$estimate[2]
                         sim_store$auc_1[i] = roc_test$estimate[1]
@@ -2569,8 +2646,9 @@ server <- function(input, output, session) {
                                                "Constant across confidence levels",
                                                "Different across confience levels"),
                    `Differing effect sizes` = other_vars$effs_different_report,
-                   `TA lineups/subj` = input$n_TA_lineups,
-                   `TP lineups/subj` = input$n_TP_lineups,
+                   `Between- or within-subjects` = parameters$between_within,
+                   `TA lineups/subj per condition` = input$n_TA_lineups,
+                   `TP lineups/subj per condition` = input$n_TP_lineups,
                    `Simulated samples` = input$nsims,
                    `AUC/DPP bootstraps` = input$nboot_iter,
                    `Time taken (m)` = parse_number(other_vars$time_taken),
@@ -2603,6 +2681,7 @@ server <- function(input, output, session) {
                    `Effect size`,
                    `Effect size type`,
                    `Differing effect sizes`,
+                   `Between- or within-subjects`,
                    `Avg. AUC in Cond A`,
                    `Cond A AUC 95% CI Lower`,
                    `Cond A AUC 95% CI Upper`,
@@ -2626,8 +2705,8 @@ server <- function(input, output, session) {
                    `Type I error rate`, 
                    `Test tails`,
                    `ROC truncation`,
-                   `TA lineups/subj`,
-                   `TP lineups/subj`,
+                   `TA lineups/subj per condition`,
+                   `TP lineups/subj per condition`,
                    `Simulated samples`,
                    `AUC/DPP bootstraps`,
                    `Time taken (m)`,
@@ -2751,9 +2830,9 @@ server <- function(input, output, session) {
                     "Partial AUC truncation"),
                     Value = c(previous_ns,
                               previous_effs,
-                              data_files$compendium_data$`TA lineups/subj`[1] + data_files$compendium_data$`TP lineups/subj`[1],
-                              data_files$compendium_data$`TA lineups/subj`[1],
-                              data_files$compendium_data$`TP lineups/subj`[1],
+                              data_files$compendium_data$`TA lineups/subj per condition`[1] + data_files$compendium_data$`TP lineups/subj per condition`[1],
+                              data_files$compendium_data$`TA lineups/subj per condition`[1],
+                              data_files$compendium_data$`TP lineups/subj per condition`[1],
                               data_files$compendium_data$`Simulated samples`[1],
                               data_files$compendium_data$`AUC bootstraps`[1],
                               data_files$compendium_data$`ROC truncation`[1]))
