@@ -10,6 +10,8 @@ suppressPackageStartupMessages({
     library(shinyBS)
     library(googlesheets4)
     library(boot)
+    library(sdtlu)
+    library(bayestestR)
 })
 
 ## functions ----
@@ -258,6 +260,50 @@ data_tab <- tabItem(
         title = "Your data",
         div(style = 'overflow-x: scroll',dataTableOutput("processed_data")))
 )
+
+### sdtlu tab ----
+sdtlu_tab = tabItem(tabName = "sdtlu_tab",
+                    box(width = 12,
+                        title = "SDT parameter estimates from data",
+                        tags$p("If you wish to generate data for simulation from an SDT model, you may want to get an idea of what parameter values to use, either from your own data or from one of the available open datasets. This tab allows you to estimate SDT parameters from an uploaded dataset.\nTo estimate parameters, fill in the following information about your dataset below:")),
+                    box(width = 6,
+                            textOutput("cond1_label"),
+                            radioButtons(
+                                "simultaneous_sequential_sim_a",
+                                "Simultaneous or Sequential lineup?",
+                                choices = c("Simultaneous",
+                                            "Sequential"),
+                                selected = "Simultaneous"
+                            ),
+                            numericInput("lineup_size_sim_a",
+                                         "Lineup size?",
+                                         value = 6,
+                                         min = 1
+                            )),
+                    box(width = 6,
+                        textOutput("cond2_label"),
+                        radioButtons(
+                            "simultaneous_sequential_sim_b",
+                            "Simultaneous or Sequential lineup?",
+                            choices = c("Simultaneous",
+                                        "Sequential"),
+                            selected = "Simultaneous"
+                        ),
+                        numericInput("lineup_size_sim_b",
+                                     "Lineup size?",
+                                     value = 6,
+                                     min = 1
+                        )),
+                    actionButton(
+                        "get_sdtlu",
+                        "Get SDT parameter estimates",
+                        width = '100%',
+                        class = "btn-info"
+                    ),
+                    box(width = 12,
+                        dataTableOutput("sdtlu_estimates")),
+                    box(width = 12,
+                        plotOutput("sdtlu_params_sim_plot")))
 
 ### effect sizes tab ----
 effects_tab = tabItem(tabName = "effects_tab",
@@ -638,8 +684,9 @@ ui <- dashboardPage(
             menuItem("How this app works", tabName = "explanation_tab", icon = icon("info-circle")),
             menuItem("Previous simulation results", tabName = "previous_tab", icon = icon("history")),
             menuItem("Data Upload", tabName = "data_tab", icon = icon("table")),
+            menuItem("SDT parameter estimation", tabName = "sdtlu_tab", icon = icon("signal")),
             menuItem("pAUC effect sizes", tabName = "effects_tab", icon = icon("book")),
-            menuItem("Simulation Parameters", tabName = "parameters_tab", icon = icon("gear")),
+            menuItem("Simulation Parameters", tabName = "parameters_tab", icon = icon("book")),
             menuItem("Simulation Results", tabName = "results_tab", icon = icon("poll")),
             menuItem("App validation & testing", tabName = "validation_tab", icon = icon("search"))
             #sidebarMenuOutput("results_render")
@@ -658,6 +705,7 @@ ui <- dashboardPage(
             explanation_tab,
             previous_tab,
             data_tab,
+            sdtlu_tab,
             effects_tab,
             parameters_tab,
             results_tab,
@@ -673,6 +721,10 @@ server <- function(input, output, session) {
     
     ## initial setup ----
     hide("effs_different")
+    
+    output$cond1_label = renderText({"Condition 1"})
+    
+    output$cond2_label = renderText({"Condition 2"})
     
     ## function for computing average DPP ----
     # Authors: Andrew M. Smith, James M. Lampinen, Gary L. Wells, Laura Smalarz, & Simona Mackovichova 
@@ -761,6 +813,7 @@ server <- function(input, output, session) {
     ## data files ----
     data_files = reactiveValues(user_data = NULL,
                                 processed_data = NULL,
+                                sdtlu_estimates = NULL,
                                 conf_effs_data = NULL,
                                 saved_data = NULL,
                                 upload_data = NULL,
@@ -1327,7 +1380,13 @@ server <- function(input, output, session) {
         #    as.character()
         
         parameters$cond2 = as.character(levels(data_files$processed_data$cond)[2])
+        
+        output$cond1_label = renderText({parameters$cond1})
+        
+        output$cond2_label = renderText({parameters$cond2})
     })
+    
+    
     
     #observeEvent(input$roc_paired, {
     #    if (input$roc_paired == "Yes") {
@@ -1760,6 +1819,203 @@ server <- function(input, output, session) {
             ROC_data_plot
         })
         
+    })
+    
+    ## estimating SDT parameters from uploaded data ----
+    observeEvent(input$get_sdtlu, {
+        req(input$simultaneous_sequential_sim_a,
+            input$simultaneous_sequential_sim_b,
+            input$lineup_size_sim_a,
+            input$lineup_size_sim_b,
+            data_files$saved_data)
+        
+        showModal(modalDialog(HTML(sprintf("Estimating parameters, please wait... <br/>If this takes longer than ~5 minutes it is possible that the data are not suitable for modelling.")),
+                              fade = TRUE,
+                              easyClose = FALSE,
+                              size = "l"))
+        
+        ### Estimates for Condition A ----
+        #### Process data ----
+        data_sdtlu_a = data_files$saved_data %>% 
+            filter(cond == parameters$cond1) %>% 
+            mutate(lineup_size = input$lineup_size_sim_a,
+                   conf = conf_level_rev)
+        
+        data_sdtlu_processed_a = sdtlu_process_data(data_sdtlu_a)
+        
+        #### Set fitting options ----
+        if (input$simultaneous_sequential_sim_a == "Simultaneous") {
+            options_a = list(model_type = "sim",
+                             fit_fcn = "G2",
+                             fix_p = "data",
+                             fix_sigma_t = "free",
+                             use_restr_data = FALSE,
+                             run_bootstrap = FALSE)
+        } else {
+            options_a = list(model_type = "seq",
+                             fit_fcn = "G2",
+                             fix_p = "data",
+                             fix_sigma_t = "free",
+                             use_restr_data = FALSE,
+                             run_bootstrap = FALSE)
+        }
+        
+        #### Fit the model ----
+        sdtlu_fit_a = sdtlu_fit(data_sdtlu_processed_a,
+                                options = options_a)
+        
+        #### Recover the estimates ----
+        params_a = sdtlu_fit_a$best_params_full
+        
+        cs_a = params_a[4:length(params_a)]
+        
+        params_data_a = data.frame(
+            Parameter = c("p",
+                          "mu_t",
+                          "sigma_t",
+                          "cs"),
+            vals_a = c(
+                params_a[1],
+                params_a[2],
+                params_a[3],
+                paste(cs_a, collapse = ", ")
+            )
+        )
+        
+        ### Estimates for Condition B ----
+        #### Process data ----
+        data_sdtlu_b = data_files$saved_data %>% 
+            filter(cond == parameters$cond2) %>% 
+            mutate(lineup_size = input$lineup_size_sim_b,
+                   conf = conf_level_rev)
+        
+        data_sdtlu_processed_b = sdtlu_process_data(data_sdtlu_b)
+        
+        #### Set fitting options ----
+        if (input$simultaneous_sequential_sim_a == "Simultaneous") {
+            options_b = list(model_type = "sim",
+                             fit_fcn = "G2",
+                             fix_p = "data",
+                             fix_sigma_t = "free",
+                             use_restr_data = FALSE,
+                             run_bootstrap = FALSE)
+        } else {
+            options_b = list(model_type = "seq",
+                             fit_fcn = "G2",
+                             fix_p = "data",
+                             fix_sigma_t = "free",
+                             use_restr_data = FALSE,
+                             run_bootstrap = FALSE)
+        }
+        
+        #### Fit the model ----
+        sdtlu_fit_b = sdtlu_fit(data_sdtlu_processed_b,
+                                options = options_b)
+        
+        #### Recover the estimates ----
+        params_b = sdtlu_fit_b$best_params_full
+        
+        cs_b = params_b[4:length(params_a)]
+        
+        params_data_b = data.frame(
+            Parameter = c("p",
+                          "mu_t",
+                          "sigma_t",
+                          "cs"),
+            vals_b = c(
+                params_b[1],
+                params_b[2],
+                params_b[3],
+                paste(cs_b, collapse = ", ")
+            )
+        )
+        
+        data_files$sdtlu_estimates = params_data_a %>% 
+            left_join(params_data_b) %>% 
+            `colnames<-`(c("Parameter", parameters$cond1, parameters$cond2))
+        
+        output$sdtlu_estimates = renderDataTable({
+            data_files$sdtlu_estimates
+        })
+        
+        message(data_files$sdtlu_estimates)
+        
+        ### Visualizing the parameters ----
+        #### Simulated SDT distributions ----
+            cond_a_dists = data.frame(
+                Target = distribution_normal(100,
+                                        mean = as.numeric(data_files$sdtlu_estimates[2,2]),
+                                        sd = as.numeric(data_files$sdtlu_estimates[3,2])),
+                Lure = distribution_normal(100,
+                                        mean = 0,
+                                        sd = 1)
+            ) %>%
+                pivot_longer(names_to = "Distribution",
+                             values_to = "Strength",
+                             c(Target, Lure)) %>%
+                mutate(cond = parameters$cond1)
+            
+        cond_b_dists = data.frame(
+            Target = distribution_normal(100,
+                                         mean = as.numeric(data_files$sdtlu_estimates[2,3]),
+                                         sd = as.numeric(data_files$sdtlu_estimates[3,3])),
+            Lure = distribution_normal(100,
+                                       mean = 0,
+                                       sd = 1)
+        ) %>%
+            pivot_longer(names_to = "Distribution",
+                         values_to = "Strength",
+                         c(Target, Lure)) %>%
+            mutate(cond = parameters$cond2)
+        
+        
+        combined_dists = rbind(cond_a_dists,
+                               cond_b_dists) %>% 
+            mutate(Condition = cond)
+        
+        message("Generated distributions")
+        message(combined_dists)
+        
+        #### Get the criterion values ----
+        criterions_sim = data.frame(
+            Condition = c(parameters$cond1,
+                     parameters$cond2),
+            cs = c(paste(cs_a, collapse = ", "),
+                   paste(cs_b, collapse = ", "))
+        ) %>% 
+            separate(cs, as.character(c(1:max(length(cs_a), length(cs_b)))), ", ") %>% 
+            pivot_longer(names_to = "criterion",
+                         values_to = "Strength",
+                         -Condition) %>% 
+            mutate(Strength = as.numeric(Strength))
+        
+        message("Extracted criterion values for plotting")
+        
+        sdtlu_params_sim_plot = combined_dists %>% 
+            ggplot(aes(x = Strength, color = Distribution))+
+            geom_density()+
+            facet_grid(cols = vars(Condition))+
+            geom_vline(data = criterions_sim,
+                       aes(xintercept = Strength),
+                       alpha = .5)+
+            apatheme+
+            labs(y = "Density")+
+            theme(text = element_text(size = 20))
+        
+        output$sdtlu_params_sim_plot = renderPlot({
+            sdtlu_params_sim_plot
+        })
+        
+        showModal(modalDialog("All done! See below for parameter estimates and model fit.",
+                              fade = TRUE,
+                              easyClose = FALSE,
+                              size = "l"))
+    })
+    
+    
+    ### Remove modal button once parameters are generated ----
+    observeEvent(data_files$sdtlu_estimates, {
+        removeModal(session = getDefaultReactiveDomain())
     })
     
     ## main simulation loop ----

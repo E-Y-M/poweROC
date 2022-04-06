@@ -12,5 +12,7 @@ pacman::p_load(
     pROC,
     shinyBS,
     googlesheets4,
-    boot
+    boot,
+    sdtlu,
+    bayestestR
 )
