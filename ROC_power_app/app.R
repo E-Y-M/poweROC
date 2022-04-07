@@ -303,7 +303,9 @@ sdtlu_tab = tabItem(tabName = "sdtlu_tab",
                     box(width = 12,
                         dataTableOutput("sdtlu_estimates")),
                     box(width = 12,
-                        plotOutput("sdtlu_params_sim_plot")))
+                        plotOutput("sdtlu_params_sim_plot")),
+                    box(width = 12,
+                        plotOutput("hypothetical_sdtlu_plot")))
 
 ### effect sizes tab ----
 effects_tab = tabItem(tabName = "effects_tab",
@@ -813,6 +815,7 @@ server <- function(input, output, session) {
     ## data files ----
     data_files = reactiveValues(user_data = NULL,
                                 processed_data = NULL,
+                                ROC_data_wide = NULL,
                                 sdtlu_estimates = NULL,
                                 conf_effs_data = NULL,
                                 saved_data = NULL,
@@ -1329,7 +1332,8 @@ server <- function(input, output, session) {
                  color = "Condition")+
             theme(text = element_text(size = 20))
         
-        #plots$hypothetical_plot = ROC_data_plot
+        data_files$ROC_data_wide = ROC_data_wide
+        plots$hypothetical_ROC_plot = hypothetical_ROC_plot
         
         output$hypothetical_ROC_plot = renderPlot({
             hypothetical_ROC_plot
@@ -1398,6 +1402,7 @@ server <- function(input, output, session) {
     
     ## reactive plots ----
     plots = reactiveValues(hypothetical_plot = NULL,
+                           hypothetical_ROC_plot = NULL,
                            pwr_plot = NULL,
                            previous_sim_plot = NULL)
     
@@ -1839,7 +1844,7 @@ server <- function(input, output, session) {
         data_sdtlu_a = data_files$saved_data %>% 
             filter(cond == parameters$cond1) %>% 
             mutate(lineup_size = input$lineup_size_sim_a,
-                   conf = conf_level_rev)
+                   conf_level = conf_level_rev)
         
         data_sdtlu_processed_a = sdtlu_process_data(data_sdtlu_a)
         
@@ -1887,7 +1892,7 @@ server <- function(input, output, session) {
         data_sdtlu_b = data_files$saved_data %>% 
             filter(cond == parameters$cond2) %>% 
             mutate(lineup_size = input$lineup_size_sim_b,
-                   conf = conf_level_rev)
+                   conf_level = conf_level_rev)
         
         data_sdtlu_processed_b = sdtlu_process_data(data_sdtlu_b)
         
@@ -2006,16 +2011,80 @@ server <- function(input, output, session) {
             sdtlu_params_sim_plot
         })
         
+        #### Model vs. Data ROC curves ----
+        ##### Condition A ----
+        cond_a_roc = sdtlu_roc_model(
+            params = sdtlu_fit_a$best_params_full,
+            lineup_size = input$lineup_size_sim_a)
+        
+        cond_a_roc_data_lines = data.frame("absent" = cond_a_roc[[3]],
+                                           "present" = cond_a_roc[[4]],
+                                           cond = parameters$cond1)
+        
+        cond_a_roc_data_points = data.frame("absent" = unlist(cond_a_roc[[1]]),
+                                            "present" = unlist(cond_a_roc[[2]]),
+                                            cond = parameters$cond1)
+        
+        message(cond_a_roc_data_points)
+        
+        ##### Condition B ----
+        cond_b_roc = sdtlu_roc_model(
+            params = sdtlu_fit_b$best_params_full,
+            lineup_size = input$lineup_size_sim_b)
+        
+        cond_b_roc_data_lines = data.frame("absent"  = cond_b_roc[[3]],
+                                           "present" = cond_b_roc[[4]],
+                                           cond = parameters$cond2)
+        
+        cond_b_roc_data_points = data.frame("absent"  = unlist(cond_b_roc[[1]]),
+                                            "present" = unlist(cond_b_roc[[2]]),
+                                            cond = parameters$cond2)
+        
+        ##### Update the plot ----
+        ROC_data_wide = data_files$ROC_data_wide
+        
+        hypothetical_sdtlu_plot = ggplot(data = ROC_data_wide, aes(x = absent, y = present, color = cond))+
+            geom_point(alpha = .5)+
+            geom_line()+
+            #geom_vline(xintercept = partial_threshold)+
+            apatheme+
+            labs(x = "\nFalse ID rate",
+                 y = "Correct ID rate\n",
+                 linetype = "Effect",
+                 color = "Condition")+
+            theme(text = element_text(size = 20))+
+            geom_line(data = cond_a_roc_data_lines,
+                       aes(x = absent,
+                           y = present,
+                       color = cond))+
+            geom_point(data = cond_a_roc_data_points,
+                       aes(x = absent,
+                           y = present,
+                       color = cond),
+                       size = 3,
+                       shape = 4)+
+            geom_line(data = cond_b_roc_data_lines,
+                       aes(x = absent,
+                           y = present,
+                       color = cond))+
+            geom_point(data = cond_b_roc_data_points,
+                       aes(x = absent,
+                           y = present,
+                       color = cond),
+                       size = 3,
+                       shape = 4)
+        
+        message("Created data vs. model ROC plot")
+        
+        output$hypothetical_sdtlu_plot = renderPlot({
+            hypothetical_sdtlu_plot
+            #sdtlu_params_sim_plot
+        })
+        
         showModal(modalDialog("All done! See below for parameter estimates and model fit.",
                               fade = TRUE,
                               easyClose = FALSE,
                               size = "l"))
-    })
-    
-    
-    ### Remove modal button once parameters are generated ----
-    observeEvent(data_files$sdtlu_estimates, {
-        removeModal(session = getDefaultReactiveDomain())
     })
     
     ## main simulation loop ----

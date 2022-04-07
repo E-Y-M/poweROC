@@ -2,6 +2,10 @@ library(psych)
 library(tidyverse)
 library(sdtlu)
 library(bayestestR)
+source("./ROC_power_app/scripts/func.R")
+
+#* Load in Palmer et al. (2013) data ----
+palmer_data = read.csv("./Dataset testing and reports/sdtlu Testing/palmer_data.csv")
 
 #* Load in Colloff et al, (2021a) high- vs. low-similarity data ----
 data = read.csv("./Dataset testing and reports/Data/Colloff et al. 2021a/Exp 2/colloff_2021_processed_high_low.csv") %>% 
@@ -15,6 +19,8 @@ data_high = data %>%
     filter(cond == "High-similarity fillers")
 
 #* sdtlu processing data ----
+sdtlu_graph_data_roc(sim_low$resp_data_full) 
+
 sim_low = sdtlu_process_data(data_low)
 sim_high = sdtlu_process_data(data_high)
 sim_low
@@ -23,7 +29,8 @@ options = list(model_type = "sim",
                fix_p = "data",
                fix_sigma_t = "free",
                use_restr_data = FALSE,
-               run_bootstrap = FALSE)
+               run_bootstrap = FALSE,
+               n_bootstrap_samps = 10)
 
 fit_a = sdtlu_fit(sim_low,
                     options = options)
@@ -45,6 +52,7 @@ print(cond_a_cs)
 #* Getting relevant values from the model fits ----
 #** Condition A ----
 params_a = fit_a$best_params_full
+fit_a$quants_fit
 
 cond_a_p = params_a[1]
 cond_a_mu_t = params_a[2]
@@ -99,3 +107,97 @@ cond_b_sdt = cond_b_dists %>%
 
 cond_a_sdt
 cond_b_sdt
+
+#** Getting the model-predicted ROC ----
+cond_a_roc = sdtlu_graph_model_roc(
+    params = params_a,
+    params_quants = NULL,
+    lineup_size = 6)
+
+params_a = c(cond_a_p,
+           cond_a_mu_t,
+           cond_a_sigma_t,
+           cond_a_cs)
+
+cond_b_roc = sdtlu_graph_model_roc(
+    params = c(cond_b_p,
+               cond_b_mu_t,
+               cond_b_sigma_t,
+               cond_b_cs),
+    params_quants = quants_matrix,
+    lineup_size = 6)
+
+quants_matrix = data.frame(upr = c(
+    NA,
+    .975,
+    .975,
+    rep(NA, times = 11)),
+    lwr = c(
+        NA,
+        .025,
+        .025,
+        rep(NA, times = 11)))
+
+
+sdtlu_graph_model_roc
+quants_matrix[1,1]
+
+cond_a_roc2 = sdtlu_roc_model(
+    params = params_a,
+    lineup_size = 6)
+
+cond_a_roc_data_lines = data.frame(x = cond_a_roc2[[3]],
+                                   y = cond_a_roc2[[4]])
+
+cond_a_roc_data_points = data.frame(x = unlist(cond_a_roc2[[1]]),
+                                    y = unlist(cond_a_roc2[[2]]))
+
+cond_a_rocplot = ggplot(cond_a_roc_data_lines,
+                        aes(x = x,
+                            y = y))+
+    geom_point()+
+    geom_point(data = cond_a_roc_data_points,
+               aes(x = x, y = y),
+               color = "red",
+               size = 3)
+
+cond_a_rocplot
+
+#** Getting the data ROC ----
+cond_a_data_roc = sdtlu_roc_data(sim_low$resp_data_full)
+
+cond_a_data_roc = data.frame(x = cond_a_data_roc[[2]],
+                             y = cond_a_data_roc[[1]])
+
+cond_a_rocplot_complete = cond_a_rocplot +
+    geom_point(data = cond_a_data_roc, 
+               aes(x = x,
+                   y = y),
+               color = "blue",
+               size = 5)+
+    geom_line(data = cond_a_data_roc,
+              aes(x = x,
+                  y = y))
+
+cond_a_rocplot_complete
+
+#* Testing things on the Palmer data ----
+palmer_processed = sdtlu_process_data(palmer_data)
+
+options = list(model_type = "sim",
+               fit_fcn = "chi_square",
+               fix_p = "data",
+               fix_sigma_t = "free",
+               use_restr_data = FALSE,
+               run_bootstrap = TRUE,
+               n_bootstrap_samps = 20)
+
+palmer_fit = sdtlu_fit(palmer_processed,
+                       options = options)
+
+quants_matrix = palmer_fit$quants_params
+
+palmer_roc = sdtlu_graph_model_roc(
+    params = palmer_fit$best_params_full,
+    params_quants = quants_matrix,
+    lineup_size = 6)
