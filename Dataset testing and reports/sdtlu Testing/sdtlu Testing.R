@@ -201,3 +201,68 @@ palmer_roc = sdtlu_graph_model_roc(
     params = palmer_fit$best_params_full,
     params_quants = quants_matrix,
     lineup_size = 6)
+
+#* Testing what happens when there aren't IDs at a confidence level ----
+test_data = palmer_data %>% 
+    filter(!(id_type == "filler" & conf_level == 4))
+
+n_confs = length(unique(test_data$conf_level))
+max_conf = max(test_data$conf_level)
+min_conf = min(test_data$conf_level)
+
+resp_vector = rep(c(rep("suspect", n_confs),
+                rep("filler", n_confs),
+                "reject"), times = 2)
+
+palmer_processed = sdtlu_process_data(test_data)
+
+options = list(model_type = "sim",
+               fit_fcn = "G2",
+               fix_p = "data",
+               fix_sigma_t = "free",
+               use_restr_data = FALSE,
+               run_bootstrap = TRUE,
+               n_bootstrap_samps = 20)
+
+palmer_fit = sdtlu_fit(palmer_processed,
+                       options = options)
+
+palmer_fit$best_fit_measure
+
+test = palmer_fit$model_prop
+palmer_processed$resp_data_full
+
+model_fit_data = data.frame(model_prop = as.vector(palmer_fit$model_prop),
+                            data_resps = as.vector(palmer_processed$resp_data_full),
+                            resp_type = rep(c(rep("Suspect", n_confs),
+                                              rep("Filler", n_confs),
+                                              "Reject"), times = 2),
+                            conf_level = rep(c(max_conf:min_conf, max_conf:min_conf, NA),
+                                               times = 2),
+                            Presence = c(rep("TP", times = n_confs*2+1),
+                                         rep("TA", times = n_confs*2+1))) %>% 
+    mutate(data_total = sum(data_resps),
+           data_prop = data_resps/data_total,
+           row = 1:n()) %>% 
+    rowwise() %>% 
+    mutate(label = paste(Presence, resp_type, conf_level, sep = "_"),
+           label = str_replace(label, "_NA", "")) %>% 
+    arrange(row) %>% 
+    pivot_longer(names_to = "Source",
+                 values_to = "Proportion",
+                 c(model_prop, data_prop)) %>% 
+    mutate(Source = ifelse(grepl("data", Source), "Data", "Model"),
+           Condition = "A")
+
+model_fit_data$label = reorder(model_fit_data$label, model_fit_data$row)
+
+model_fit_data %>% 
+    ggplot(aes(x = label, y = Proportion, color = Presence, shape = Source))+
+    geom_point()+
+    scale_shape_manual(values = c(1, 4))+
+    scale_color_manual(values = c("red", "blue"))+
+    apatheme+
+    ggtitle("Model response predictions vs. data")+
+    theme(plot.title = element_text(hjust = .5),
+          axis.text.x = element_text(angle = 90,
+                                     vjust = .5))

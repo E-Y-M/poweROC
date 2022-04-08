@@ -265,7 +265,9 @@ data_tab <- tabItem(
 sdtlu_tab = tabItem(tabName = "sdtlu_tab",
                     box(width = 12,
                         title = "SDT parameter estimates from data",
-                        tags$p("If you wish to generate data for simulation from an SDT model, you may want to get an idea of what parameter values to use, either from your own data or from one of the available open datasets. This tab allows you to estimate SDT parameters from an uploaded dataset.\nTo estimate parameters, fill in the following information about your dataset below:")),
+                        tags$p("If you wish to generate data for simulation from an SDT model, you may want to get an idea of what parameter values to use, either from your own data or from one of the available open datasets. This tab allows you to estimate SDT parameters from an uploaded dataset using functions from Cohen et al.`s (2021) ", a(href = "https://link.springer.com/article/10.3758%2Fs13428-020-01402-7", 'sdtlu', .noWS = 'outside'), " R package."),
+                        tags$br(),
+                        tags$p("To estimate parameters, fill in the following information about your dataset below and click `Get SDT parameter estimates`. Once estimation is complete, this page will display estimated parameter values, and several sdtlu plots, including: model-implied SDT distributions and model-predicted vs. data ROCs and response frequencies.")),
                     box(width = 6,
                             textOutput("cond1_label"),
                             radioButtons(
@@ -304,6 +306,8 @@ sdtlu_tab = tabItem(tabName = "sdtlu_tab",
                         dataTableOutput("sdtlu_estimates")),
                     box(width = 12,
                         plotOutput("sdtlu_params_sim_plot")),
+                    box(width = 12,
+                        plotOutput("model_fit_data_plot")),
                     box(width = 12,
                         plotOutput("hypothetical_sdtlu_plot")))
 
@@ -1355,6 +1359,12 @@ server <- function(input, output, session) {
     parameters = reactiveValues(effs = vector(),
                                 effs_different = vector(),
                                 n_confs = NA,
+                                n_confs_a = NA,
+                                n_confs_b = NA,
+                                max_conf_a = NA,
+                                min_conf_a = NA,
+                                max_conf_b = NA,
+                                min_conf_b = NA,
                                 ns = vector(),
                                 n_TA_lineups = NA,
                                 n_TP_lineups = NA,
@@ -1376,14 +1386,19 @@ server <- function(input, output, session) {
         
         parameters$cond1 = as.character(levels(data_files$processed_data$cond)[1])
         
-        #parameters$cond2 = data_files$processed_data %>% 
-        #    as.data.frame() %>% 
-        #    select(cond) %>% 
-        #    unique() %>% 
-        #    slice(2) %>% 
-        #    as.character()
-        
         parameters$cond2 = as.character(levels(data_files$processed_data$cond)[2])
+        
+        parameters$n_confs_a = length(unique(data_files$processed_data$conf_level[data_files$processed_data$cond == parameters$cond1]))
+        
+        parameters$max_conf_a = max(data_files$processed_data$conf_level[data_files$processed_data$cond == parameters$cond1])
+        
+        parameters$min_conf_a = min(data_files$processed_data$conf_level[data_files$processed_data$cond == parameters$cond1])
+        
+        parameters$n_confs_b = length(unique(data_files$processed_data$conf_level[data_files$processed_data$cond == parameters$cond2]))
+        
+        parameters$max_conf_b = max(data_files$processed_data$conf_level[data_files$processed_data$cond == parameters$cond2])
+        
+        parameters$min_conf_b = min(data_files$processed_data$conf_level[data_files$processed_data$cond == parameters$cond2])
         
         output$cond1_label = renderText({parameters$cond1})
         
@@ -1939,6 +1954,14 @@ server <- function(input, output, session) {
             left_join(params_data_b) %>% 
             `colnames<-`(c("Parameter", parameters$cond1, parameters$cond2))
         
+        fit_measures = data.frame("Parameter" = "Fit (G2)",
+                                  "Cond1" = sdtlu_fit_a$best_fit_measure,
+                                  "Cond2" = sdtlu_fit_b$best_fit_measure) %>% 
+            `colnames<-`(c("Parameter", parameters$cond1, parameters$cond2))
+        
+        data_files$sdtlu_estimates = data_files$sdtlu_estimates %>% 
+            rbind(fit_measures)
+        
         output$sdtlu_estimates = renderDataTable({
             data_files$sdtlu_estimates
         })
@@ -1999,23 +2022,112 @@ server <- function(input, output, session) {
         sdtlu_params_sim_plot = combined_dists %>% 
             ggplot(aes(x = Strength, color = Distribution))+
             geom_density()+
+            scale_color_manual(values = c("red", "blue"))+
             facet_grid(cols = vars(Condition))+
             geom_vline(data = criterions_sim,
                        aes(xintercept = Strength),
                        alpha = .5)+
             apatheme+
             labs(y = "Density")+
-            theme(text = element_text(size = 20))
+            ggtitle("Model-implied SDT parameters")+
+            theme(text = element_text(size = 20),
+                  plot.title = element_text(hjust = .5,
+                                            size = 25))
         
         output$sdtlu_params_sim_plot = renderPlot({
             sdtlu_params_sim_plot
         })
         
+        #### Model vs. Data response predictions ----
+        ##### Condition A ----
+        model_fit_data_a = data.frame(model_prop = as.vector(sdtlu_fit_a$model_prop),
+                                    data_resps = as.vector(data_sdtlu_processed_a$resp_data_full),
+                                    resp_type = rep(c(rep("Suspect", parameters$n_confs_a),
+                                                      rep("Filler", parameters$n_confs_a),
+                                                      "Reject"), times = 2),
+                                    conf_level = rep(c(parameters$max_conf_a:parameters$min_conf_a, parameters$max_conf_a:parameters$min_conf_a, NA),
+                                                     times = 2),
+                                    Presence = c(rep("TP", times = parameters$n_confs_a*2+1),
+                                                 rep("TA", times = parameters$n_confs_a*2+1))) %>% 
+            mutate(data_total = sum(data_resps),
+                   data_prop = data_resps/data_total,
+                   row = 1:n()) %>% 
+            rowwise() %>% 
+            mutate(label = paste(Presence, resp_type, conf_level, sep = "_"),
+                   label = str_replace(label, "_NA", "")) %>% 
+            arrange(row) %>% 
+            pivot_longer(names_to = "Source",
+                         values_to = "Proportion",
+                         c(model_prop, data_prop)) %>% 
+            mutate(Source = ifelse(grepl("data", Source), "Data", "Model"),
+                   Condition = parameters$cond1)
+        
+        model_fit_data_a$label = reorder(model_fit_data_a$label, model_fit_data_a$row)
+        
+        ##### Condition B ----
+        model_fit_data_b = data.frame(model_prop = as.vector(sdtlu_fit_b$model_prop),
+                                      data_resps = as.vector(data_sdtlu_processed_b$resp_data_full),
+                                      resp_type = rep(c(rep("Suspect", parameters$n_confs_b),
+                                                        rep("Filler", parameters$n_confs_b),
+                                                        "Reject"), times = 2),
+                                      conf_level = rep(c(parameters$max_conf_b:parameters$min_conf_b, parameters$max_conf_b:parameters$min_conf_b, NA),
+                                                       times = 2),
+                                      Presence = c(rep("TP", times = parameters$n_confs_b*2+1),
+                                                   rep("TA", times = parameters$n_confs_b*2+1))) %>% 
+            mutate(data_total = sum(data_resps),
+                   data_prop = data_resps/data_total,
+                   row = 1:n()) %>% 
+            rowwise() %>% 
+            mutate(label = paste(Presence, resp_type, conf_level, sep = "_"),
+                   label = str_replace(label, "_NA", "")) %>% 
+            arrange(row) %>% 
+            pivot_longer(names_to = "Source",
+                         values_to = "Proportion",
+                         c(model_prop, data_prop)) %>% 
+            mutate(Source = ifelse(grepl("data", Source), "Data", "Model"),
+                   Condition = parameters$cond2)
+        
+        model_fit_data_b$label = reorder(model_fit_data_b$label, model_fit_data_b$row)
+        
+        ##### Combine and plot ----
+        model_fit_data = rbind(model_fit_data_a,
+                               model_fit_data_b) %>% 
+            mutate(Condition = factor(Condition,
+                                      levels = c(parameters$cond1, parameters$cond2)))
+        
+        model_fit_data_plot = model_fit_data %>% 
+            ggplot(aes(x = label, y = Proportion, color = Presence, shape = Source))+
+            geom_point(size = 3)+
+            facet_grid(cols = vars(Condition))+
+            scale_shape_manual(values = c(1, 4))+
+            scale_color_manual(values = c("red", "blue"))+
+            apatheme+
+            ggtitle("Model response predictions vs. data")+
+            theme(text = element_text(size = 20),
+                  axis.text.x = element_text(size = 8,
+                                             angle = 90,
+                                             vjust = .5),
+                  plot.title = element_text(size = 25,
+                                            hjust = .5))+
+            labs(x = "Response Category",
+                 y = "Proportion")
+        
+        output$model_fit_data_plot = renderPlot({
+            model_fit_data_plot
+        })
+        
         #### Model vs. Data ROC curves ----
         ##### Condition A ----
-        cond_a_roc = sdtlu_roc_model(
-            params = sdtlu_fit_a$best_params_full,
-            lineup_size = input$lineup_size_sim_a)
+        if (input$simultaneous_sequential_sim_a == "Simultaneous") {
+            cond_a_roc = sdtlu_roc_model(
+                params = sdtlu_fit_a$best_params_full,
+                lineup_size = input$lineup_size_sim_a)
+        } else {
+            cond_a_roc = sdtlu_roc_model(
+                params = sdtlu_fit_a$best_params_full,
+                lineup_size = input$lineup_size_sim_a,
+                model_type = "seq")
+        }
         
         cond_a_roc_data_lines = data.frame("absent" = cond_a_roc[[3]],
                                            "present" = cond_a_roc[[4]],
@@ -2028,9 +2140,16 @@ server <- function(input, output, session) {
         message(cond_a_roc_data_points)
         
         ##### Condition B ----
-        cond_b_roc = sdtlu_roc_model(
-            params = sdtlu_fit_b$best_params_full,
-            lineup_size = input$lineup_size_sim_b)
+        if (input$simultaneous_sequential_sim_b == "Simultaneous") {
+            cond_b_roc = sdtlu_roc_model(
+                params = sdtlu_fit_b$best_params_full,
+                lineup_size = input$lineup_size_sim_b)
+        } else {
+            cond_b_roc = sdtlu_roc_model(
+                params = sdtlu_fit_b$best_params_full,
+                lineup_size = input$lineup_size_sim_b,
+                model_type = "seq")
+        }
         
         cond_b_roc_data_lines = data.frame("absent"  = cond_b_roc[[3]],
                                            "present" = cond_b_roc[[4]],
@@ -2052,7 +2171,10 @@ server <- function(input, output, session) {
                  y = "Correct ID rate\n",
                  linetype = "Effect",
                  color = "Condition")+
-            theme(text = element_text(size = 20))+
+            ggtitle("Model ROC predictions vs. data")+
+            theme(text = element_text(size = 20),
+                  plot.title = element_text(hjust = .5,
+                                            size = 25))+
             geom_line(data = cond_a_roc_data_lines,
                        aes(x = absent,
                            y = present,
