@@ -345,8 +345,94 @@ parameters_tab = tabItem(tabName = "parameters_tab",
                          box(width = 12,
                              title = "Enter simulation parameters below. Mouse over each entry box for an explanation, and see the 'App validation & testing' tab for recommendations. 
                              You can also import simulation parameters from previous simulations uploaded by users (see the 'Previous simulation results' tab). Once you have entered all parameters, press the `Check parameters and generate hypothetical ROC curves` button to check whether the entered parameters are valid and view 
-                             hypothetical ROC curves (Note that you will need to do this any time you change a parameter value). If the check succeeds, a `Simulate` button will appear."),
+                             hypothetical ROC curves (Note that you will need to do this any time you change a parameter value). If the check succeeds, a `Simulate` button will appear.",
+                             radioButtons("empirical_theoretical",
+                                          "Use uploaded data or simulate from SDT parameters?",
+                                          choices = c("Data",
+                                                      "SDT"),
+                                          selected = "Data")),
                              #tags$p(strong("Enter simulation parameters below. Mouse over each entry box for an explanation. Once you have entered effect sizes and sample sizes, a plot of hypothetical ROCs will be generated."))),
+                         fluidRow(
+                             column(
+                                 6,
+                                 hidden(radioButtons("sim_seq_a",
+                                              "Condition A: Simultaneous or Sequential?",
+                                              choices = c("Simultaneous",
+                                                          "Sequential"),
+                                              selected = "Simultaneous")),
+                                 hidden(numericInput("lineup_sizes_a",
+                                                     "Condition A: Lineup size",
+                                                     value = 6,
+                                                     min = 1)),
+                                 hidden(numericInput("mu_t_a",
+                                                     "Condition A: Target distribution mean",
+                                                     value = 1)),
+                                 bsTooltip("mu_t_a",
+                                           "Specify the target distribution mean (i.e., d). The mean of the lure distribution is 0.",
+                                           placement = "bottom",
+                                           trigger = "hover"),
+                                 hidden(numericInput("sigma_t_a",
+                                                     "Condition A: Target distribution SD",
+                                                     value = 1,
+                                                     min = 0)),
+                                 bsTooltip("sigma_t_a",
+                                           "Specify the SD of the target distribution. The SD of the lure distribution is 1.",
+                                           placement = "bottom",
+                                           trigger = "hover"),
+                                 hidden(textInput("cs_a",
+                                                  "Condition A: Criterion values",
+                                                  value = "",
+                                                  placeholder = "1.5, 2, 2.5")),
+                                 bsTooltip("cs_a",
+                                           "Specify the criterion values in a comma-separated list"),
+                                 hidden(textInput("pos_prop_a",
+                                                  "Condition A: Sequential position probabilities",
+                                                  value = "",
+                                                  placeholder = "0, .5, 0, 0, .5, 0")),
+                                 bsTooltip("pos_prop_a",
+                                           "Specify the probabilities of a suspect appearing in each sequential position, as a comma-separated list. Must be the same length as the lineup size.")
+                                 ),
+                             column(
+                                 6,
+                                 hidden(radioButtons("sim_seq_b",
+                                                     "Condition B: Simultaneous or Sequential?",
+                                                     choices = c("Simultaneous",
+                                                                 "Sequential"),
+                                                     selected = "Simultaneous")),
+                                 hidden(numericInput("lineup_sizes_b",
+                                                     "Condition B: Lineup size",
+                                                     value = 6,
+                                                     min = 1)),
+                                 hidden(numericInput("mu_t_b",
+                                                     "Condition B: Target distribution mean",
+                                                     value = 1)),
+                                 bsTooltip("mu_t_b",
+                                           "Specify the target distribution mean (i.e., d). The mean of the lure distribution is 0.",
+                                           placement = "bottom",
+                                           trigger = "hover"),
+                                 hidden(numericInput("sigma_t_b",
+                                                     "Condition B: Target distribution SD",
+                                                     value = 1,
+                                                     min = 0)),
+                                 bsTooltip("sigma_t_b",
+                                           "Specify the SD of the target distribution. The SD of the lure distribution is 1.",
+                                           placement = "bottom",
+                                           trigger = "hover"),
+                                 hidden(textInput("cs_b",
+                                                  "Condition B: Criterion values",
+                                                  value = "",
+                                                  placeholder = "1.5, 2, 2.5")),
+                                 bsTooltip("cs_b",
+                                           "Specify the criterion values in a comma-separated list"),
+                                 hidden(textInput("pos_prop_b",
+                                                  "Condition B: Sequential position probabilities",
+                                                  value = "",
+                                                  placeholder = "0, .5, 0, 0, .5, 0")),
+                                 bsTooltip("pos_prop_b",
+                                           "Specify the probabilities of a suspect appearing in each sequential position, as a comma-separated list. Must be the same length as the lineup size.")
+                                 
+                             )
+                        ),
                          fluidRow(
                              column(
                                  4,
@@ -826,6 +912,7 @@ server <- function(input, output, session) {
                                 upload_data = NULL,
                                 pwr_store = NULL,
                                 sim_params = data.frame(Parameter = rep(NA, times = 14)),
+                                sdtlu_hypothetical_data = NULL,
                                 compendium_data = NULL,
                                 previous_sim_params = data.frame(Parameter = rep(NA, times = 8)),
                                 previous_sim_effs = NULL)
@@ -1370,7 +1457,74 @@ server <- function(input, output, session) {
                                 n_TP_lineups = NA,
                                 cond1 = NA,
                                 cond2 = NA,
-                                between_within = NA)
+                                between_within = NA,
+                                empirical_theoretical = NA,
+                                sim_seq_a = NA,
+                                lineup_sizes_a = NA,
+                                mu_t_a = NA,
+                                sigma_t_a = NA,
+                                cs_a = NA,
+                                pos_prop_a = NA,
+                                sim_seq_b = NA,
+                                lineup_sizes_b = NA,
+                                mu_t_b = NA,
+                                sigma_t_b = NA,
+                                cs_b = NA,
+                                pos_prop_b = NA
+                                )
+    
+    observeEvent(input$empirical_theoretical, {
+        if (input$empirical_theoretical == "Data") {
+            show("eff_type")
+            show("effs")
+            
+            hide("sim_seq_a")
+            hide("lineup_sizes_a")
+            hide("mu_t_a")
+            hide("sigma_t_a")
+            hide("cs_a")
+            hide("pos_prop_a")
+            
+            hide("sim_seq_b")
+            hide("lineup_sizes_b")
+            hide("mu_t_b")
+            hide("sigma_t_b")
+            hide("cs_b")
+            hide("pos_prop_b")
+            
+        } else {
+            show("sim_seq_a")
+            show("lineup_sizes_a")
+            show("mu_t_a")
+            show("sigma_t_a")
+            show("cs_a")
+            
+            show("sim_seq_b")
+            show("lineup_sizes_b")
+            show("mu_t_b")
+            show("sigma_t_b")
+            show("cs_b")
+            
+            hide("eff_type")
+            hide("effs")
+        }
+    })
+    
+    observeEvent(input$sim_seq_a, {
+        if (input$sim_seq_a == "Simultaneous") {
+            hide("pos_prop_a")
+        } else {
+            show("pos_prop_a")
+        }
+    })
+    
+    observeEvent(input$sim_seq_b, {
+        if (input$sim_seq_a == "Simultaneous") {
+            hide("pos_prop_b")
+        } else {
+            show("pos_prop_b")
+        }
+    })
     
     observeEvent(data_files$processed_data, {
         #parameters$cond1 = data_files$processed_data %>% 
@@ -1404,8 +1558,6 @@ server <- function(input, output, session) {
         
         output$cond2_label = renderText({parameters$cond2})
     })
-    
-    
     
     #observeEvent(input$roc_paired, {
     #    if (input$roc_paired == "Yes") {
@@ -1492,13 +1644,26 @@ server <- function(input, output, session) {
     
     ### one- or two-tailed test ----
     output$test_tails = renderUI({
-        opt = c("Two-tailed" = "2_tail",
-                sprintf("%s > %s",
-                        parameters$cond1,
-                        parameters$cond2),
-                sprintf("%s > %s",
-                        parameters$cond2,
-                        parameters$cond1))
+        
+        if(!is.null(data_files$processed_data) & input$empirical_theoretical == "Data") {
+            opt = c("Two-tailed" = "2_tail",
+                    sprintf("%s > %s",
+                            parameters$cond1,
+                            parameters$cond2),
+                    sprintf("%s > %s",
+                            parameters$cond2,
+                            parameters$cond1))
+        } else {
+            opt = c("Two-tailed" = "2_tail",
+                    sprintf("%s > %s",
+                            "A",
+                            "B"),
+                    sprintf("%s > %s",
+                            "B",
+                            "A"))
+        }
+        
+        
                 #sprintf("%s > %s",
                 #        unique(data_files$processed_data$cond)[1],
                 #        unique(data_files$processed_data$cond)[2]) = "A_B",
@@ -1596,250 +1761,709 @@ server <- function(input, output, session) {
     
     ### generate hypothetical ROCs before simulation ----
     observeEvent(input$generate_hypothetical, {
-        req(data_files$processed_data)
-        req(parameters$effs)
-        req(parameters$ns)
         
-        if (length(parameters$effs_different) != parameters$n_confs) {
-            showModal(modalDialog(
-                title = "Warning",
-                "# of entered effect sizes does not match # of confidence levels in the data. 
+        if (input$empirical_theoretical == "Data") {
+            req(data_files$processed_data)
+            req(parameters$effs)
+            req(parameters$ns)
+            
+            if (length(parameters$effs_different) != parameters$n_confs) {
+                showModal(modalDialog(
+                    title = "Warning",
+                    "# of entered effect sizes does not match # of confidence levels in the data. 
                 Please enter the correct # of effect sizes."
-            ))
-            
-            data_files$conf_effs_data = data.frame(
-                conf_level = unique(data_files$processed_data$conf_level)) %>% 
-                mutate(conf_level_rev = max(conf_level)+1 - conf_level) %>% 
-                arrange(conf_level) %>% 
-                mutate(conf_effs = 1)
-            
-            hide("sim_start")
-        } else {
-            data_files$conf_effs_data = data.frame(
-                conf_level = unique(data_files$processed_data$conf_level)) %>% 
-                mutate(conf_level_rev = max(conf_level)+1 - conf_level) %>% 
-                arrange(conf_level) %>% 
-                mutate(conf_effs = parameters$effs_different)
-            
-            show("sim_start")
-        }
-        
-        #### getting proportion data from each condition ----
-        #data_props = open_data %>% 
-        #    filter(exp == "Akan et al. (2021): Exp 1: Showup vs. 6-person") %>%
-        #    group_by(id_type, culprit_present, cond) %>% 
-        #    count() %>% 
-        #    ungroup() %>% 
-        #    group_by(culprit_present, cond) %>% 
-        #    mutate(total = sum(n),
-        #           prop = n/total,
-        #           cond = as.factor(cond)) %>% 
-        #    ungroup()
-        
-        data_props = data_files$processed_data %>%
-            group_by(id_type, culprit_present, cond) %>% 
-            count() %>% 
-            ungroup() %>% 
-            group_by(culprit_present, cond) %>% 
-            mutate(total = sum(n),
-                   prop = n/total,
-                   cond = as.factor(cond)) %>% 
-            ungroup()
-        
-        message("Processed proportion data")
-        
-        ##### Getting TA & TP suspect proportions for Condition 1 ----
-        cond1_TA_susp_prop = data_props %>% 
-            filter(cond == levels(data_props$cond)[1] &
-                       culprit_present == "absent" & 
-                       id_type == "suspect") %>% 
-            dplyr::select(prop) %>% 
-            as.numeric()
-        
-        cond1_TP_susp_prop = data_props %>% 
-            filter(cond == levels(data_props$cond)[1] &
-                       culprit_present == "present" & 
-                       id_type == "suspect") %>% 
-            dplyr::select(prop) %>% 
-            as.numeric()
-        
-        ##### Getting TA & TP suspect proportions for Condition 2 ----
-        cond2_TA_susp_prop = data_props %>% 
-            filter(cond == levels(data_props$cond)[2] &
-                       culprit_present == "absent" & 
-                       id_type == "suspect") %>% 
-            dplyr::select(prop) %>% 
-            as.numeric()
-        
-        cond2_TP_susp_prop = data_props %>% 
-            filter(cond == levels(data_props$cond)[2] &
-                       culprit_present == "present" & 
-                       id_type == "suspect") %>% 
-            dplyr::select(prop) %>% 
-            as.numeric()
-        
-        message("Processed data for both conditions")
-        
-        #### Getting responses at each confidence level for both conditions ----
-        data_original = data_files$processed_data %>%
-            #mutate(conf_level = as.factor(conf_level)) %>% 
-            group_by(id_type, conf_level_rev, culprit_present, cond) %>% 
-            count() %>% 
-            ungroup() %>% 
-            group_by(culprit_present, cond) %>% 
-            mutate(total = sum(n),
-                   prop = n/total) %>% 
-            ungroup() %>%
-            filter(id_type == "suspect")
-        
-        message("Data processing complete")
-        message(data_original)
-        
-        ROC_data = data.frame(prop = rep(NA, times = length(unique(data_original$cond))*
-                                             length(unique(data_original$culprit_present))*
-                                             length(unique(data_original$conf_level_rev))*
-                                             length(parameters$effs)),
-                              cond = NA,
-                              presence = NA,
-                              criteria = NA,
-                              eff = NA)
-        
-        row = 1
-        
-        message("Created empty ROC store object for hypothetical plot")
-        
-        for (g in 1:length(parameters$effs)) {
-            data = data_original %>% 
-                left_join(data_files$conf_effs_data)
-            
-            eff = parameters$effs[g]
-            
-            for (h in 1:nrow(data)) {
-                if (data$culprit_present[h] == "present" & data$cond[h] == levels(data$cond)[2]) {
-                    data$n[h] = round(data$n[h] * (eff + 1) * (data$conf_effs[h] + 1))
-                } else {
-                    data$n[h] = data$n[h]
-                }
+                ))
+                
+                data_files$conf_effs_data = data.frame(
+                    conf_level = unique(data_files$processed_data$conf_level)) %>% 
+                    mutate(conf_level_rev = max(conf_level)+1 - conf_level) %>% 
+                    arrange(conf_level) %>% 
+                    mutate(conf_effs = 1)
+                
+                hide("sim_start")
+            } else {
+                data_files$conf_effs_data = data.frame(
+                    conf_level = unique(data_files$processed_data$conf_level)) %>% 
+                    mutate(conf_level_rev = max(conf_level)+1 - conf_level) %>% 
+                    arrange(conf_level) %>% 
+                    mutate(conf_effs = parameters$effs_different)
+                
+                show("sim_start")
             }
             
-            data$prop = data$n / data$total
+            #### getting proportion data from each condition ----
+            #data_props = open_data %>% 
+            #    filter(exp == "Akan et al. (2021): Exp 1: Showup vs. 6-person") %>%
+            #    group_by(id_type, culprit_present, cond) %>% 
+            #    count() %>% 
+            #    ungroup() %>% 
+            #    group_by(culprit_present, cond) %>% 
+            #    mutate(total = sum(n),
+            #           prop = n/total,
+            #           cond = as.factor(cond)) %>% 
+            #    ungroup()
             
-            for (i in 1:length(unique(data$cond))) {
-                curr_cond = levels(data$cond)[i]
-                for (j in 1:length(unique(data$culprit_present))) {
-                    curr_present = unique(data$culprit_present)[j]
-                    for (k in 1:length(unique(data$conf_level_rev))) {
-                        curr_conf = unique(data$conf_level_rev)[k]
-                        curr_resps = sum(data$prop[data$cond == curr_cond &
-                                                       data$culprit_present == curr_present &
-                                                       data$conf_level_rev %in% c(1:curr_conf)])
-                        
-                        ROC_data$cond[row] = curr_cond
-                        ROC_data$presence[row] = curr_present
-                        ROC_data$prop[row] = curr_resps
-                        ROC_data$criteria[row] = curr_conf
-                        ROC_data$eff[row] = eff
-                        row = row + 1
+            data_props = data_files$processed_data %>%
+                group_by(id_type, culprit_present, cond) %>% 
+                count() %>% 
+                ungroup() %>% 
+                group_by(culprit_present, cond) %>% 
+                mutate(total = sum(n),
+                       prop = n/total,
+                       cond = as.factor(cond)) %>% 
+                ungroup()
+            
+            message("Processed proportion data")
+            
+            ##### Getting TA & TP suspect proportions for Condition 1 ----
+            cond1_TA_susp_prop = data_props %>% 
+                filter(cond == levels(data_props$cond)[1] &
+                           culprit_present == "absent" & 
+                           id_type == "suspect") %>% 
+                dplyr::select(prop) %>% 
+                as.numeric()
+            
+            cond1_TP_susp_prop = data_props %>% 
+                filter(cond == levels(data_props$cond)[1] &
+                           culprit_present == "present" & 
+                           id_type == "suspect") %>% 
+                dplyr::select(prop) %>% 
+                as.numeric()
+            
+            ##### Getting TA & TP suspect proportions for Condition 2 ----
+            cond2_TA_susp_prop = data_props %>% 
+                filter(cond == levels(data_props$cond)[2] &
+                           culprit_present == "absent" & 
+                           id_type == "suspect") %>% 
+                dplyr::select(prop) %>% 
+                as.numeric()
+            
+            cond2_TP_susp_prop = data_props %>% 
+                filter(cond == levels(data_props$cond)[2] &
+                           culprit_present == "present" & 
+                           id_type == "suspect") %>% 
+                dplyr::select(prop) %>% 
+                as.numeric()
+            
+            message("Processed data for both conditions")
+            
+            #### Getting responses at each confidence level for both conditions ----
+            data_original = data_files$processed_data %>%
+                #mutate(conf_level = as.factor(conf_level)) %>% 
+                group_by(id_type, conf_level_rev, culprit_present, cond) %>% 
+                count() %>% 
+                ungroup() %>% 
+                group_by(culprit_present, cond) %>% 
+                mutate(total = sum(n),
+                       prop = n/total) %>% 
+                ungroup() %>%
+                filter(id_type == "suspect")
+            
+            message("Data processing complete")
+            message(data_original)
+            
+            ROC_data = data.frame(prop = rep(NA, times = length(unique(data_original$cond))*
+                                                 length(unique(data_original$culprit_present))*
+                                                 length(unique(data_original$conf_level_rev))*
+                                                 length(parameters$effs)),
+                                  cond = NA,
+                                  presence = NA,
+                                  criteria = NA,
+                                  eff = NA)
+            
+            row = 1
+            
+            message("Created empty ROC store object for hypothetical plot")
+            
+            for (g in 1:length(parameters$effs)) {
+                data = data_original %>% 
+                    left_join(data_files$conf_effs_data)
+                
+                eff = parameters$effs[g]
+                
+                for (h in 1:nrow(data)) {
+                    if (data$culprit_present[h] == "present" & data$cond[h] == levels(data$cond)[2]) {
+                        data$n[h] = round(data$n[h] * (eff + 1) * (data$conf_effs[h] + 1))
+                    } else {
+                        data$n[h] = data$n[h]
+                    }
+                }
+                
+                data$prop = data$n / data$total
+                
+                for (i in 1:length(unique(data$cond))) {
+                    curr_cond = levels(data$cond)[i]
+                    for (j in 1:length(unique(data$culprit_present))) {
+                        curr_present = unique(data$culprit_present)[j]
+                        for (k in 1:length(unique(data$conf_level_rev))) {
+                            curr_conf = unique(data$conf_level_rev)[k]
+                            curr_resps = sum(data$prop[data$cond == curr_cond &
+                                                           data$culprit_present == curr_present &
+                                                           data$conf_level_rev %in% c(1:curr_conf)])
+                            
+                            ROC_data$cond[row] = curr_cond
+                            ROC_data$presence[row] = curr_present
+                            ROC_data$prop[row] = curr_resps
+                            ROC_data$criteria[row] = curr_conf
+                            ROC_data$eff[row] = eff
+                            row = row + 1
+                        }
                     }
                 }
             }
-        }
-        
-        message("Populated ROC store object")
-        
-        if (max(ROC_data$prop) > 1) {
-            showModal(modalDialog(
-                title = "Warning",
-                "One or more effect sizes results in a correct ID proportion > 1. 
+            
+            message("Populated ROC store object")
+            
+            if (max(ROC_data$prop) > 1) {
+                showModal(modalDialog(
+                    title = "Warning",
+                    "One or more effect sizes results in a correct ID proportion > 1. 
                 Change the maximum effect size(s) or the direction of the effect sizes to be tested"
-            ))
-            
-            hide("sim_start")
-        } else if (min(parameters$effs) < -1) {
-            showModal(modalDialog(
-                title = "Warning",
-                "One or more effect sizes is below -1. 
+                ))
+                
+                hide("sim_start")
+            } else if (min(parameters$effs) < -1) {
+                showModal(modalDialog(
+                    title = "Warning",
+                    "One or more effect sizes is below -1. 
                 Please ensure that all effect sizes are greater than or equal to -1"
-            ))
+                ))
+                
+                hide("sim_start")
+            } else {
+                show("sim_start")
+            }
             
-            hide("sim_start")
-        } else {
-            show("sim_start")
-        }
-        
-        ROC_data_wide = spread(ROC_data,
-                               key = "presence",
-                               value = "prop")  %>% 
-            rbind(data.frame(cond = rep(c(parameters$cond1, 
-                                          parameters$cond2), 
-                                        each = length(parameters$effs)),
-                             criteria = NA,
-                             eff = rep(parameters$effs, times = length(unique(data_original$cond))),
-                             present = 0,
-                             absent = 0)) #%>% 
+            ROC_data_wide = spread(ROC_data,
+                                   key = "presence",
+                                   value = "prop")  %>% 
+                rbind(data.frame(cond = rep(c(parameters$cond1, 
+                                              parameters$cond2), 
+                                            each = length(parameters$effs)),
+                                 criteria = NA,
+                                 eff = rep(parameters$effs, times = length(unique(data_original$cond))),
+                                 present = 0,
+                                 absent = 0)) #%>% 
             #mutate(present = ifelse(present < 0, 0,
             #                        ifelse(present > 1, 1, present)))
+            
+            
+            max_criteria = as.numeric(length(unique(ROC_data_wide$criteria[!is.na(ROC_data_wide$criteria)])))
+            
+            if (input$roc_trunc == "Lowest false ID rate") {
+                #partial_threshold = ROC_data_wide %>% 
+                #    filter(criteria == max_criteria) %>% 
+                #    select(absent) %>% 
+                #    min() 
+                
+                partial_threshold = min(
+                    data_props$prop[data_props$id_type == "suspect" &
+                                        data_props$culprit_present == "absent" &
+                                        data_props$cond == levels(data_props$cond)[1]],
+                    data_props$prop[data_props$id_type == "suspect" &
+                                        data_props$culprit_present == "absent" &
+                                        data_props$cond == levels(data_props$cond)[2]]
+                )
+                
+            } else if (input$roc_trunc == "Highest false ID rate") {
+                #partial_threshold = ROC_data_wide %>% 
+                #    filter(criteria == max_criteria) %>% 
+                #    select(absent) %>% 
+                #    max()
+                
+                partial_threshold = max(
+                    data_props$prop[data_props$id_type == "suspect" &
+                                        data_props$culprit_present == "absent" &
+                                        data_props$cond == levels(data_props$cond)[1]],
+                    data_props$prop[data_props$id_type == "suspect" &
+                                        data_props$culprit_present == "absent" &
+                                        data_props$cond == levels(data_props$cond)[2]]
+                )
+                
+            } else {
+                partial_threshold = 1 - other_vars$custom_trunc
+            }
+            
+            message("Created data for plotting")
+            message(ROC_data_wide)
+            
+            
+            ROC_data_plot = ROC_data_wide %>% 
+                ggplot(aes(x = absent, y = present, color = cond, linetype = as.factor(eff)))+
+                geom_point(alpha = .5)+
+                geom_line()+
+                geom_vline(xintercept = partial_threshold)+
+                apatheme+
+                labs(x = "\nFalse ID rate",
+                     y = "Correct ID rate\n",
+                     linetype = "Effect",
+                     color = "Condition")+
+                theme(text = element_text(size = 20))
+            
+            plots$hypothetical_plot = ROC_data_plot
+            
+            output$ROC_data_plot = renderPlot({
+                ROC_data_plot
+            })
         
-        
-        max_criteria = as.numeric(length(unique(ROC_data_wide$criteria[!is.na(ROC_data_wide$criteria)])))
-        
-        if (input$roc_trunc == "Lowest false ID rate") {
-            #partial_threshold = ROC_data_wide %>% 
-            #    filter(criteria == max_criteria) %>% 
-            #    select(absent) %>% 
-            #    min() 
-            
-            partial_threshold = min(
-                data_props$prop[data_props$id_type == "suspect" &
-                                    data_props$culprit_present == "absent" &
-                                    data_props$cond == levels(data_props$cond)[1]],
-                data_props$prop[data_props$id_type == "suspect" &
-                                    data_props$culprit_present == "absent" &
-                                    data_props$cond == levels(data_props$cond)[2]]
-            )
-            
-        } else if (input$roc_trunc == "Highest false ID rate") {
-            #partial_threshold = ROC_data_wide %>% 
-            #    filter(criteria == max_criteria) %>% 
-            #    select(absent) %>% 
-            #    max()
-            
-            partial_threshold = max(
-                data_props$prop[data_props$id_type == "suspect" &
-                                    data_props$culprit_present == "absent" &
-                                    data_props$cond == levels(data_props$cond)[1]],
-                data_props$prop[data_props$id_type == "suspect" &
-                                    data_props$culprit_present == "absent" &
-                                    data_props$cond == levels(data_props$cond)[2]]
-            )
-            
+        # If simulating from SDT parameters ----
         } else {
-            partial_threshold = 1 - other_vars$custom_trunc
-        }
+            ### Required input values for simulation ----
+            req(input$sim_seq_a)
+            req(input$lineup_sizes_a)
+            req(input$mu_t_a)
+            req(input$sigma_t_a)
+            req(input$cs_a)
+            
+            req(input$sim_seq_b)
+            req(input$lineup_sizes_b)
+            req(input$mu_t_b)
+            req(input$sigma_t_b)
+            req(input$cs_b)
+            
+            req(parameters$ns)
+            
+            ### Set parameter values ----
+            parameters$sim_seq_a = input$sim_seq_a
+            parameters$lineup_sizes_a = input$lineup_sizes_a
+            parameters$mu_t_a = input$mu_t_a
+            parameters$sigma_t_a = input$sigma_t_a
+            parameters$cs_a = extract(input$cs_a)
 
-        message("Created data for plotting")
-        message(ROC_data_wide)
-        
-        
-        ROC_data_plot = ROC_data_wide %>% 
-            ggplot(aes(x = absent, y = present, color = cond, linetype = as.factor(eff)))+
-            geom_point(alpha = .5)+
-            geom_line()+
-            geom_vline(xintercept = partial_threshold)+
-            apatheme+
-            labs(x = "\nFalse ID rate",
-                 y = "Correct ID rate\n",
-                 linetype = "Effect",
-                 color = "Condition")+
-            theme(text = element_text(size = 20))
-        
-        plots$hypothetical_plot = ROC_data_plot
-        
-        output$ROC_data_plot = renderPlot({
-            ROC_data_plot
+            parameters$sim_seq_b = input$sim_seq_b
+            parameters$lineup_sizes_b = input$lineup_sizes_b
+            parameters$mu_t_b = input$mu_t_b
+            parameters$sigma_t_b = input$sigma_t_b
+            parameters$cs_b = extract(input$cs_b)
+            
+            parameters$effs = 0
+            
+            #### Set the probability of target presence (based on # of TP and total lineups) ----
+            p = input$n_TP_lineups / input$n_total_lineups
+            
+            #### Set the # of datasets to simulate for the hypothetical ROC curves ----
+            n_sims = 1
+            
+            #### Set the # of trials to estimate (using the maximum N provided) ----
+            n_trials = max(parameters$ns)
+            
+            #### Put parameter values into vectors ----
+            params_a = c(p, parameters$mu_t_a, parameters$sigma_t_a, parameters$cs_a)
+            params_b = c(p, parameters$mu_t_b, parameters$sigma_t_b, parameters$cs_b)
+            
+            message(params_a)
+            message(params_b)
+            
+            message("Generated SDT parameter values prior to simulation")
+             
+            ### If one or both conditions are Sequential, require pos_prop variables (and check these against lineup size) ----
+            #### Generate simulated data from SDT models ----
+            ##### Condition A ----
+            if (input$sim_seq_a == "Sequential") {
+                req(input$pos_prop_a)
+                
+                parameters$pos_prop_a = extract(input$pos_prop_a)
+                
+                ###### Check if the probability vector is same length as lineup size ----
+                if (length(parameters$pos_prop_a) != parameters$lineup_sizes_a) {
+                    showModal(modalDialog(
+                        title = "Warning",
+                        "# of entered sequential probabilities does not match lineup size."
+                    ))
+                    
+                    parameters$pos_prop_a = c(rep(1/parameters$lineup_sizes_a), times = lineup_sizes_a)
+
+                    hide("sim_start")
+                } else {
+                    simmed_data_a = as.data.frame(t(as.data.frame(sdtlu_seq_sim(params_a, parameters$lineup_sizes_a, n_trials, n_sims, pos_prop = parameters$pos_prop_a))))
+                    simmed_data_a$id_type = rep(c(rep("suspect", length(parameters$cs_a)),
+                                                  rep("filler", length(parameters$cs_a)),
+                                                  "reject"), times = 2)
+                    simmed_data_a$conf_level_rev = rep(c(1:length(parameters$cs_a), 1:length(parameters$cs_a), NA),
+                                                       times = 2)
+                    simmed_data_a$conf_level = rep(c(length(parameters$cs_a):1, length(parameters$cs_a):1, NA),
+                                                   times = 2)
+                    simmed_data_a$culprit_present = c(rep("present", times = length(parameters$cs_a)*2+1),
+                                               rep("absent", times = length(parameters$cs_a)*2+1))
+                    
+                    simmed_data_a_TP_rej = rbind(filter(simmed_data_a, id_type == "reject" & culprit_present == "present"),
+                                                 filter(simmed_data_a, id_type == "reject" & culprit_present == "present"),
+                                                 filter(simmed_data_a, id_type == "reject" & culprit_present == "present"))
+                    simmed_data_a_TP_rej$conf_level_rev = 1:length(parameters$cs_a)
+                    simmed_data_a_TP_rej$conf_level = length(parameters$cs_a):1
+                    simmed_data_a_TP_rej$V1 = round(simmed_data_a_TP_rej$V1/length(parameters$cs_a))
+                    
+                    simmed_data_a_TA_rej = rbind(filter(simmed_data_a, id_type == "reject" & culprit_present == "absent"),
+                                                 filter(simmed_data_a, id_type == "reject" & culprit_present == "absent"),
+                                                 filter(simmed_data_a, id_type == "reject" & culprit_present == "absent"))
+                    simmed_data_a_TA_rej$conf_level_rev = 1:length(parameters$cs_a)
+                    simmed_data_a_TA_rej$conf_level = length(parameters$cs_a):1
+                    simmed_data_a_TA_rej$V1 = round(simmed_data_a_TA_rej$V1/length(parameters$cs_a))
+                    
+                    simmed_data_a_final = filter(rbind(simmed_data_a,
+                                                       simmed_data_a_TP_rej,
+                                                       simmed_data_a_TA_rej),
+                                                 !is.na(conf_level))
+                    simmed_data_a_final$cond = "A"
+                }
+            } else {
+                simmed_data_a = as.data.frame(t(as.data.frame(sdtlu_sim_sim(params_a, parameters$lineup_sizes_a, n_trials, n_sims))))
+                simmed_data_a$id_type = rep(c(rep("suspect", length(parameters$cs_a)),
+                                              rep("filler", length(parameters$cs_a)),
+                                              "reject"), times = 2)
+                
+                simmed_data_a$conf_level_rev = rep(c(1:length(parameters$cs_a), 1:length(parameters$cs_a), NA),
+                                                   times = 2)
+                simmed_data_a$conf_level = rep(c(length(parameters$cs_a):1, length(parameters$cs_a):1, NA),
+                                               times = 2)
+                simmed_data_a$culprit_present = c(rep("present", times = length(parameters$cs_a)*2+1),
+                                           rep("absent", times = length(parameters$cs_a)*2+1))
+                
+                simmed_data_a_TP_rej = rbind(filter(simmed_data_a, id_type == "reject" & culprit_present == "present"),
+                                             filter(simmed_data_a, id_type == "reject" & culprit_present == "present"),
+                                             filter(simmed_data_a, id_type == "reject" & culprit_present == "present"))
+                simmed_data_a_TP_rej$conf_level_rev = 1:length(parameters$cs_a)
+                simmed_data_a_TP_rej$conf_level = length(parameters$cs_a):1
+                simmed_data_a_TP_rej$V1 = round(simmed_data_a_TP_rej$V1/length(parameters$cs_a))
+                
+                simmed_data_a_TA_rej = rbind(filter(simmed_data_a, id_type == "reject" & culprit_present == "absent"),
+                                             filter(simmed_data_a, id_type == "reject" & culprit_present == "absent"),
+                                             filter(simmed_data_a, id_type == "reject" & culprit_present == "absent"))
+                simmed_data_a_TA_rej$conf_level_rev = 1:length(parameters$cs_a)
+                simmed_data_a_TA_rej$conf_level = length(parameters$cs_a):1
+                simmed_data_a_TA_rej$V1 = round(simmed_data_a_TA_rej$V1/length(parameters$cs_a))
+                
+                simmed_data_a_final = filter(rbind(simmed_data_a,
+                                                   simmed_data_a_TP_rej,
+                                                   simmed_data_a_TA_rej),
+                                             !is.na(conf_level))
+                simmed_data_a_final$cond = "A"
+            }
+            
+            ##### Condition B ----
+            if (input$sim_seq_b == "Sequential") {
+                req(input$pos_prop_b)
+                
+                parameters$pos_prop_b = extract(input$pos_prop_b)
+                
+                ###### Check if the probability vector is same length as lineup size ----
+                if (length(parameters$pos_prop_b) != parameters$lineup_sizes_b) {
+                    showModal(modalDialog(
+                        title = "Warning",
+                        "# of entered sequential probabilities does not match lineup size."
+                    ))
+                    
+                    parameters$pos_prop_b = c(rep(1/parameters$lineup_sizes_b), times = lineup_sizes_b)
+                    
+                    hide("sim_start")
+                } else {
+                    simmed_data_b = as.data.frame(t(as.data.frame(sdtlu_seq_sim(params_b, parameters$lineup_sizes_b, n_trials, n_sims, pos_prop = parameters$pos_prop_b))))
+                    simmed_data_b$id_type = rep(c(rep("suspect", length(parameters$cs_b)),
+                                                  rep("filler", length(parameters$cs_b)),
+                                                  "reject"), times = 2)
+                    simmed_data_b$conf_level_rev = rep(c(1:length(parameters$cs_b), 1:length(parameters$cs_b), NA),
+                                                       times = 2)
+                    simmed_data_b$conf_level = rep(c(length(parameters$cs_b):1, length(parameters$cs_b):1, NA),
+                                                   times = 2)
+                    simmed_data_b$culprit_present = c(rep("present", times = length(parameters$cs_b)*2+1),
+                                               rep("absent", times = length(parameters$cs_b)*2+1))
+                    
+                    simmed_data_b_TP_rej = rbind(filter(simmed_data_b, id_type == "reject" & culprit_present == "present"),
+                                                 filter(simmed_data_b, id_type == "reject" & culprit_present == "present"),
+                                                 filter(simmed_data_b, id_type == "reject" & culprit_present == "present"))
+                    simmed_data_b_TP_rej$conf_level_rev = 1:length(parameters$cs_b)
+                    simmed_data_b_TP_rej$conf_level = length(parameters$cs_b):1
+                    simmed_data_b_TP_rej$V1 = round(simmed_data_b_TP_rej$V1/length(parameters$cs_b))
+                    
+                    simmed_data_b_TA_rej = rbind(filter(simmed_data_b, id_type == "reject" & culprit_present == "absent"),
+                                                 filter(simmed_data_b, id_type == "reject" & culprit_present == "absent"),
+                                                 filter(simmed_data_b, id_type == "reject" & culprit_present == "absent"))
+                    simmed_data_b_TA_rej$conf_level_rev = 1:length(parameters$cs_b)
+                    simmed_data_b_TA_rej$conf_level = length(parameters$cs_b):1
+                    simmed_data_b_TA_rej$V1 = round(simmed_data_b_TA_rej$V1/length(parameters$cs_b))
+                    
+                    simmed_data_b_final = filter(rbind(simmed_data_b,
+                                                       simmed_data_b_TP_rej,
+                                                       simmed_data_b_TA_rej),
+                                                 !is.na(conf_level))
+                    simmed_data_b_final$cond = "B"
+                }
+            } else {
+                simmed_data_b = as.data.frame(t(as.data.frame(sdtlu_sim_sim(params_b, parameters$lineup_sizes_b, n_trials, n_sims))))
+                simmed_data_b$id_type = rep(c(rep("suspect", length(parameters$cs_b)),
+                                              rep("filler", length(parameters$cs_b)),
+                                              "reject"), times = 2)
+                simmed_data_b$conf_level_rev = rep(c(1:length(parameters$cs_b), 1:length(parameters$cs_b), NA),
+                                                   times = 2)
+                simmed_data_b$conf_level = rep(c(length(parameters$cs_b):1, length(parameters$cs_b):1, NA),
+                                               times = 2)
+                simmed_data_b$culprit_present = c(rep("present", times = length(parameters$cs_b)*2+1),
+                                           rep("absent", times = length(parameters$cs_b)*2+1))
+                
+                simmed_data_b_TP_rej = rbind(filter(simmed_data_b, id_type == "reject" & culprit_present == "present"),
+                                             filter(simmed_data_b, id_type == "reject" & culprit_present == "present"),
+                                             filter(simmed_data_b, id_type == "reject" & culprit_present == "present"))
+                simmed_data_b_TP_rej$conf_level_rev = 1:length(parameters$cs_b)
+                simmed_data_b_TP_rej$conf_level = length(parameters$cs_b):1
+                simmed_data_b_TP_rej$V1 = round(simmed_data_b_TP_rej$V1/length(parameters$cs_b))
+                
+                simmed_data_b_TA_rej = rbind(filter(simmed_data_b, id_type == "reject" & culprit_present == "absent"),
+                                             filter(simmed_data_b, id_type == "reject" & culprit_present == "absent"),
+                                             filter(simmed_data_b, id_type == "reject" & culprit_present == "absent"))
+                simmed_data_b_TA_rej$conf_level_rev = 1:length(parameters$cs_b)
+                simmed_data_b_TA_rej$conf_level = length(parameters$cs_b):1
+                simmed_data_b_TA_rej$V1 = round(simmed_data_b_TA_rej$V1/length(parameters$cs_b))
+                
+                simmed_data_b_final = filter(rbind(simmed_data_b,
+                                                   simmed_data_b_TP_rej,
+                                                   simmed_data_b_TA_rej),
+                                             !is.na(conf_level))
+                simmed_data_b_final$cond = "B"
+            }
+            
+            #### Combine Condition A & B data ----
+            simmed_data = rbind(simmed_data_a_final,
+                                simmed_data_b_final)
+            
+            #### Generate trial-level data ----
+            simmed_data_trial = data.frame()
+            
+            for (i in 1:nrow(simmed_data)) {
+                simmed_data_slice = simmed_data[i,]
+                simmed_data_append = do.call("rbind", replicate(simmed_data_slice$V1, simmed_data_slice, simplify = FALSE))
+                simmed_data_trial = rbind(simmed_data_trial,
+                                          simmed_data_append)    
+            }
+            
+            simmed_data_trial$cond = factor(simmed_data_trial$cond,
+                                            levels = c("A", "B"))
+            
+            data_files$sdtlu_hypothetical_data = simmed_data_trial
+            
+            message("Created hypothetical sdtlu data")
+            
+            data_files$conf_effs_data = data.frame(
+                conf_level = unique(data_files$sdtlu_hypothetical_data$conf_level)) %>% 
+                mutate(conf_level_rev = max(conf_level)+1 - conf_level) %>% 
+                arrange(conf_level) %>% 
+                mutate(conf_effs = 0)
+            
+            #### getting proportion data from each condition ----
+            #data_props = open_data %>% 
+            #    filter(exp == "Akan et al. (2021): Exp 1: Showup vs. 6-person") %>%
+            #    group_by(id_type, culprit_present, cond) %>% 
+            #    count() %>% 
+            #    ungroup() %>% 
+            #    group_by(culprit_present, cond) %>% 
+            #    mutate(total = sum(n),
+            #           prop = n/total,
+            #           cond = as.factor(cond)) %>% 
+            #    ungroup()
+            
+            data_props = data_files$sdtlu_hypothetical_data %>%
+                group_by(id_type, culprit_present, cond) %>% 
+                count() %>% 
+                ungroup() %>% 
+                group_by(culprit_present, cond) %>% 
+                mutate(total = sum(n),
+                       prop = n/total,
+                       cond = as.factor(cond)) %>% 
+                ungroup()
+            
+            message("Processed proportion data")
+            
+            ##### Getting TA & TP suspect proportions for Condition 1 ----
+            cond1_TA_susp_prop = data_props %>% 
+                filter(cond == levels(data_props$cond)[1] &
+                           culprit_present == "absent" & 
+                           id_type == "suspect") %>% 
+                dplyr::select(prop) %>% 
+                as.numeric()
+            
+            cond1_TP_susp_prop = data_props %>% 
+                filter(cond == levels(data_props$cond)[1] &
+                           culprit_present == "present" & 
+                           id_type == "suspect") %>% 
+                dplyr::select(prop) %>% 
+                as.numeric()
+            
+            ##### Getting TA & TP suspect proportions for Condition 2 ----
+            cond2_TA_susp_prop = data_props %>% 
+                filter(cond == levels(data_props$cond)[2] &
+                           culprit_present == "absent" & 
+                           id_type == "suspect") %>% 
+                dplyr::select(prop) %>% 
+                as.numeric()
+            
+            cond2_TP_susp_prop = data_props %>% 
+                filter(cond == levels(data_props$cond)[2] &
+                           culprit_present == "present" & 
+                           id_type == "suspect") %>% 
+                dplyr::select(prop) %>% 
+                as.numeric()
+            
+            message("Processed data for both conditions")
+            
+            #### Getting responses at each confidence level for both conditions ----
+            data_original = data_files$sdtlu_hypothetical_data %>%
+                #mutate(conf_level = as.factor(conf_level)) %>% 
+                group_by(id_type, conf_level_rev, culprit_present, cond) %>% 
+                count() %>% 
+                ungroup() %>% 
+                group_by(culprit_present, cond) %>% 
+                mutate(total = sum(n),
+                       prop = n/total) %>% 
+                ungroup() %>%
+                filter(id_type == "suspect")
+            
+            message("Data processing complete")
+            message(data_original)
+            
+            ROC_data = data.frame(prop = rep(NA, times = length(unique(data_original$cond))*
+                                                 length(unique(data_original$culprit_present))*
+                                                 length(unique(data_original$conf_level_rev))*
+                                                 length(parameters$effs)),
+                                  cond = NA,
+                                  presence = NA,
+                                  criteria = NA,
+                                  eff = NA)
+            
+            row = 1
+            
+            message("Created empty ROC store object for hypothetical plot")
+            
+            for (g in 1:length(parameters$effs)) {
+                data = data_original %>% 
+                    left_join(data_files$conf_effs_data)
+                
+                eff = parameters$effs[g]
+                
+                message(data)
+                
+                for (h in 1:nrow(data)) {
+                    data$n[h] = data$n[h]
+                }
+                
+                message("Passed first loop")
+                
+                data$prop = data$n / data$total
+                
+                for (i in 1:length(unique(data$cond))) {
+                    curr_cond = levels(data$cond)[i]
+                    for (j in 1:length(unique(data$culprit_present))) {
+                        curr_present = unique(data$culprit_present)[j]
+                        for (k in 1:length(unique(data$conf_level_rev))) {
+                            curr_conf = unique(data$conf_level_rev)[k]
+                            curr_resps = sum(data$prop[data$cond == curr_cond &
+                                                           data$culprit_present == curr_present &
+                                                           data$conf_level_rev %in% c(1:curr_conf)])
+                            
+                            ROC_data$cond[row] = curr_cond
+                            ROC_data$presence[row] = curr_present
+                            ROC_data$prop[row] = curr_resps
+                            ROC_data$criteria[row] = curr_conf
+                            ROC_data$eff[row] = eff
+                            row = row + 1
+                        }
+                    }
+                }
+            }
+            
+            message("Populated ROC store object")
+            
+            if (max(ROC_data$prop) > 1) {
+                showModal(modalDialog(
+                    title = "Warning",
+                    "One or more effect sizes results in a correct ID proportion > 1. 
+                Change the maximum effect size(s) or the direction of the effect sizes to be tested"
+                ))
+                
+                hide("sim_start")
+            } else if (min(parameters$effs) < -1) {
+                showModal(modalDialog(
+                    title = "Warning",
+                    "One or more effect sizes is below -1. 
+                Please ensure that all effect sizes are greater than or equal to -1"
+                ))
+                
+                hide("sim_start")
+            } else {
+                show("sim_start")
+            }
+            
+            ROC_data_wide = spread(ROC_data,
+                                   key = "presence",
+                                   value = "prop")  %>% 
+                rbind(data.frame(cond = rep(c("A", 
+                                              "B"), 
+                                            each = length(parameters$effs)),
+                                 criteria = NA,
+                                 eff = rep(parameters$effs, times = length(unique(data_original$cond))),
+                                 present = 0,
+                                 absent = 0)) #%>% 
+            #mutate(present = ifelse(present < 0, 0,
+            #                        ifelse(present > 1, 1, present)))
+            
+            
+            max_criteria = as.numeric(length(unique(ROC_data_wide$criteria[!is.na(ROC_data_wide$criteria)])))
+            
+            if (input$roc_trunc == "Lowest false ID rate") {
+                #partial_threshold = ROC_data_wide %>% 
+                #    filter(criteria == max_criteria) %>% 
+                #    select(absent) %>% 
+                #    min() 
+                
+                partial_threshold = min(
+                    data_props$prop[data_props$id_type == "suspect" &
+                                        data_props$culprit_present == "absent" &
+                                        data_props$cond == levels(data_props$cond)[1]],
+                    data_props$prop[data_props$id_type == "suspect" &
+                                        data_props$culprit_present == "absent" &
+                                        data_props$cond == levels(data_props$cond)[2]]
+                )
+                
+            } else if (input$roc_trunc == "Highest false ID rate") {
+                #partial_threshold = ROC_data_wide %>% 
+                #    filter(criteria == max_criteria) %>% 
+                #    select(absent) %>% 
+                #    max()
+                
+                partial_threshold = max(
+                    data_props$prop[data_props$id_type == "suspect" &
+                                        data_props$culprit_present == "absent" &
+                                        data_props$cond == levels(data_props$cond)[1]],
+                    data_props$prop[data_props$id_type == "suspect" &
+                                        data_props$culprit_present == "absent" &
+                                        data_props$cond == levels(data_props$cond)[2]]
+                )
+                
+            } else {
+                partial_threshold = 1 - other_vars$custom_trunc
+            }
+            
+            message("Created data for plotting")
+            message(ROC_data_wide)
+            
+            
+            ROC_data_plot = ROC_data_wide %>% 
+                ggplot(aes(x = absent, y = present, color = cond, linetype = as.factor(eff)))+
+                geom_point(alpha = .5)+
+                geom_line()+
+                geom_vline(xintercept = partial_threshold)+
+                apatheme+
+                labs(x = "\nFalse ID rate",
+                     y = "Correct ID rate\n",
+                     linetype = "Effect",
+                     color = "Condition")+
+                theme(text = element_text(size = 20))
+            
+            plots$hypothetical_plot = ROC_data_plot
+            
+            output$ROC_data_plot = renderPlot({
+                ROC_data_plot
         })
-        
-    })
+    }
+})
     
     ## estimating SDT parameters from uploaded data ----
     observeEvent(input$get_sdtlu, {

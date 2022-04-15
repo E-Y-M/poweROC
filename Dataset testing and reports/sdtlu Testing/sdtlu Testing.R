@@ -4,6 +4,9 @@ library(sdtlu)
 library(bayestestR)
 source("./ROC_power_app/scripts/func.R")
 
+test_cs = "1, 1.5, 2"
+test_cs_vector = extract(test_cs)
+test_cs_vector[1]
 #* Load in Palmer et al. (2013) data ----
 palmer_data = read.csv("./Dataset testing and reports/sdtlu Testing/palmer_data.csv")
 
@@ -266,3 +269,110 @@ model_fit_data %>%
     theme(plot.title = element_text(hjust = .5),
           axis.text.x = element_text(angle = 90,
                                      vjust = .5))
+
+#* Simulating data from a model ----
+#** Condition A ----
+p_a = .5
+mu_t_a = 1
+sigma_t_a = 1
+cs_a = c(1.5, 2, 2.5)
+lineup_sizes_a = 6
+n_trials = 10000
+n_sims = 1
+
+params_a = c(p_a, mu_t_a, sigma_t_a, cs_a)
+simmed_data_a = as.data.frame(t(as.data.frame(sdtlu_sim_sim(params_a, lineup_sizes_a, n_trials, n_sims))))
+simmed_data_a$id_type = rep(c(rep("suspect", length(cs_a)),
+                             rep("filler", length(cs_a)),
+                             "reject"), times = 2)
+simmed_data_a$conf_level_rev = rep(c(1:length(cs_a), 1:length(cs_a), NA),
+                             times = 2)
+simmed_data_a$conf_level = rep(c(length(cs_a):1, length(cs_a):1, NA),
+                               times = 2)
+simmed_data_a$presence = c(rep("present", times = length(cs_a)*2+1),
+                           rep("absent", times = length(cs_a)*2+1))
+
+simmed_data_a_TP_rej = rbind(filter(simmed_data_a, id_type == "reject" & presence == "present"),
+                             filter(simmed_data_a, id_type == "reject" & presence == "present"),
+                             filter(simmed_data_a, id_type == "reject" & presence == "present"))
+simmed_data_a_TP_rej$conf_level_rev = 1:length(cs_a)
+simmed_data_a_TP_rej$conf_level = length(cs_a):1
+simmed_data_a_TP_rej$V1 = round(simmed_data_a_TP_rej$V1/length(cs_a))
+
+simmed_data_a_TA_rej = rbind(filter(simmed_data_a, id_type == "reject" & presence == "absent"),
+                             filter(simmed_data_a, id_type == "reject" & presence == "absent"),
+                             filter(simmed_data_a, id_type == "reject" & presence == "absent"))
+simmed_data_a_TA_rej$conf_level_rev = 1:length(cs_a)
+simmed_data_a_TA_rej$conf_level = length(cs_a):1
+simmed_data_a_TA_rej$V1 = round(simmed_data_a_TA_rej$V1/length(cs_a))
+
+simmed_data_a_final = filter(rbind(simmed_data_a,
+                      simmed_data_a_TP_rej,
+                      simmed_data_a_TA_rej),
+                      !is.na(conf_level))
+simmed_data_a_final$cond = "A"
+
+#** Condition B ----
+p_b = .5
+mu_t_b = 2
+sigma_t_b = 1.4
+cs_b = c(.5, 2.5, 3.5)
+lineup_sizes_b = 6
+n_trials = 10000
+n_sims = 1
+
+params_b = c(p_b, mu_t_b, sigma_t_b, cs_b)
+simmed_data_b = as.data.frame(t(as.data.frame(sdtlu_sim_sim(params_b, lineup_sizes_b, n_trials, n_sims))))
+simmed_data_b$id_type = rep(c(rep("suspect", length(cs)),
+                              rep("filler", length(cs)),
+                              "reject"), times = 2)
+simmed_data_b$conf_level_rev = rep(c(1:length(cs_b), 1:length(cs_b), NA),
+                                   times = 2)
+simmed_data_b$conf_level = rep(c(length(cs_b):1, length(cs_b):1, NA),
+                               times = 2)
+simmed_data_b$presence = c(rep("present", times = length(cs_b)*2+1),
+                           rep("absent", times = length(cs_b)*2+1))
+
+simmed_data_b_TP_rej = rbind(filter(simmed_data_b, id_type == "reject" & presence == "present"),
+                             filter(simmed_data_b, id_type == "reject" & presence == "present"),
+                             filter(simmed_data_b, id_type == "reject" & presence == "present"))
+simmed_data_b_TP_rej$conf_level_rev = 1:length(cs_b)
+simmed_data_b_TP_rej$conf_level = length(cs_b):1
+simmed_data_b_TP_rej$V1 = round(simmed_data_b_TP_rej$V1/length(cs_b))
+
+simmed_data_b_TA_rej = rbind(filter(simmed_data_b, id_type == "reject" & presence == "absent"),
+                             filter(simmed_data_b, id_type == "reject" & presence == "absent"),
+                             filter(simmed_data_b, id_type == "reject" & presence == "absent"))
+simmed_data_b_TA_rej$conf_level_rev = 1:length(cs_b)
+simmed_data_b_TA_rej$conf_level = length(cs_b):1
+simmed_data_b_TA_rej$V1 = round(simmed_data_b_TA_rej$V1/length(cs_b))
+
+simmed_data_b_final = filter(rbind(simmed_data_b,
+                                   simmed_data_b_TP_rej,
+                                   simmed_data_b_TA_rej),
+                             !is.na(conf_level))
+simmed_data_b_final$cond = "B"
+
+#** Combined both conditions ----
+simmed_data = rbind(simmed_data_a_final,
+                    simmed_data_b_final)
+replicate(simmed_data, 2)
+
+#** Generate trial-level data ----
+simmed_data_trial = data.frame()
+
+for (i in 1:nrow(simmed_data)) {
+    simmed_data_slice = simmed_data[i,]
+    simmed_data_append = do.call("rbind", replicate(simmed_data_slice$V1, simmed_data_slice, simplify = FALSE))
+    simmed_data_trial = rbind(simmed_data_trial,
+                              simmed_data_append)    
+}
+
+p = 1/3
+mu_t_a = 1
+sigma_t_a = 1
+cs_a = extract("1, 1.5, 2")
+
+params_a = c(p, mu_t_a, sigma_t_a, cs_a)
+params_a
+params_a[1]
