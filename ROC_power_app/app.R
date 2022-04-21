@@ -1474,6 +1474,8 @@ server <- function(input, output, session) {
                                 )
     
     observeEvent(input$empirical_theoretical, {
+        hide("sim_start")
+        
         if (input$empirical_theoretical == "Data") {
             show("eff_type")
             show("effs")
@@ -2086,16 +2088,24 @@ server <- function(input, output, session) {
                     simmed_data_a$culprit_present = c(rep("present", times = length(parameters$cs_a)*2+1),
                                                rep("absent", times = length(parameters$cs_a)*2+1))
                     
-                    simmed_data_a_TP_rej = rbind(filter(simmed_data_a, id_type == "reject" & culprit_present == "present"),
-                                                 filter(simmed_data_a, id_type == "reject" & culprit_present == "present"),
-                                                 filter(simmed_data_a, id_type == "reject" & culprit_present == "present"))
+                    simmed_data_a_TP_rej = data.frame()
+                    
+                    for (i in 1:length(parameters$cs_a)) {
+                        simmed_data_a_TP_rej = rbind(simmed_data_a_TP_rej,
+                                                     filter(simmed_data_a, id_type == "reject" & culprit_present == "present"))
+                    }
+                    
                     simmed_data_a_TP_rej$conf_level_rev = 1:length(parameters$cs_a)
                     simmed_data_a_TP_rej$conf_level = length(parameters$cs_a):1
                     simmed_data_a_TP_rej$V1 = round(simmed_data_a_TP_rej$V1/length(parameters$cs_a))
                     
-                    simmed_data_a_TA_rej = rbind(filter(simmed_data_a, id_type == "reject" & culprit_present == "absent"),
-                                                 filter(simmed_data_a, id_type == "reject" & culprit_present == "absent"),
-                                                 filter(simmed_data_a, id_type == "reject" & culprit_present == "absent"))
+                    simmed_data_a_TA_rej = data.frame()
+                    
+                    for (i in 1:length(parameters$cs_a)) {
+                        simmed_data_a_TA_rej = rbind(simmed_data_a_TA_rej,
+                                                     filter(simmed_data_a, id_type == "reject" & culprit_present == "absent"))
+                    }
+                    
                     simmed_data_a_TA_rej$conf_level_rev = 1:length(parameters$cs_a)
                     simmed_data_a_TA_rej$conf_level = length(parameters$cs_a):1
                     simmed_data_a_TA_rej$V1 = round(simmed_data_a_TA_rej$V1/length(parameters$cs_a))
@@ -2119,16 +2129,24 @@ server <- function(input, output, session) {
                 simmed_data_a$culprit_present = c(rep("present", times = length(parameters$cs_a)*2+1),
                                            rep("absent", times = length(parameters$cs_a)*2+1))
                 
-                simmed_data_a_TP_rej = rbind(filter(simmed_data_a, id_type == "reject" & culprit_present == "present"),
-                                             filter(simmed_data_a, id_type == "reject" & culprit_present == "present"),
-                                             filter(simmed_data_a, id_type == "reject" & culprit_present == "present"))
+                simmed_data_a_TP_rej = data.frame()
+                
+                for (i in 1:length(parameters$cs_a)) {
+                    simmed_data_a_TP_rej = rbind(simmed_data_a_TP_rej,
+                                                 filter(simmed_data_a, id_type == "reject" & culprit_present == "present"))
+                }
+                
                 simmed_data_a_TP_rej$conf_level_rev = 1:length(parameters$cs_a)
                 simmed_data_a_TP_rej$conf_level = length(parameters$cs_a):1
                 simmed_data_a_TP_rej$V1 = round(simmed_data_a_TP_rej$V1/length(parameters$cs_a))
                 
-                simmed_data_a_TA_rej = rbind(filter(simmed_data_a, id_type == "reject" & culprit_present == "absent"),
-                                             filter(simmed_data_a, id_type == "reject" & culprit_present == "absent"),
-                                             filter(simmed_data_a, id_type == "reject" & culprit_present == "absent"))
+                simmed_data_a_TA_rej = data.frame()
+                
+                for (i in 1:length(parameters$cs_a)) {
+                    simmed_data_a_TA_rej = rbind(simmed_data_a_TA_rej,
+                                                 filter(simmed_data_a, id_type == "reject" & culprit_present == "absent"))
+                }
+                
                 simmed_data_a_TA_rej$conf_level_rev = 1:length(parameters$cs_a)
                 simmed_data_a_TA_rej$conf_level = length(parameters$cs_a):1
                 simmed_data_a_TA_rej$V1 = round(simmed_data_a_TA_rej$V1/length(parameters$cs_a))
@@ -2168,16 +2186,24 @@ server <- function(input, output, session) {
                     simmed_data_b$culprit_present = c(rep("present", times = length(parameters$cs_b)*2+1),
                                                rep("absent", times = length(parameters$cs_b)*2+1))
                     
-                    simmed_data_b_TP_rej = rbind(filter(simmed_data_b, id_type == "reject" & culprit_present == "present"),
-                                                 filter(simmed_data_b, id_type == "reject" & culprit_present == "present"),
-                                                 filter(simmed_data_b, id_type == "reject" & culprit_present == "present"))
+                    simmed_data_b_TP_rej = data.frame()
+                    
+                    for (i in 1:length(parameters$cs_b)) {
+                        simmed_data_b_TP_rej = rbind(simmed_data_b_TP_rej,
+                                                     filter(simmed_data_b, id_type == "reject" & culprit_present == "present"))
+                    }
+                    
                     simmed_data_b_TP_rej$conf_level_rev = 1:length(parameters$cs_b)
                     simmed_data_b_TP_rej$conf_level = length(parameters$cs_b):1
                     simmed_data_b_TP_rej$V1 = round(simmed_data_b_TP_rej$V1/length(parameters$cs_b))
                     
-                    simmed_data_b_TA_rej = rbind(filter(simmed_data_b, id_type == "reject" & culprit_present == "absent"),
-                                                 filter(simmed_data_b, id_type == "reject" & culprit_present == "absent"),
-                                                 filter(simmed_data_b, id_type == "reject" & culprit_present == "absent"))
+                    simmed_data_b_TA_rej = data.frame()
+                    
+                    for (i in 1:length(parameters$cs_b)) {
+                        simmed_data_b_TA_rej = rbind(simmed_data_b_TA_rej,
+                                                     filter(simmed_data_b, id_type == "reject" & culprit_present == "absent"))
+                    }
+                    
                     simmed_data_b_TA_rej$conf_level_rev = 1:length(parameters$cs_b)
                     simmed_data_b_TA_rej$conf_level = length(parameters$cs_b):1
                     simmed_data_b_TA_rej$V1 = round(simmed_data_b_TA_rej$V1/length(parameters$cs_b))
@@ -2200,16 +2226,24 @@ server <- function(input, output, session) {
                 simmed_data_b$culprit_present = c(rep("present", times = length(parameters$cs_b)*2+1),
                                            rep("absent", times = length(parameters$cs_b)*2+1))
                 
-                simmed_data_b_TP_rej = rbind(filter(simmed_data_b, id_type == "reject" & culprit_present == "present"),
-                                             filter(simmed_data_b, id_type == "reject" & culprit_present == "present"),
-                                             filter(simmed_data_b, id_type == "reject" & culprit_present == "present"))
+                simmed_data_b_TP_rej = data.frame()
+                
+                for (i in 1:length(parameters$cs_b)) {
+                    simmed_data_b_TP_rej = rbind(simmed_data_b_TP_rej,
+                                                 filter(simmed_data_b, id_type == "reject" & culprit_present == "present"))
+                }
+                
                 simmed_data_b_TP_rej$conf_level_rev = 1:length(parameters$cs_b)
                 simmed_data_b_TP_rej$conf_level = length(parameters$cs_b):1
                 simmed_data_b_TP_rej$V1 = round(simmed_data_b_TP_rej$V1/length(parameters$cs_b))
                 
-                simmed_data_b_TA_rej = rbind(filter(simmed_data_b, id_type == "reject" & culprit_present == "absent"),
-                                             filter(simmed_data_b, id_type == "reject" & culprit_present == "absent"),
-                                             filter(simmed_data_b, id_type == "reject" & culprit_present == "absent"))
+                simmed_data_b_TA_rej = data.frame()
+                
+                for (i in 1:length(parameters$cs_b)) {
+                    simmed_data_b_TA_rej = rbind(simmed_data_b_TA_rej,
+                                                 filter(simmed_data_b, id_type == "reject" & culprit_present == "absent"))
+                }
+                
                 simmed_data_b_TA_rej$conf_level_rev = 1:length(parameters$cs_b)
                 simmed_data_b_TA_rej$conf_level = length(parameters$cs_b):1
                 simmed_data_b_TA_rej$V1 = round(simmed_data_b_TA_rej$V1/length(parameters$cs_b))
@@ -2855,8 +2889,6 @@ server <- function(input, output, session) {
                     easyClose = TRUE,
                     size = "l"))
         
-        sim_store = data.frame(auc_p = rep(NA, times = input$nsims))
-        
         pwr_store = matrix(nrow = length(parameters$ns),
                            ncol = length(parameters$effs))
         
@@ -2917,8 +2949,10 @@ server <- function(input, output, session) {
         sim_counter = 0
         other_vars$sim_counter = 0
         
+        ## If simulating from data ----
+        if (input$empirical_theoretical == "Data") {
         ### loop over effect sizes ----
-        for (g in 1:length(parameters$effs)) {
+            for (g in 1:length(parameters$effs)) {
             eff = parameters$effs[g]
             
             data_original = data_files$processed_data %>%
@@ -2980,6 +3014,16 @@ server <- function(input, output, session) {
             
             ### loop over Ns ####
             for (h in 1:length(parameters$ns)) {
+                
+                sim_store = data.frame(auc_diff = rep(NA, times = input$nsims),
+                                       auc_1 = rep(NA, times = input$nsims),
+                                       auc_2 = rep(NA, times = input$nsims),
+                                       auc_p = rep(NA, times = input$nsims),
+                                       sig = rep(NA, times = input$nsims),
+                                       dpp_diff = rep(NA, times = input$nsims),
+                                       dpp_1 = rep(NA, times = input$nsims),
+                                       dpp_2 = rep(NA, times = input$nsims),
+                                       sig_dpp = rep(NA, times = input$nsims))
                 
                 #curr_n = parameters$ns[h]
                 
@@ -3124,7 +3168,7 @@ server <- function(input, output, session) {
                     )
                     
                     ##### ROC test ----
-                    if (input$between_within == "Between") {
+                    if (input$between_within == "Between-subjects") {
                         if (input$roc_trunc == "Lowest false ID rate") {
                             ##### If truncating at lowest false ID rate ----
                             roc_test = roc.test(
@@ -3181,7 +3225,7 @@ server <- function(input, output, session) {
                                 )),
                                 partial.auc.focus = "sp",
                                 method = "bootstrap",
-                                paired = TRUE,
+                                paired = FALSE,
                                 boot.n = input$nboot_iter,
                                 progress = "none"
                             )
@@ -3196,7 +3240,7 @@ server <- function(input, output, session) {
                                 )),
                                 partial.auc.focus = "sp",
                                 method = "bootstrap",
-                                paired = TRUE,
+                                paired = FALSE,
                                 boot.n = input$nboot_iter,
                                 progress = "none"
                             ) 
@@ -3209,18 +3253,19 @@ server <- function(input, output, session) {
                                 partial.auc = c(1, other_vars$custom_trunc),
                                 partial.auc.focus = "sp",
                                 method = "bootstrap",
-                                paired = TRUE,
+                                paired = FALSE,
                                 boot.n = input$nboot_iter,
                                 progress = "none"
                             ) 
                         }
                     }
                         
+                    message("Completed ROC test")
                         
-                        sim_store$auc_diff[i] = roc_test$estimate[1] - roc_test$estimate[2]
-                        sim_store$auc_1[i] = roc_test$estimate[1]
-                        sim_store$auc_2[i] = roc_test$estimate[2]
-                        sim_store$auc_p[i] = roc_test$p.value
+                        sim_store$auc_diff[i] = as.numeric(roc_test$estimate[1]) - as.numeric(roc_test$estimate[2])
+                        sim_store$auc_1[i] = as.numeric(roc_test$estimate[1])
+                        sim_store$auc_2[i] = as.numeric(roc_test$estimate[2])
+                        sim_store$auc_p[i] = as.numeric(roc_test$p.value)
                         
                         if (input$test_tails == "2_tail") {
                             sim_store$sig[i] = ifelse(sim_store$auc_p[i] < input$alpha_level, 1, 0)
@@ -3234,7 +3279,6 @@ server <- function(input, output, session) {
                                                           sim_store$auc_diff[i] < 0, 1, 0)
                         }
                     }
-                    
                     
                     #### Generate data for DPP function ----
                     if (input$measure != "pAUC") {
@@ -3391,7 +3435,672 @@ server <- function(input, output, session) {
                                                     na.rm = TRUE)[1]
             }
         }
+        } else {
+        ## If simulating from SDT parameters ----
+            ### Set parameter values ----
+            parameters$sim_seq_a = input$sim_seq_a
+            parameters$lineup_sizes_a = input$lineup_sizes_a
+            parameters$mu_t_a = input$mu_t_a
+            parameters$sigma_t_a = input$sigma_t_a
+            parameters$cs_a = extract(input$cs_a)
+            parameters$cond1 = "A"
+            
+            parameters$sim_seq_b = input$sim_seq_b
+            parameters$lineup_sizes_b = input$lineup_sizes_b
+            parameters$mu_t_b = input$mu_t_b
+            parameters$sigma_t_b = input$sigma_t_b
+            parameters$cs_b = extract(input$cs_b)
+            parameters$cond2 = "B"
+            
+            parameters$effs = 0
+            
+            #### Set the probability of target presence (based on # of TP and total lineups) ----
+            p = input$n_TP_lineups / input$n_total_lineups
+            
+            #### Put parameter values into vectors ----
+            params_a = c(p, parameters$mu_t_a, parameters$sigma_t_a, parameters$cs_a)
+            params_b = c(p, parameters$mu_t_b, parameters$sigma_t_b, parameters$cs_b)
+            
+            message("Set parameter values for main simulation")
+            
+            ### loop over effect sizes ----
+            for (g in 1:length(parameters$effs)) {
+                eff = parameters$effs[g]
         
+                ### loop over Ns ####
+                for (h in 1:length(parameters$ns)) {
+                    
+                    sim_store = data.frame(auc_diff = rep(NA, times = input$nsims),
+                                           auc_1 = rep(NA, times = input$nsims),
+                                           auc_2 = rep(NA, times = input$nsims),
+                                           auc_p = rep(NA, times = input$nsims),
+                                           sig = rep(NA, times = input$nsims),
+                                           dpp_diff = rep(NA, times = input$nsims),
+                                           dpp_1 = rep(NA, times = input$nsims),
+                                           dpp_2 = rep(NA, times = input$nsims),
+                                           sig_dpp = rep(NA, times = input$nsims))
+                    
+                    #curr_n = parameters$ns[h]
+                    
+                    if (input$between_within == "Between-subjects") {
+                        curr_n = parameters$ns[h]
+                    } else {
+                        curr_n = parameters$ns[h] * 2
+                    }
+                    
+                    curr_trials = curr_n * input$n_total_lineups
+                    
+                    message(curr_trials)
+                    message("Set number of trials")
+                    
+                    #### Loop over sims ----
+                    for (i in 1:input$nsims) {
+                        ##### For each sim, generate ROC data from simulated models ----
+                        if (input$sim_seq_a == "Sequential") {
+                            req(input$pos_prop_a)
+                            
+                            parameters$pos_prop_a = extract(input$pos_prop_a)
+                            
+                            ###### Check if the probability vector is same length as lineup size ----
+                            if (length(parameters$pos_prop_a) != parameters$lineup_sizes_a) {
+                                showModal(modalDialog(
+                                    title = "Warning",
+                                    "# of entered sequential probabilities does not match lineup size."
+                                ))
+                                
+                                parameters$pos_prop_a = c(rep(1/parameters$lineup_sizes_a), times = lineup_sizes_a)
+                                
+                                hide("sim_start")
+                            } else {
+                                simmed_data_a = as.data.frame(t(as.data.frame(sdtlu_seq_sim(params_a, parameters$lineup_sizes_a, curr_trials, 1, pos_prop = parameters$pos_prop_a))))
+                                simmed_data_a$id_type = rep(c(rep("suspect", length(parameters$cs_a)),
+                                                              rep("filler", length(parameters$cs_a)),
+                                                              "reject"), times = 2)
+                                simmed_data_a$conf_level_rev = rep(c(1:length(parameters$cs_a), 1:length(parameters$cs_a), NA),
+                                                                   times = 2)
+                                simmed_data_a$conf_level = rep(c(length(parameters$cs_a):1, length(parameters$cs_a):1, NA),
+                                                               times = 2)
+                                simmed_data_a$culprit_present = c(rep("present", times = length(parameters$cs_a)*2+1),
+                                                                  rep("absent", times = length(parameters$cs_a)*2+1))
+                                
+                                simmed_data_a_TP_rej = data.frame()
+                                
+                                for (m in 1:length(parameters$cs_a)) {
+                                    simmed_data_a_TP_rej = rbind(simmed_data_a_TP_rej,
+                                                                 filter(simmed_data_a, id_type == "reject" & culprit_present == "present"))
+                                }
+                                
+                                simmed_data_a_TP_rej$conf_level_rev = 1:length(parameters$cs_a)
+                                simmed_data_a_TP_rej$conf_level = length(parameters$cs_a):1
+                                simmed_data_a_TP_rej$V1 = round(simmed_data_a_TP_rej$V1/length(parameters$cs_a))
+                                
+                                simmed_data_a_TA_rej = data.frame()
+                                
+                                for (n in 1:length(parameters$cs_a)) {
+                                    simmed_data_a_TA_rej = rbind(simmed_data_a_TA_rej,
+                                                                 filter(simmed_data_a, id_type == "reject" & culprit_present == "absent"))
+                                }
+                                
+                                simmed_data_a_TA_rej$conf_level_rev = 1:length(parameters$cs_a)
+                                simmed_data_a_TA_rej$conf_level = length(parameters$cs_a):1
+                                simmed_data_a_TA_rej$V1 = round(simmed_data_a_TA_rej$V1/length(parameters$cs_a))
+                                
+                                simmed_data_a_final = filter(rbind(simmed_data_a,
+                                                                   simmed_data_a_TP_rej,
+                                                                   simmed_data_a_TA_rej),
+                                                             !is.na(conf_level))
+                                simmed_data_a_final$cond = "A"
+                            }
+                        } else {
+                            simmed_data_a = as.data.frame(t(as.data.frame(sdtlu_sim_sim(params_a, parameters$lineup_sizes_a, curr_trials, 1))))
+                            simmed_data_a$id_type = rep(c(rep("suspect", length(parameters$cs_a)),
+                                                          rep("filler", length(parameters$cs_a)),
+                                                          "reject"), times = 2)
+                            
+                            message("Breakpoint 1")
+                            
+                            simmed_data_a$conf_level_rev = rep(c(1:length(parameters$cs_a), 1:length(parameters$cs_a), NA),
+                                                               times = 2)
+                            simmed_data_a$conf_level = rep(c(length(parameters$cs_a):1, length(parameters$cs_a):1, NA),
+                                                           times = 2)
+                            simmed_data_a$culprit_present = c(rep("present", times = length(parameters$cs_a)*2+1),
+                                                              rep("absent", times = length(parameters$cs_a)*2+1))
+                            
+                            simmed_data_a_TP_rej = data.frame()
+                            
+                            for (m in 1:length(parameters$cs_a)) {
+                                simmed_data_a_TP_rej = rbind(simmed_data_a_TP_rej,
+                                                             filter(simmed_data_a, id_type == "reject" & culprit_present == "present"))
+                            }
+                            
+                            simmed_data_a_TP_rej$conf_level_rev = 1:length(parameters$cs_a)
+                            simmed_data_a_TP_rej$conf_level = length(parameters$cs_a):1
+                            simmed_data_a_TP_rej$V1 = round(simmed_data_a_TP_rej$V1/length(parameters$cs_a))
+                            
+                            simmed_data_a_TA_rej = data.frame()
+                            
+                            for (n in 1:length(parameters$cs_a)) {
+                                simmed_data_a_TA_rej = rbind(simmed_data_a_TA_rej,
+                                                             filter(simmed_data_a, id_type == "reject" & culprit_present == "absent"))
+                            }
+                            
+                            simmed_data_a_TA_rej$conf_level_rev = 1:length(parameters$cs_a)
+                            simmed_data_a_TA_rej$conf_level = length(parameters$cs_a):1
+                            simmed_data_a_TA_rej$V1 = round(simmed_data_a_TA_rej$V1/length(parameters$cs_a))
+                            
+                            simmed_data_a_final = filter(rbind(simmed_data_a,
+                                                               simmed_data_a_TP_rej,
+                                                               simmed_data_a_TA_rej),
+                                                         !is.na(conf_level))
+                            simmed_data_a_final$cond = "A"
+                        }
+                        
+                        message("Generated Condition A data for main simulation")
+                        
+                        ##### Condition B ----
+                        if (input$sim_seq_b == "Sequential") {
+                            req(input$pos_prop_b)
+                            
+                            parameters$pos_prop_b = extract(input$pos_prop_b)
+                            
+                            ###### Check if the probability vector is same length as lineup size ----
+                            if (length(parameters$pos_prop_b) != parameters$lineup_sizes_b) {
+                                showModal(modalDialog(
+                                    title = "Warning",
+                                    "# of entered sequential probabilities does not match lineup size."
+                                ))
+                                
+                                parameters$pos_prop_b = c(rep(1/parameters$lineup_sizes_b), times = lineup_sizes_b)
+                                
+                                hide("sim_start")
+                            } else {
+                                simmed_data_b = as.data.frame(t(as.data.frame(sdtlu_seq_sim(params_b, parameters$lineup_sizes_b, curr_trials, 1, pos_prop = parameters$pos_prop_b))))
+                                simmed_data_b$id_type = rep(c(rep("suspect", length(parameters$cs_b)),
+                                                              rep("filler", length(parameters$cs_b)),
+                                                              "reject"), times = 2)
+                                simmed_data_b$conf_level_rev = rep(c(1:length(parameters$cs_b), 1:length(parameters$cs_b), NA),
+                                                                   times = 2)
+                                simmed_data_b$conf_level = rep(c(length(parameters$cs_b):1, length(parameters$cs_b):1, NA),
+                                                               times = 2)
+                                simmed_data_b$culprit_present = c(rep("present", times = length(parameters$cs_b)*2+1),
+                                                                  rep("absent", times = length(parameters$cs_b)*2+1))
+                                
+                                simmed_data_b_TP_rej = data.frame()
+                                
+                                for (o in 1:length(parameters$cs_b)) {
+                                    simmed_data_b_TP_rej = rbind(simmed_data_b_TP_rej,
+                                                                 filter(simmed_data_b, id_type == "reject" & culprit_present == "present"))
+                                }
+                                
+                                simmed_data_b_TP_rej$conf_level_rev = 1:length(parameters$cs_b)
+                                simmed_data_b_TP_rej$conf_level = length(parameters$cs_b):1
+                                simmed_data_b_TP_rej$V1 = round(simmed_data_b_TP_rej$V1/length(parameters$cs_b))
+                                
+                                simmed_data_b_TA_rej = data.frame()
+                                
+                                for (p in 1:length(parameters$cs_b)) {
+                                    simmed_data_b_TA_rej = rbind(simmed_data_b_TA_rej,
+                                                                 filter(simmed_data_b, id_type == "reject" & culprit_present == "absent"))
+                                }
+                                
+                                simmed_data_b_TA_rej$conf_level_rev = 1:length(parameters$cs_b)
+                                simmed_data_b_TA_rej$conf_level = length(parameters$cs_b):1
+                                simmed_data_b_TA_rej$V1 = round(simmed_data_b_TA_rej$V1/length(parameters$cs_b))
+                                
+                                simmed_data_b_final = filter(rbind(simmed_data_b,
+                                                                   simmed_data_b_TP_rej,
+                                                                   simmed_data_b_TA_rej),
+                                                             !is.na(conf_level))
+                                simmed_data_b_final$cond = "B"
+                            }
+                        } else {
+                            simmed_data_b = as.data.frame(t(as.data.frame(sdtlu_sim_sim(params_b, parameters$lineup_sizes_b, curr_trials, 1))))
+                            simmed_data_b$id_type = rep(c(rep("suspect", length(parameters$cs_b)),
+                                                          rep("filler", length(parameters$cs_b)),
+                                                          "reject"), times = 2)
+                            simmed_data_b$conf_level_rev = rep(c(1:length(parameters$cs_b), 1:length(parameters$cs_b), NA),
+                                                               times = 2)
+                            simmed_data_b$conf_level = rep(c(length(parameters$cs_b):1, length(parameters$cs_b):1, NA),
+                                                           times = 2)
+                            simmed_data_b$culprit_present = c(rep("present", times = length(parameters$cs_b)*2+1),
+                                                              rep("absent", times = length(parameters$cs_b)*2+1))
+                            
+                            simmed_data_b_TP_rej = data.frame()
+                            
+                            for (o in 1:length(parameters$cs_b)) {
+                                simmed_data_b_TP_rej = rbind(simmed_data_b_TP_rej,
+                                                             filter(simmed_data_b, id_type == "reject" & culprit_present == "present"))
+                            }
+                            
+                            simmed_data_b_TP_rej$conf_level_rev = 1:length(parameters$cs_b)
+                            simmed_data_b_TP_rej$conf_level = length(parameters$cs_b):1
+                            simmed_data_b_TP_rej$V1 = round(simmed_data_b_TP_rej$V1/length(parameters$cs_b))
+                            
+                            simmed_data_b_TA_rej = data.frame()
+                            
+                            for (p in 1:length(parameters$cs_b)) {
+                                simmed_data_b_TA_rej = rbind(simmed_data_b_TA_rej,
+                                                             filter(simmed_data_b, id_type == "reject" & culprit_present == "absent"))
+                            }
+                            
+                            simmed_data_b_TA_rej$conf_level_rev = 1:length(parameters$cs_b)
+                            simmed_data_b_TA_rej$conf_level = length(parameters$cs_b):1
+                            simmed_data_b_TA_rej$V1 = round(simmed_data_b_TA_rej$V1/length(parameters$cs_b))
+                            
+                            simmed_data_b_final = filter(rbind(simmed_data_b,
+                                                               simmed_data_b_TP_rej,
+                                                               simmed_data_b_TA_rej),
+                                                         !is.na(conf_level))
+                            simmed_data_b_final$cond = "B"
+                        }
+                        
+                        #### Combine Condition A & B data ----
+                        simmed_data = rbind(simmed_data_a_final,
+                                            simmed_data_b_final)
+                        
+                        message("Generated simmed data in main simulation loop")
+                        
+                        #### Generate trial-level data ----
+                        simmed_data_trial = data.frame()
+                        
+                        for (q in 1:nrow(simmed_data)) {
+                            simmed_data_slice = simmed_data[q,]
+                            simmed_data_append = do.call("rbind", replicate(simmed_data_slice$V1, simmed_data_slice, simplify = FALSE))
+                            simmed_data_trial = rbind(simmed_data_trial,
+                                                      simmed_data_append)    
+                        }
+                        
+                        simmed_data_trial$cond = factor(simmed_data_trial$cond,
+                                                        levels = c("A", "B"))
+                        
+                        ### Generate ROC data ----
+                        ###### For Condition 1 ----
+                        ####### TA ----
+                        TA_data_cond1 = select(filter(simmed_data_trial, cond == "A" & culprit_present == "absent"),
+                                               conf_level, id_type)
+                        TA_data_cond1$conf_level = ifelse(TA_data_cond1$id_type == "suspect", 
+                                                          TA_data_cond1$conf_level, 0)
+                        
+                        TA_data_cond1 = unlist(as.list(dplyr::select(TA_data_cond1, conf_level)))
+                        
+                        TA_data_cond1 = TA_data_cond1[!is.na(TA_data_cond1)]
+                        
+                        cond1_partial = length(TA_data_cond1[TA_data_cond1 > 0]) / length(TA_data_cond1)
+                        
+                        ####### TP ----
+                        TP_data_cond1 = select(filter(simmed_data_trial, cond == "A" & culprit_present == "present"),
+                                               conf_level, id_type)
+                        TP_data_cond1$conf_level = ifelse(TP_data_cond1$id_type == "suspect", 
+                                                          TP_data_cond1$conf_level, 0)
+                        
+                        TP_data_cond1 = unlist(as.list(dplyr::select(TP_data_cond1, conf_level)))
+                        
+                        TP_data_cond1 = TP_data_cond1[!is.na(TP_data_cond1)]
+                        
+                        ###### For Condition 2 ----
+                        ####### TA ----
+                        TA_data_cond2 = select(filter(simmed_data_trial, cond == "B" & culprit_present == "absent"),
+                                               conf_level, id_type)
+                        TA_data_cond2$conf_level = ifelse(TA_data_cond2$id_type == "suspect", 
+                                                          TA_data_cond2$conf_level, 0)
+                        
+                        TA_data_cond2 = unlist(as.list(dplyr::select(TA_data_cond2, conf_level)))
+                        
+                        TA_data_cond2 = TA_data_cond2[!is.na(TA_data_cond2)]
+                        
+                        cond2_partial = length(TA_data_cond2[TA_data_cond2 > 0]) / length(TA_data_cond2)
+                        
+                        ####### TP ----
+                        TP_data_cond2 = select(filter(simmed_data_trial, cond == "B" & culprit_present == "present"),
+                                               conf_level, id_type)
+                        TP_data_cond2$conf_level = ifelse(TP_data_cond2$id_type == "suspect", 
+                                                          TP_data_cond2$conf_level, 0)
+                        
+                        TP_data_cond2 = unlist(as.list(dplyr::select(TP_data_cond2, conf_level)))
+                        
+                        TP_data_cond2 = TP_data_cond2[!is.na(TP_data_cond2)]
+                        
+                        ##### Generate the ROCs ----
+                        
+                        if (input$measure != "DPP") {
+                            
+                            ###### Condition 1 ----
+                            
+                            
+                            #if (length(TP_data_cond1) > length(TA_data_cond1)) {
+                            #    TA_data_cond1 = append(TA_data_cond1,
+                            #                           rep(
+                            #                               0,
+                            #                               length(TP_data_cond1) - length(TA_data_cond1)
+                            #                           ))
+                            #} else if (length(TA_data_cond1) > length(TP_data_cond1)) {
+                            #    TP_data_cond1 = append(TP_data_cond1,
+                            #                           rep(
+                            #                               0,
+                            #                               length(TA_data_cond1) - length(TP_data_cond1)
+                            #                           ))
+                            #} else {
+                            #    TA_data_cond1 = TA_data_cond1
+                            #    TP_data_cond1 = TP_data_cond1
+                            #}
+                            
+                            roc_cond1 = roc(
+                                controls = TA_data_cond1,
+                                cases = TP_data_cond1[!is.na(TP_data_cond1)],
+                                direction = "<",
+                                ci = F
+                                #partial.auc = c(1, 1 - min(
+                                #    cond1_partial, cond2_partial
+                            )
+                            
+                            ###### Condition 2 ----
+                            #if (length(TP_data_cond2) > length(TA_data_cond2)) {
+                            #    TA_data_cond2 = append(TA_data_cond2,
+                            #                           rep(
+                            #                               0,
+                            #                               length(TP_data_cond2) - length(TA_data_cond2)
+                            #                           ))
+                            #} else if (length(TA_data_cond2) > length(TP_data_cond2)) {
+                            #    TP_data_cond2 = append(TP_data_cond2,
+                            #                           rep(
+                            #                               0,
+                            #                               length(TA_data_cond2) - length(TP_data_cond2)
+                            #                           ))
+                            #} else {
+                            #    TA_data_cond2 = TA_data_cond2
+                            #    TP_data_cond2 = TP_data_cond2
+                            #}
+                            
+                            roc_cond2 = roc(
+                                controls = TA_data_cond2,
+                                cases = TP_data_cond2[!is.na(TP_data_cond2)],
+                                direction = "<",
+                                ci = F
+                                #partial.auc = c(1, 1 - min(
+                                #    cond1_partial, cond2_partial
+                            )
+                            
+                            ##### ROC test ----
+                            if (input$between_within == "Between-subjects") {
+                                if (input$roc_trunc == "Lowest false ID rate") {
+                                    ##### If truncating at lowest false ID rate ----
+                                    roc_test = roc.test(
+                                        roc_cond1,
+                                        roc_cond2,
+                                        reuse.auc = FALSE,
+                                        partial.auc = c(1, 1 - min(
+                                            cond1_partial, cond2_partial
+                                        )),
+                                        partial.auc.focus = "sp",
+                                        method = "bootstrap",
+                                        paired = FALSE,
+                                        boot.n = input$nboot_iter,
+                                        progress = "none"
+                                    )
+                                } else if (input$roc_trunc == "Highest false ID rate") {
+                                    ##### If truncating at highest false ID rate ----
+                                    roc_test = roc.test(
+                                        roc_cond1,
+                                        roc_cond2,
+                                        reuse.auc = FALSE,
+                                        partial.auc = c(1, 1 - max(
+                                            cond1_partial, cond2_partial
+                                        )),
+                                        partial.auc.focus = "sp",
+                                        method = "bootstrap",
+                                        paired = FALSE,
+                                        boot.n = input$nboot_iter,
+                                        progress = "none"
+                                    ) 
+                                } else {
+                                    ##### If truncating at a custom false ID rate ----
+                                    roc_test = roc.test(
+                                        roc_cond1,
+                                        roc_cond2,
+                                        reuse.auc = FALSE,
+                                        partial.auc = c(1, other_vars$custom_trunc),
+                                        partial.auc.focus = "sp",
+                                        method = "bootstrap",
+                                        paired = FALSE,
+                                        boot.n = input$nboot_iter,
+                                        progress = "none"
+                                    ) 
+                                }
+                            } else {
+                                if (input$roc_trunc == "Lowest false ID rate") {
+                                    ##### If truncating at lowest false ID rate ----
+                                    roc_test = roc.test(
+                                        roc_cond1,
+                                        roc_cond2,
+                                        reuse.auc = FALSE,
+                                        partial.auc = c(1, 1 - min(
+                                            cond1_partial, cond2_partial
+                                        )),
+                                        partial.auc.focus = "sp",
+                                        method = "bootstrap",
+                                        paired = FALSE,
+                                        boot.n = input$nboot_iter,
+                                        progress = "none"
+                                    )
+                                } else if (input$roc_trunc == "Highest false ID rate") {
+                                    ##### If truncating at highest false ID rate ----
+                                    roc_test = roc.test(
+                                        roc_cond1,
+                                        roc_cond2,
+                                        reuse.auc = FALSE,
+                                        partial.auc = c(1, 1 - max(
+                                            cond1_partial, cond2_partial
+                                        )),
+                                        partial.auc.focus = "sp",
+                                        method = "bootstrap",
+                                        paired = FALSE,
+                                        boot.n = input$nboot_iter,
+                                        progress = "none"
+                                    ) 
+                                } else {
+                                    ##### If truncating at a custom false ID rate ----
+                                    roc_test = roc.test(
+                                        roc_cond1,
+                                        roc_cond2,
+                                        reuse.auc = FALSE,
+                                        partial.auc = c(1, other_vars$custom_trunc),
+                                        partial.auc.focus = "sp",
+                                        method = "bootstrap",
+                                        paired = FALSE,
+                                        boot.n = input$nboot_iter,
+                                        progress = "none"
+                                    ) 
+                                }
+                            }
+                            
+                            message(roc_test$estimate[1],
+                                    roc_test$estimate[2],
+                                    roc_test$p.value)
+                            
+                            message("Completed ROC test")
+                            message(i)
+                            
+                            sim_store$auc_diff[i] = as.numeric(roc_test$estimate[1]) - as.numeric(roc_test$estimate[2])
+                            message("Breakpoint 2")
+                            sim_store$auc_1[i] = as.numeric(roc_test$estimate[1])
+                            message("Breakpoint 3")
+                            sim_store$auc_2[i] = as.numeric(roc_test$estimate[2])
+                            message("Breakpoint 4")
+                            sim_store$auc_p[i] = as.numeric(roc_test$p.value)
+                            
+                            message("Added AUC values to sim_store")
+                            
+                            if (input$test_tails == "2_tail") {
+                                sim_store$sig[i] = ifelse(sim_store$auc_p[i] < input$alpha_level, 1, 0)
+                            } else if (input$test_tails == sprintf("%s > %s",
+                                                                   parameters$cond1,
+                                                                   parameters$cond2)) {
+                                sim_store$sig[i] = ifelse(sim_store$auc_p[i] < input$alpha_level * 2 &
+                                                              sim_store$auc_diff[i] > 0, 1, 0)
+                            } else {
+                                sim_store$sig[i] = ifelse(sim_store$auc_p[i] < input$alpha_level * 2 &
+                                                              sim_store$auc_diff[i] < 0, 1, 0)
+                            }
+                        }
+                        
+                        message("Recorded test significance in sim_store")
+                        
+                        #### Generate data for DPP function ----
+                        if (input$measure != "pAUC") {
+                            TA_dataframe_cond1 = data.frame(conf = TA_data_cond1,
+                                                            tpORta = 0,
+                                                            cond = "A")
+                            
+                            TP_dataframe_cond1 = data.frame(conf = TP_data_cond1,
+                                                            tpORta = 1,
+                                                            cond = "A")
+                            
+                            TA_dataframe_cond2 = data.frame(conf = TA_data_cond2,
+                                                            tpORta = 0,
+                                                            cond = "B")
+                            
+                            TP_dataframe_cond2 = data.frame(conf = TP_data_cond2,
+                                                            tpORta = 1,
+                                                            cond = "B")
+                            
+                            data_DPP = rbind(TA_dataframe_cond1,
+                                             TP_dataframe_cond1,
+                                             TA_dataframe_cond2,
+                                             TP_dataframe_cond2) %>% 
+                                mutate(cond = as.factor(cond))
+                            
+                            ##### Bootstrap the DPP values and the difference ----
+                            DPP_results = boot(data = data_DPP, 
+                                               statistic = DPP_difference,
+                                               R = input$nboot_iter)
+                            
+                            sim_store$dpp_diff[i] = DPP_results$t0[3]
+                            sim_store$dpp_1[i] = DPP_results$t0[1]
+                            sim_store$dpp_2[i] = DPP_results$t0[2]
+                            
+                            ###### Adjusting the difference confidence interval based on alpha level/test ----
+                            if (input$test_tails == "2_tail") {
+                                #generate 95% CIs Bias Corrected and Accelerated
+                                confidence_interval_diff = boot.ci(DPP_results, index=3, conf=(1-input$alpha_level), type='bca')
+                                ci_diff=confidence_interval_diff$bca[,c(4,5)]
+                                
+                                
+                                sim_store$sig_dpp[i] = ifelse(ci_diff[1] < 0 & ci_diff[2] < 0, 1, 
+                                                              ifelse(ci_diff[1] > 0 & ci_diff[2] > 0, 1, 
+                                                                     ifelse(is.na(ci_diff[1]) | is.na(ci_diff[2]), NA, 0)))
+                                
+                            } else if (input$test_tails == sprintf("%s > %s",
+                                                                   parameters$cond1,
+                                                                   parameters$cond2)) {
+                                
+                                confidence_interval_diff = boot.ci(results, index=3, conf=(1-(input$alpha_level*2)), type='bca')
+                                ci_diff=confidence_interval_diff$bca[,c(4,5)]
+                                
+                                sim_store$sig_dpp[i] = ifelse(ci_diff[2] < 0, 1, 
+                                                              ifelse(is.na(ci_diff[1]) | is.na(ci_diff[2]), NA, 0))
+                            } else {
+                                confidence_interval_diff = boot.ci(results, index=3, conf=(1-(input$alpha_level*2)), type='bca')
+                                ci_diff=confidence_interval_diff$bca[,c(4,5)]
+                                
+                                sim_store$sig_dpp[i] = ifelse(ci_diff[1] > 0, 1, 
+                                                              ifelse(is.na(ci_diff[1]) | is.na(ci_diff[2]), NA, 0))
+                            }
+                        }
+                        
+                        #### Insert NAs for power estimates if only one measure is chosen ----
+                        if (input$measure == "DPP") {
+                            sim_store$sig[i] = NA
+                        }
+                        
+                        if (input$measure == "pAUC") {
+                            sim_store$sig_dpp[i] = NA
+                        }
+                        
+                        sim_counter = sim_counter + 1
+                        
+                        other_vars$sim_counter = other_vars$sim_counter + 1
+                        
+                        showNotification(
+                            sprintf(
+                                "%s / %s simulations complete",
+                                sim_counter,
+                                other_vars$sim_total
+                            )
+                        )
+                    }
+                    # Store power estimates
+                    pwr_store[h, g] = mean(sim_store$sig, na.rm = TRUE)
+                    
+                    pwr_store_dpp[h, g] = mean(sim_store$sig_dpp, na.rm = TRUE)
+                    
+                    # Store AUC difference estimates
+                    auc_store[h, g] = mean(sim_store$auc_diff, na.rm = TRUE)
+                    
+                    ## 95% Quantile on the AUC difference estimate
+                    auc_store_ci_upr[h, g] = quantile(sim_store$auc_diff,
+                                                      probs = c(.025, .975),
+                                                      na.rm = TRUE)[2]
+                    auc_store_ci_lwr[h, g] = quantile(sim_store$auc_diff,
+                                                      probs = c(.025, .975),
+                                                      na.rm = TRUE)[1]
+                    
+                    # Store Condition 1 AUC
+                    auc_1_store[h, g] = mean(sim_store$auc_1, na.rm = TRUE)
+                    
+                    ## 95% Quantile on the AUC estimate
+                    auc_1_store_ci_upr[h, g] = quantile(sim_store$auc_1,
+                                                        probs = c(.025, .975),
+                                                        na.rm = TRUE)[2]
+                    auc_1_store_ci_lwr[h, g] = quantile(sim_store$auc_1,
+                                                        probs = c(.025, .975),
+                                                        na.rm = TRUE)[1]
+                    
+                    # Store Condition 2 AUC
+                    auc_2_store[h, g] = mean(sim_store$auc_2, na.rm = TRUE)
+                    
+                    ## 95% Quantile on the AUC estimate
+                    auc_2_store_ci_upr[h, g] = quantile(sim_store$auc_2,
+                                                        probs = c(.025, .975),
+                                                        na.rm = TRUE)[2]
+                    auc_2_store_ci_lwr[h, g] = quantile(sim_store$auc_2,
+                                                        probs = c(.025, .975),
+                                                        na.rm = TRUE)[1]
+                    
+                    # Store DPP difference estimates
+                    dpp_store[h, g] = mean(sim_store$dpp_diff, na.rm = TRUE)
+                    
+                    ## 95% Quantile on the DPP difference estimate
+                    dpp_store_ci_upr[h, g] = quantile(sim_store$dpp_diff,
+                                                      probs = c(.025, .975),
+                                                      na.rm = TRUE)[2]
+                    dpp_store_ci_lwr[h, g] = quantile(sim_store$dpp_diff,
+                                                      probs = c(.025, .975),
+                                                      na.rm = TRUE)[1]
+                    
+                    # Store Condition 1 DPP
+                    dpp_1_store[h, g] = mean(sim_store$dpp_1, na.rm = TRUE)
+                    
+                    ## 95% Quantile on the DPP estimate
+                    dpp_1_store_ci_upr[h, g] = quantile(sim_store$dpp_1,
+                                                        probs = c(.025, .975),
+                                                        na.rm = TRUE)[2]
+                    dpp_1_store_ci_lwr[h, g] = quantile(sim_store$dpp_1,
+                                                        probs = c(.025, .975),
+                                                        na.rm = TRUE)[1]
+                    
+                    # Store Condition 2 DPP
+                    dpp_2_store[h, g] = mean(sim_store$dpp_2, na.rm = TRUE)
+                    
+                    ## 95% Quantile on the DPP estimate
+                    dpp_2_store_ci_upr[h, g] = quantile(sim_store$dpp_2,
+                                                        probs = c(.025, .975),
+                                                        na.rm = TRUE)[2]
+                    dpp_2_store_ci_lwr[h, g] = quantile(sim_store$dpp_2,
+                                                        probs = c(.025, .975),
+                                                        na.rm = TRUE)[1]
+                }
+            }
+        }
         ### generate results dataframes ----
         #### AUC difference ----
         auc_store = auc_store %>% 

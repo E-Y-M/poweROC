@@ -275,7 +275,7 @@ model_fit_data %>%
 p_a = .5
 mu_t_a = 1
 sigma_t_a = 1
-cs_a = c(1.5, 2, 2.5)
+cs_a = c(1.5, 2, 2.2, 2.5)
 lineup_sizes_a = 6
 n_trials = 10000
 n_sims = 1
@@ -291,6 +291,13 @@ simmed_data_a$conf_level = rep(c(length(cs_a):1, length(cs_a):1, NA),
                                times = 2)
 simmed_data_a$presence = c(rep("present", times = length(cs_a)*2+1),
                            rep("absent", times = length(cs_a)*2+1))
+
+simmed_data_a_TP_rej = data.frame()
+
+for (i in 1:length(cs_a)) {
+    simmed_data_a_TP_rej = rbind(simmed_data_a_TP_rej,
+                                 filter(simmed_data_a, id_type == "reject" & presence == "present"))
+}
 
 simmed_data_a_TP_rej = rbind(filter(simmed_data_a, id_type == "reject" & presence == "present"),
                              filter(simmed_data_a, id_type == "reject" & presence == "present"),
