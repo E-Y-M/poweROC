@@ -41,8 +41,6 @@ fit_a = sdtlu_fit(sim_low,
 fit_b = sdtlu_fit(sim_high,
                      options = options)
 
-cond1_label_test = "testtest_test"
-
 test_data = data.frame(
     test = "test",
     cs = paste(round(cond_a_cs, digits = 3), collapse = ", ")
@@ -61,7 +59,6 @@ cond_a_p = params_a[1]
 cond_a_mu_t = params_a[2]
 cond_a_sigma_t = params_a[3]
 cond_a_cs = params_a[4:length(params_a)]
-cond_a_data = 
 
 cond_a_dists = data.frame(t = distribution_normal(100, 
                               mean = cond_a_mu_t,
@@ -277,7 +274,7 @@ mu_t_a = 1
 sigma_t_a = 1
 cs_a = c(1.5, 2, 2.2, 2.5)
 lineup_sizes_a = 6
-n_trials = 10000
+n_trials = 1000
 n_sims = 1
 
 params_a = c(p_a, mu_t_a, sigma_t_a, cs_a)
@@ -291,6 +288,13 @@ simmed_data_a$conf_level = rep(c(length(cs_a):1, length(cs_a):1, NA),
                                times = 2)
 simmed_data_a$presence = c(rep("present", times = length(cs_a)*2+1),
                            rep("absent", times = length(cs_a)*2+1))
+
+# Test that the condition n's make sense ----
+simmed_data_a_ns = simmed_data_a %>% 
+    group_by(presence) %>% 
+    summarize(n = sum(V1))
+
+# sdtlu doesn't strictly enforce exactly equal assignment of 
 
 simmed_data_a_TP_rej = data.frame()
 

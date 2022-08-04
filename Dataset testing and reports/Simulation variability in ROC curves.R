@@ -106,7 +106,8 @@ ROC_data_store = data.frame(prop = rep(NA, times = 1*
                       presence = NA,
                       criteria = NA)
 
-
+h = 1
+i = 1
 ## Main simulation loop ----
 for (h in 1:length(ns)) {
     curr_n = ns[h]

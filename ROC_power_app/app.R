@@ -2872,6 +2872,11 @@ server <- function(input, output, session) {
         
         message(data_files$conf_effs_data)
         
+        data_files$raw_data_store = data.frame(conf_level = NA,
+                                               cond = NA,
+                                               culprit_present = NA,
+                                               sim = NA,
+                                               n = NA)
         
         other_vars$start_time = Sys.time()
         start_time = Sys.time()
@@ -3106,6 +3111,45 @@ server <- function(input, output, session) {
                     )
                     
                     TP_data_cond2 = TP_data_cond2[!is.na(TP_data_cond2)]
+                    
+                    ##### TESTING: Save condition data to look at later ----
+                    TA_data_cond1_store = data.frame(
+                        conf_level = TA_data_cond1,
+                        cond = "A",
+                        culprit_present = "TA",
+                        sim = i,
+                        n = curr_n
+                    )
+                    
+                    TP_data_cond1_store = data.frame(
+                        conf_level = TP_data_cond1,
+                        cond = "A",
+                        culprit_present = "TP",
+                        sim = i,
+                        n = curr_n
+                    )
+                    
+                    TA_data_cond2_store = data.frame(
+                        conf_level = TA_data_cond2,
+                        cond = "B",
+                        culprit_present = "TA",
+                        sim = i,
+                        n = curr_n
+                    )
+                    
+                    TP_data_cond2_store = data.frame(
+                        conf_level = TP_data_cond2,
+                        cond = "B",
+                        culprit_present = "TP",
+                        sim = i,
+                        n = curr_n
+                    )
+                    
+                    data_files$raw_data_store = rbind(data_files$raw_data_store,
+                                                      TA_data_cond1_store,
+                                                      TP_data_cond1_store,
+                                                      TA_data_cond2_store,
+                                                      TP_data_cond2_store)
                     
                     ##### Generate the ROCs ----
                     
@@ -3488,7 +3532,7 @@ server <- function(input, output, session) {
                         curr_n = parameters$ns[h] * 2
                     }
                     
-                    curr_trials = curr_n * input$n_total_lineups
+                    curr_trials = round((curr_n * input$n_total_lineups) / 2)
                     
                     message(curr_trials)
                     message("Set number of trials")
@@ -3759,6 +3803,45 @@ server <- function(input, output, session) {
                         TP_data_cond2 = unlist(as.list(dplyr::select(TP_data_cond2, conf_level)))
                         
                         TP_data_cond2 = TP_data_cond2[!is.na(TP_data_cond2)]
+                        
+                        ##### TESTING: Save condition data to look at later ----
+                        TA_data_cond1_store = data.frame(
+                            conf_level = TA_data_cond1,
+                            cond = "A",
+                            culprit_present = "TA",
+                            sim = i,
+                            n = curr_n
+                        )
+                        
+                        TP_data_cond1_store = data.frame(
+                            conf_level = TP_data_cond1,
+                            cond = "A",
+                            culprit_present = "TP",
+                            sim = i,
+                            n = curr_n
+                        )
+                        
+                        TA_data_cond2_store = data.frame(
+                            conf_level = TA_data_cond2,
+                            cond = "B",
+                            culprit_present = "TA",
+                            sim = i,
+                            n = curr_n
+                        )
+                        
+                        TP_data_cond2_store = data.frame(
+                            conf_level = TP_data_cond2,
+                            cond = "B",
+                            culprit_present = "TP",
+                            sim = i,
+                            n = curr_n
+                        )
+                        
+                        data_files$raw_data_store = rbind(data_files$raw_data_store,
+                                                          TA_data_cond1_store,
+                                                          TP_data_cond1_store,
+                                                          TA_data_cond2_store,
+                                                          TP_data_cond2_store)
                         
                         ##### Generate the ROCs ----
                         
@@ -4302,7 +4385,17 @@ server <- function(input, output, session) {
         })
         
         other_vars$sims_complete = 1
-            
+        
+        #### TESTING: Save the raw simulation results ----
+        data_files$raw_data_store = filter(data_files$raw_data_store,
+                                           !is.na(conf_level))
+        
+        write.csv(data_files$raw_data_store,
+                  "raw_sim_results.csv",
+                  row.names = FALSE,
+                  na = "")
+        
+        
         #other_vars$time_taken = 
         #    sprintf("Time taken: %s minutes",
         #            round((end_time - start_time)/60, 2))
