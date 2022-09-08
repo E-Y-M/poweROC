@@ -2876,7 +2876,12 @@ server <- function(input, output, session) {
                                                cond = NA,
                                                culprit_present = NA,
                                                sim = NA,
-                                               n = NA)
+                                               n = NA,
+                                               eff = NA,
+                                               auc1 = NA,
+                                               auc2 = NA,
+                                               D_stat = NA,
+                                               sd_bootstrap = NA)
         
         other_vars$start_time = Sys.time()
         start_time = Sys.time()
@@ -3111,45 +3116,6 @@ server <- function(input, output, session) {
                     )
                     
                     TP_data_cond2 = TP_data_cond2[!is.na(TP_data_cond2)]
-                    
-                    ##### TESTING: Save condition data to look at later ----
-                    TA_data_cond1_store = data.frame(
-                        conf_level = TA_data_cond1,
-                        cond = "A",
-                        culprit_present = "TA",
-                        sim = i,
-                        n = curr_n
-                    )
-                    
-                    TP_data_cond1_store = data.frame(
-                        conf_level = TP_data_cond1,
-                        cond = "A",
-                        culprit_present = "TP",
-                        sim = i,
-                        n = curr_n
-                    )
-                    
-                    TA_data_cond2_store = data.frame(
-                        conf_level = TA_data_cond2,
-                        cond = "B",
-                        culprit_present = "TA",
-                        sim = i,
-                        n = curr_n
-                    )
-                    
-                    TP_data_cond2_store = data.frame(
-                        conf_level = TP_data_cond2,
-                        cond = "B",
-                        culprit_present = "TP",
-                        sim = i,
-                        n = curr_n
-                    )
-                    
-                    data_files$raw_data_store = rbind(data_files$raw_data_store,
-                                                      TA_data_cond1_store,
-                                                      TP_data_cond1_store,
-                                                      TA_data_cond2_store,
-                                                      TP_data_cond2_store)
                     
                     ##### Generate the ROCs ----
                     
@@ -3394,6 +3360,77 @@ server <- function(input, output, session) {
                     if (input$measure == "pAUC") {
                         sim_store$sig_dpp[i] = NA
                     }
+                    
+                    ##### TESTING: Save condition data to look at later ----
+                    TA_data_cond1_store = data.frame(
+                        conf_level = TA_data_cond1,
+                        cond = "A",
+                        culprit_present = "TA",
+                        sim = i,
+                        n = curr_n,
+                        eff = eff,
+                        auc1 = ifelse(input$measure == "DPP", NA,
+                                      as.numeric(roc_test$estimate[1])),
+                        auc2 = ifelse(input$measure == "DPP", NA,
+                                      as.numeric(roc_test$estimate[2])),
+                        D_stat = ifelse(input$measure == "DPP", NA,
+                                        as.numeric(roc_test$statistic)),
+                        sd_bootstrap = NA
+                    )
+                    
+                    TP_data_cond1_store = data.frame(
+                        conf_level = TP_data_cond1,
+                        cond = "A",
+                        culprit_present = "TP",
+                        sim = i,
+                        n = curr_n,
+                        eff = eff,
+                        auc1 = ifelse(input$measure == "DPP", NA,
+                                      as.numeric(roc_test$estimate[1])),
+                        auc2 = ifelse(input$measure == "DPP", NA,
+                                      as.numeric(roc_test$estimate[2])),
+                        D_stat = ifelse(input$measure == "DPP", NA,
+                                        as.numeric(roc_test$statistic)),
+                        sd_bootstrap = NA
+                    )
+                    
+                    TA_data_cond2_store = data.frame(
+                        conf_level = TA_data_cond2,
+                        cond = "B",
+                        culprit_present = "TA",
+                        sim = i,
+                        n = curr_n,
+                        eff = eff,
+                        auc1 = ifelse(input$measure == "DPP", NA,
+                                      as.numeric(roc_test$estimate[1])),
+                        auc2 = ifelse(input$measure == "DPP", NA,
+                                      as.numeric(roc_test$estimate[2])),
+                        D_stat = ifelse(input$measure == "DPP", NA,
+                                        as.numeric(roc_test$statistic)),
+                        sd_bootstrap = NA
+                    )
+                    
+                    TP_data_cond2_store = data.frame(
+                        conf_level = TP_data_cond2,
+                        cond = "B",
+                        culprit_present = "TP",
+                        sim = i,
+                        n = curr_n,
+                        eff = eff,
+                        auc1 = ifelse(input$measure == "DPP", NA,
+                                      as.numeric(roc_test$estimate[1])),
+                        auc2 = ifelse(input$measure == "DPP", NA,
+                                      as.numeric(roc_test$estimate[2])),
+                        D_stat = ifelse(input$measure == "DPP", NA,
+                                        as.numeric(roc_test$statistic)),
+                        sd_bootstrap = NA
+                    )
+                    
+                    data_files$raw_data_store = rbind(data_files$raw_data_store,
+                                                      TA_data_cond1_store,
+                                                      TP_data_cond1_store,
+                                                      TA_data_cond2_store,
+                                                      TP_data_cond2_store)
                     
                     sim_counter = sim_counter + 1
                     
@@ -3804,45 +3841,6 @@ server <- function(input, output, session) {
                         
                         TP_data_cond2 = TP_data_cond2[!is.na(TP_data_cond2)]
                         
-                        ##### TESTING: Save condition data to look at later ----
-                        TA_data_cond1_store = data.frame(
-                            conf_level = TA_data_cond1,
-                            cond = "A",
-                            culprit_present = "TA",
-                            sim = i,
-                            n = curr_n
-                        )
-                        
-                        TP_data_cond1_store = data.frame(
-                            conf_level = TP_data_cond1,
-                            cond = "A",
-                            culprit_present = "TP",
-                            sim = i,
-                            n = curr_n
-                        )
-                        
-                        TA_data_cond2_store = data.frame(
-                            conf_level = TA_data_cond2,
-                            cond = "B",
-                            culprit_present = "TA",
-                            sim = i,
-                            n = curr_n
-                        )
-                        
-                        TP_data_cond2_store = data.frame(
-                            conf_level = TP_data_cond2,
-                            cond = "B",
-                            culprit_present = "TP",
-                            sim = i,
-                            n = curr_n
-                        )
-                        
-                        data_files$raw_data_store = rbind(data_files$raw_data_store,
-                                                          TA_data_cond1_store,
-                                                          TP_data_cond1_store,
-                                                          TA_data_cond2_store,
-                                                          TP_data_cond2_store)
-                        
                         ##### Generate the ROCs ----
                         
                         if (input$measure != "DPP") {
@@ -4098,6 +4096,77 @@ server <- function(input, output, session) {
                         if (input$measure == "pAUC") {
                             sim_store$sig_dpp[i] = NA
                         }
+                        
+                        ##### TESTING: Save condition data to look at later ----
+                        TA_data_cond1_store = data.frame(
+                            conf_level = TA_data_cond1,
+                            cond = "A",
+                            culprit_present = "TA",
+                            sim = i,
+                            n = curr_n,
+                            eff = NA,
+                            auc1 = ifelse(input$measure == "DPP", NA,
+                                          as.numeric(roc_test$estimate[1])),
+                            auc2 = ifelse(input$measure == "DPP", NA,
+                                          as.numeric(roc_test$estimate[2])),
+                            D_stat = ifelse(input$measure == "DPP", NA,
+                                            as.numeric(roc_test$statistic)),
+                            sd_bootstrap = NA
+                        )
+                        
+                        TP_data_cond1_store = data.frame(
+                            conf_level = TP_data_cond1,
+                            cond = "A",
+                            culprit_present = "TP",
+                            sim = i,
+                            n = curr_n,
+                            eff = NA,
+                            auc1 = ifelse(input$measure == "DPP", NA,
+                                          as.numeric(roc_test$estimate[1])),
+                            auc2 = ifelse(input$measure == "DPP", NA,
+                                          as.numeric(roc_test$estimate[2])),
+                            D_stat = ifelse(input$measure == "DPP", NA,
+                                            as.numeric(roc_test$statistic)),
+                            sd_bootstrap = NA
+                        )
+                        
+                        TA_data_cond2_store = data.frame(
+                            conf_level = TA_data_cond2,
+                            cond = "B",
+                            culprit_present = "TA",
+                            sim = i,
+                            n = curr_n,
+                            eff = NA,
+                            auc1 = ifelse(input$measure == "DPP", NA,
+                                          as.numeric(roc_test$estimate[1])),
+                            auc2 = ifelse(input$measure == "DPP", NA,
+                                          as.numeric(roc_test$estimate[2])),
+                            D_stat = ifelse(input$measure == "DPP", NA,
+                                            as.numeric(roc_test$statistic)),
+                            sd_bootstrap = NA
+                        )
+                        
+                        TP_data_cond2_store = data.frame(
+                            conf_level = TP_data_cond2,
+                            cond = "B",
+                            culprit_present = "TP",
+                            sim = i,
+                            n = curr_n,
+                            eff = NA,
+                            auc1 = ifelse(input$measure == "DPP", NA,
+                                          as.numeric(roc_test$estimate[1])),
+                            auc2 = ifelse(input$measure == "DPP", NA,
+                                          as.numeric(roc_test$estimate[2])),
+                            D_stat = ifelse(input$measure == "DPP", NA,
+                                            as.numeric(roc_test$statistic)),
+                            sd_bootstrap = NA
+                        )
+                        
+                        data_files$raw_data_store = rbind(data_files$raw_data_store,
+                                                          TA_data_cond1_store,
+                                                          TP_data_cond1_store,
+                                                          TA_data_cond2_store,
+                                                          TP_data_cond2_store)
                         
                         sim_counter = sim_counter + 1
                         
@@ -4388,7 +4457,9 @@ server <- function(input, output, session) {
         
         #### TESTING: Save the raw simulation results ----
         data_files$raw_data_store = filter(data_files$raw_data_store,
-                                           !is.na(conf_level))
+                                           !is.na(conf_level)) %>% 
+            rowwise() %>% 
+            mutate(sd_bootstrap = (auc1 - auc2) / D_stat)
         
         write.csv(data_files$raw_data_store,
                   "raw_sim_results.csv",

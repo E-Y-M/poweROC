@@ -18,8 +18,9 @@ apatheme <-
 `%nin%` = Negate(`%in%`)
 
 # Names of data files to loop over ----
-datafile_names = c("Colloff High-Low (3000 lineups per condition)", "Colloff High-Low (6000 lineups per condition)")
 simulated_datafiles = list.files("./Dataset testing and reports/sdtlu Testing/Simulated data")
+datafile_names = str_replace(simulated_datafiles, ".csv", "")
+
 data_method_raw = list.files("./Dataset testing and reports/sdtlu Testing/Comparing sdtlu vs. data method/Data resampling method")
 data_method_sdtlu = list.files("./Dataset testing and reports/sdtlu Testing/Comparing sdtlu vs. data method/sdtlu method")
 
@@ -30,9 +31,14 @@ data_method_sdtlu = data_method_sdtlu[!grepl("html", data_method_sdtlu)]
 a = 1
 for (a in 1:length(datafile_names)) {
         # Get original data and ROC values ----
-    data_original = read.csv(paste0("./Dataset testing and reports/sdtlu Testing/Simulated data/", simulated_datafiles[a])) %>% 
+    
+    data_original = read.csv(paste0("./Dataset testing and reports/sdtlu Testing/Simulated data/", simulated_datafiles[a])) 
+    
+    conds = unique(data_original$cond)
+    
+    data_original = data_original %>% 
         mutate(conf_level = ifelse(id_type == "filler" | id_type == "reject", 0, conf_level),
-               cond = ifelse(cond == "Low-similarity fillers", "A", "B"),
+               cond = ifelse(cond == conds[1], "A", "B"),
                culprit_present = ifelse(culprit_present == "absent", "TA", "TP")) %>% 
         group_by(cond, culprit_present, conf_level) %>% 
         count() %>% 
