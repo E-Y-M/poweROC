@@ -1355,6 +1355,11 @@ server <- function(input, output, session) {
         message("Populated ROC store object")
         message(ROC_data)
         
+        #write.csv(ROC_data,
+        #          "./test_ROC_data.csv",
+        #          row.names = FALSE,
+        #          na = "")
+        
         ROC_data_wide = spread(ROC_data,
                                key = "presence",
                                value = "prop")  %>%
@@ -4459,7 +4464,11 @@ server <- function(input, output, session) {
         data_files$raw_data_store = filter(data_files$raw_data_store,
                                            !is.na(conf_level)) %>% 
             rowwise() %>% 
-            mutate(sd_bootstrap = (auc1 - auc2) / D_stat)
+            mutate(sd_bootstrap = (auc1 - auc2) / D_stat,
+                   eff = as.character(eff)) %>% 
+            rename("N" = n,
+                   "Effect size" = eff) %>% 
+            left_join(data_files$pwr_store)
         
         write.csv(data_files$raw_data_store,
                   "raw_sim_results.csv",

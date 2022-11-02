@@ -1,4 +1,4 @@
-﻿culprit_present,cond,conf_leve,id_type,pval,dval,auc_diff,specificity,exp
+﻿culprit_present,cond,conf_level,id_type,pval,dval,auc_diff,specificity,exp
 absent,High,80,reject,0.03,2.148,0.033,0.9,Colloff et al. (2021b): Exp 2: High vs. Low pose reinstatement
 present,Low,90,suspect,0.03,2.148,0.033,0.9,Colloff et al. (2021b): Exp 2: High vs. Low pose reinstatement
 present,Low,80,suspect,0.03,2.148,0.033,0.9,Colloff et al. (2021b): Exp 2: High vs. Low pose reinstatement
