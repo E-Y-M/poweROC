@@ -343,8 +343,7 @@ effects_tab = tabItem(tabName = "effects_tab",
 ### simulation parameters tab ----
 parameters_tab = tabItem(tabName = "parameters_tab",
                          box(width = 12,
-                             title = "Enter simulation parameters below. Mouse over each entry box for an explanation, and see the 'App validation & testing' tab for recommendations. 
-                             You can also import simulation parameters from previous simulations uploaded by users (see the 'Previous simulation results' tab). Once you have entered all parameters, press the `Check parameters and generate hypothetical ROC curves` button to check whether the entered parameters are valid and view 
+                             title = "Enter simulation parameters below. Mouse over each entry box for an explanation. Once you have entered all parameters, press the `Check parameters and generate hypothetical ROC curves` button to check whether the entered parameters are valid and view 
                              hypothetical ROC curves (Note that you will need to do this any time you change a parameter value). If the check succeeds, a `Simulate` button will appear.",
                              radioButtons("empirical_theoretical",
                                           "Use uploaded data or simulate from SDT parameters?",
@@ -443,39 +442,39 @@ parameters_tab = tabItem(tabName = "parameters_tab",
                                                  "Within-subjects"),
                                      selected = "Between-subjects"
                                  ),
-                                 radioButtons(
-                                     "eff_type",
-                                     "Use the same effect size for all confidence levels or differing effect sizes?",
-                                     choices = c("Same effect" = "constant",
-                                                 "Different effects" = "different"),
-                                     selected = "constant"
-                                 ),
-                                 bsTooltip("eff_type",
-                                           "Specify how effect sizes are to be applied to the 2nd (or only) condition in the data. Refer to the `pAUC effect sizes` tab for more information",
-                                           placement = "bottom",
-                                           trigger = "hover"),
-                                 textInput(
-                                     "effs",
-                                     "Effect sizes to test",
-                                     value = "",
-                                     placeholder = ".1, .4, .8"
-                                 ),
-                                 bsTooltip("effs",
-                                           "Specify effect sizes to test in a comma-separated list. Effect sizes are applied to the 2nd condition in your dataset (unless only one condition is present). An effect size of 0 does not change the pAUC of the 2nd condition, an effect size of 0.5 increases the pAUC of the 2nd condition by 50%, and an effect size of -0.5 decreases the pAUC of the 2nd condition by 50%. See the `pAUC effect sizes` tab for more details.",
-                                           placement = "bottom",
-                                           trigger = "hover"),
-                                 textInput(
-                                     "effs_different",
-                                     "Effect sizes to test, specified for each confidence level (lowest to highest)",
-                                     value = "",
-                                     placeholder = "e.g., .1, .2, .1, .4, .5, etc."
-                                 ),
-                                 textOutput("n_confs_message"),
-                                 tags$br(),
-                                 bsTooltip("effs_different",
-                                           "Specify effect sizes to test in a comma-separated list, with one effect size per confidence level in your data. Effect sizes are applied to the 2nd condition in your dataset (unless only one condition is present). An effect size of 0 does not change the # of hits at that confidence level in the 2nd condition, an effect size of 0.5 increases the # of hits in the 2nd condition by 50%, and an effect size of -0.5 decreases the # of hits in the 2nd condition by 50%. See the `pAUC effect sizes` tab for more details.",
-                                           placement = "bottom",
-                                           trigger = "hover"),
+                                 #hidden(radioButtons(
+                                 #    "eff_type",
+                                 #    "Use the same effect size for all confidence levels or differing effect sizes?",
+                                 #    choices = c("Same effect" = "constant",
+                                 #                "Different effects" = "different"),
+                                 #    selected = "constant"
+                                 #)),
+                                 #bsTooltip("eff_type",
+                                 #          "Specify how effect sizes are to be applied to the 2nd (or only) condition in the data. Refer to the `pAUC effect sizes` tab for more information",
+                                 #          placement = "bottom",
+                                 #          trigger = "hover"),
+                                 #hidden(textInput(
+                                 #    "effs",
+                                 #    "Effect sizes to test",
+                                 #    value = "",
+                                 #    placeholder = "0"
+                                 #)),
+                                 #bsTooltip("effs",
+                                 #          "Specify effect sizes to test in a comma-separated list. Effect sizes are applied to the 2nd condition in your dataset (unless only one condition is present). An effect size of 0 does not change the pAUC of the 2nd condition, an effect size of 0.5 increases the pAUC of the 2nd condition by 50%, and an effect size of -0.5 decreases the pAUC of the 2nd condition by 50%. See the `pAUC effect sizes` tab for more details.",
+                                 #          placement = "bottom",
+                                 #          trigger = "hover"),
+                                 #textInput(
+                                 #    "effs_different",
+                                 #    "Effect sizes to test, specified for each confidence level (lowest to highest)",
+                                 #    value = "",
+                                 #    placeholder = "e.g., .1, .2, .1, .4, .5, etc."
+                                 #),
+                                 #textOutput("n_confs_message"),
+                                 #tags$br(),
+                                 #bsTooltip("effs_different",
+                                 #          "Specify effect sizes to test in a comma-separated list, with one effect size per confidence level in your data. Effect sizes are applied to the 2nd condition in your dataset (unless only one condition is present). An effect size of 0 does not change the # of hits at that confidence level in the 2nd condition, an effect size of 0.5 increases the # of hits in the 2nd condition by 50%, and an effect size of -0.5 decreases the # of hits in the 2nd condition by 50%. See the `pAUC effect sizes` tab for more details.",
+                                 #          placement = "bottom",
+                                 #          trigger = "hover"),
                                  textInput(
                                      "ns",
                                      "Sample sizes to test",
@@ -701,19 +700,19 @@ results_tab = tabItem(
         tags$br(),
         div(style = 'overflow-x: scroll', dataTableOutput("pwr_store")),
         tags$br(),
-        tags$p(strong("You can download a summary report of the power analysis by clicking the button below. You can also (anonymously) upload your power analysis results to our compendium--doing so helps other users and provides information I can use to improve this app.")),
+        tags$p(strong("You can download a summary report of the power analysis (including all simulation parameters) by clicking the button below.")),
         downloadButton("report_dl",
                        "Download summary report"),
-        actionButton("upload_results",
-                     "Upload analysis results",
-                     icon = icon("upload"))
+        #actionButton("upload_results",
+        #             "Upload analysis results",
+        #             icon = icon("upload"))
     ),
-    bsTooltip(
-        "upload_results",
-        "Anonymously upload your analysis results for others to use. Note that this does not upload your data, just the power simulation results",
-        placement = "bottom",
-        trigger = "hover"
-    ),
+    #bsTooltip(
+    #    "upload_results",
+    #    "Anonymously upload your analysis results for others to use. Note that this does not upload your data, just the power simulation results",
+    #    placement = "bottom",
+    #    trigger = "hover"
+    #),
     box(id = "power_curves_box",
         width = 12,
         #title = "Power curves",
@@ -774,10 +773,10 @@ ui <- dashboardPage(
             id = "tabs",
             menuItem("Introduction", tabName = "intro_tab", icon = icon("compass")),
             menuItem("How this app works", tabName = "explanation_tab", icon = icon("info-circle")),
-            menuItem("Previous simulation results", tabName = "previous_tab", icon = icon("history")),
+            #menuItem("Previous simulation results", tabName = "previous_tab", icon = icon("history")),
             menuItem("Data Upload", tabName = "data_tab", icon = icon("table")),
             menuItem("SDT parameter estimation", tabName = "sdtlu_tab", icon = icon("signal")),
-            menuItem("pAUC effect sizes", tabName = "effects_tab", icon = icon("book")),
+            #menuItem("pAUC effect sizes", tabName = "effects_tab", icon = icon("book")),
             menuItem("Simulation Parameters", tabName = "parameters_tab", icon = icon("book")),
             menuItem("Simulation Results", tabName = "results_tab", icon = icon("poll")),
             menuItem("App validation & testing", tabName = "validation_tab", icon = icon("search"))
@@ -795,10 +794,10 @@ ui <- dashboardPage(
         tabItems(
             intro_tab,
             explanation_tab,
-            previous_tab,
+            #previous_tab,
             data_tab,
             sdtlu_tab,
-            effects_tab,
+            #effects_tab,
             parameters_tab,
             results_tab,
             validation_tab
@@ -911,7 +910,7 @@ server <- function(input, output, session) {
                                 saved_data = NULL,
                                 upload_data = NULL,
                                 pwr_store = NULL,
-                                sim_params = data.frame(Parameter = rep(NA, times = 14)),
+                                sim_params = data.frame(Parameter = rep(NA, times = 24)),
                                 sdtlu_hypothetical_data = NULL,
                                 compendium_data = NULL,
                                 previous_sim_params = data.frame(Parameter = rep(NA, times = 8)),
@@ -932,51 +931,140 @@ server <- function(input, output, session) {
     
     observeEvent(input$sim_start, {
         
+        
+        
         if (input$between_within == "Between-subjects") {
             parameters$between_within = "Between-subjects"
         } else {
             parameters$between_within = "Within-subjects"
         }
         
-        if (input$eff_type == "constant") {
+        #if (input$eff_type == "constant") {
             other_vars$effs_report = input$effs
             other_vars$effs_different_report = "N/A"
+        #} else {
+        #    other_vars$effs_different_report = as.list(data_files$conf_effs_data$conf_effs) %>% 
+        #        paste(collapse = ",")
+        #    other_vars$effs_report = "N/A"
+        #}
+        
+        
+        
+        if (input$empirical_theoretical == "Data") {
+            data_files$sim_params = data_files$sim_params %>% 
+                mutate(Parameter = c("Simulating from data or SDT parameters?",
+                                     "SDT: Condition A Simultaneous or Sequential",
+                                     "SDT: Condition A Lineup size",
+                                     "SDT: Condition A Target distribution mean",
+                                     "SDT: Condition A Target distribution SD",
+                                     "SDT: Condition A Criterion values",
+                                     "SDT: Condition A Sequential position probabilities",
+                                     "SDT: Condition B Simultaneous or Sequential",
+                                     "SDT: Condition B Lineup size",
+                                     "SDT: Condition B Target distribution mean",
+                                     "SDT: Condition B Target distribution SD",
+                                     "SDT: Condition B Criterion values",
+                                     "SDT: Condition B Sequential position probabilities",
+                                     "Ns",
+                                     #"Effects",
+                                     "Between- or within-subjects",
+                                     #"Confidence levels",
+                                     #"Effects by confidence level",
+                                     "# of lineups/subject per condition",
+                                     "# TA lineups/subject per condition",
+                                     "# TP lineups/subject per condition",
+                                     "# of simulated samples per effect size/N",
+                                     "# of bootstraps per AUC/DPP test",
+                                     "Partial AUC truncation",
+                                     "Custom specificity",
+                                     "Two-tailed or one-tailed?",
+                                     "Type I error rate"),
+                       Value = c(input$empirical_theoretical,
+                                 input$sim_seq_a,
+                                 input$lineup_sizes_a,
+                                 input$mu_t_a,
+                                 input$sigma_t_a,
+                                 input$cs_a,
+                                 input$pos_prop_a,
+                                 input$sim_seq_b,
+                                 input$lineup_sizes_b,
+                                 input$mu_t_b,
+                                 input$sigma_t_b,
+                                 input$cs_b,
+                                 input$pos_prop_b,
+                                 input$ns,
+                                 #other_vars$effs_report,
+                                 parameters$between_within,
+                                 #parameters$n_confs,
+                                 #other_vars$effs_different_report,
+                                 input$n_total_lineups,
+                                 input$n_TA_lineups,
+                                 input$n_TP_lineups,
+                                 input$nsims,
+                                 input$nboot_iter,
+                                 input$roc_trunc,
+                                 input$custom_trunc,
+                                 input$test_tails,
+                                 input$alpha_level)) %>% 
+                filter(!grepl("SDT: ", Parameter))
         } else {
-            other_vars$effs_different_report = as.list(data_files$conf_effs_data$conf_effs) %>% 
-                paste(collapse = ",")
-            other_vars$effs_report = "N/A"
+            data_files$sim_params = data_files$sim_params %>% 
+                mutate(Parameter = c("Simulating from data or SDT parameters?",
+                                     "SDT: Condition A Simultaneous or Sequential",
+                                     "SDT: Condition A Lineup size",
+                                     "SDT: Condition A Target distribution mean",
+                                     "SDT: Condition A Target distribution SD",
+                                     "SDT: Condition A Criterion values",
+                                     "SDT: Condition A Sequential position probabilities",
+                                     "SDT: Condition B Simultaneous or Sequential",
+                                     "SDT: Condition B Lineup size",
+                                     "SDT: Condition B Target distribution mean",
+                                     "SDT: Condition B Target distribution SD",
+                                     "SDT: Condition B Criterion values",
+                                     "SDT: Condition B Sequential position probabilities",
+                                     "Ns",
+                                     #"Effects",
+                                     "Between- or within-subjects",
+                                     #"Confidence levels",
+                                     #"Effects by confidence level",
+                                     "# of lineups/subject per condition",
+                                     "# TA lineups/subject per condition",
+                                     "# TP lineups/subject per condition",
+                                     "# of simulated samples per effect size/N",
+                                     "# of bootstraps per AUC/DPP test",
+                                     "Partial AUC truncation",
+                                     "Custom specificity",
+                                     "Two-tailed or one-tailed?",
+                                     "Type I error rate"),
+                       Value = c(input$empirical_theoretical,
+                                 input$sim_seq_a,
+                                 input$lineup_sizes_a,
+                                 input$mu_t_a,
+                                 input$sigma_t_a,
+                                 input$cs_a,
+                                 input$pos_prop_a,
+                                 input$sim_seq_b,
+                                 input$lineup_sizes_b,
+                                 input$mu_t_b,
+                                 input$sigma_t_b,
+                                 input$cs_b,
+                                 input$pos_prop_b,
+                                 input$ns,
+                                 #other_vars$effs_report,
+                                 parameters$between_within,
+                                 #parameters$n_confs,
+                                 #other_vars$effs_different_report,
+                                 input$n_total_lineups,
+                                 input$n_TA_lineups,
+                                 input$n_TP_lineups,
+                                 input$nsims,
+                                 input$nboot_iter,
+                                 input$roc_trunc,
+                                 input$custom_trunc,
+                                 input$test_tails,
+                                 input$alpha_level))
         }
         
-        data_files$sim_params = data_files$sim_params %>% 
-            mutate(Parameter = c(
-                "Ns",
-                "Effects",
-                "Between- or within-subjects",
-                "Confidence levels",
-                "Effects by confidence level",
-                "# of lineups/subject per condition",
-                "# TA lineups/subject per condition",
-                "# TP lineups/subject per condition",
-                "# of simulated samples per effect size/N",
-                "# of bootstraps per AUC/DPP test",
-                "Partial AUC truncation",
-                "Custom specificity",
-                "Two-tailed or one-tailed?",
-                "Type I error rate"),
-                Value = c(input$ns,
-                            other_vars$effs_report,
-                            parameters$between_within,
-                            parameters$n_confs,
-                            other_vars$effs_different_report,
-                            input$n_total_lineups,
-                            input$n_TA_lineups,
-                            input$n_TP_lineups,
-                            input$nsims,
-                            input$nboot_iter,
-                            input$roc_trunc,
-                            input$custom_trunc,
-                            input$test_tails,
-                            input$alpha_level))
     })
     
     #observeEvent(input$user_data, {
@@ -1543,6 +1631,8 @@ server <- function(input, output, session) {
         
         parameters$n_confs = length(unique(data_files$processed_data$conf_level))
         
+        parameters$effs = 0
+        
         parameters$effs_different = rep(0, times = parameters$n_confs)
         
         parameters$cond1 = as.character(levels(data_files$processed_data$cond)[1])
@@ -1768,6 +1858,8 @@ server <- function(input, output, session) {
     
     ### generate hypothetical ROCs before simulation ----
     observeEvent(input$generate_hypothetical, {
+        
+        parameters$effs = 0
         
         if (input$empirical_theoretical == "Data") {
             req(data_files$processed_data)
@@ -1996,14 +2088,15 @@ server <- function(input, output, session) {
             
             
             ROC_data_plot = ROC_data_wide %>% 
-                ggplot(aes(x = absent, y = present, color = cond, linetype = as.factor(eff)))+
+                ggplot(aes(x = absent, y = present, color = cond))+
+                           #linetype = as.factor(eff)))+
                 geom_point(alpha = .5)+
                 geom_line()+
                 geom_vline(xintercept = partial_threshold)+
                 apatheme+
                 labs(x = "\nFalse ID rate",
                      y = "Correct ID rate\n",
-                     linetype = "Effect",
+                     #linetype = "Effect",
                      color = "Condition")+
                 theme(text = element_text(size = 20))
             
@@ -2877,16 +2970,18 @@ server <- function(input, output, session) {
         
         message(data_files$conf_effs_data)
         
-        data_files$raw_data_store = data.frame(conf_level = NA,
-                                               cond = NA,
-                                               culprit_present = NA,
-                                               sim = NA,
-                                               n = NA,
-                                               eff = NA,
-                                               auc1 = NA,
-                                               auc2 = NA,
-                                               D_stat = NA,
-                                               sd_bootstrap = NA)
+        
+        ## CODE TO SAVE RAW SIMULATED DATA -- UNCOMMENT THIS AND ANY OTHER LINES WITH "RAW_DATA" TO ENABLE ----
+        #data_files$raw_data_store = data.frame(conf_level = NA,
+        #                                       cond = NA,
+        #                                       culprit_present = NA,
+        #                                       sim = NA,
+        #                                       n = NA,
+        #                                       eff = NA,
+        #                                       auc1 = NA,
+        #                                       auc2 = NA,
+        #                                       D_stat = NA,
+        #                                       sd_bootstrap = NA)
         
         other_vars$start_time = Sys.time()
         start_time = Sys.time()
@@ -3431,11 +3526,11 @@ server <- function(input, output, session) {
                         sd_bootstrap = NA
                     )
                     
-                    data_files$raw_data_store = rbind(data_files$raw_data_store,
-                                                      TA_data_cond1_store,
-                                                      TP_data_cond1_store,
-                                                      TA_data_cond2_store,
-                                                      TP_data_cond2_store)
+                    #data_files$raw_data_store = rbind(data_files$raw_data_store,
+                    #                                  TA_data_cond1_store,
+                    #                                  TP_data_cond1_store,
+                    #                                  TA_data_cond2_store,
+                    #                                  TP_data_cond2_store)
                     
                     sim_counter = sim_counter + 1
                     
@@ -4167,11 +4262,11 @@ server <- function(input, output, session) {
                             sd_bootstrap = NA
                         )
                         
-                        data_files$raw_data_store = rbind(data_files$raw_data_store,
-                                                          TA_data_cond1_store,
-                                                          TP_data_cond1_store,
-                                                          TA_data_cond2_store,
-                                                          TP_data_cond2_store)
+                        #data_files$raw_data_store = rbind(data_files$raw_data_store,
+                        #                                  TA_data_cond1_store,
+                        #                                  TP_data_cond1_store,
+                        #                                  TA_data_cond2_store,
+                        #                                  TP_data_cond2_store)
                         
                         sim_counter = sim_counter + 1
                         
@@ -4461,19 +4556,19 @@ server <- function(input, output, session) {
         other_vars$sims_complete = 1
         
         #### TESTING: Save the raw simulation results ----
-        data_files$raw_data_store = filter(data_files$raw_data_store,
-                                           !is.na(conf_level)) %>% 
-            rowwise() %>% 
-            mutate(sd_bootstrap = (auc1 - auc2) / D_stat,
-                   eff = as.character(eff)) %>% 
-            rename("N" = n,
-                   "Effect size" = eff) %>% 
-            left_join(data_files$pwr_store)
-        
-        write.csv(data_files$raw_data_store,
-                  "raw_sim_results.csv",
-                  row.names = FALSE,
-                  na = "")
+        #data_files$raw_data_store = filter(data_files$raw_data_store,
+        #                                   !is.na(conf_level)) %>% 
+        #    rowwise() %>% 
+        #    mutate(sd_bootstrap = (auc1 - auc2) / D_stat,
+        #           eff = as.character(eff)) %>% 
+        #    rename("N" = n,
+        #           "Effect size" = eff) %>% 
+        #    left_join(data_files$pwr_store)
+        #
+        #write.csv(data_files$raw_data_store,
+        #          "raw_sim_results.csv",
+        #          row.names = FALSE,
+        #          na = "")
         
         
         #other_vars$time_taken = 
