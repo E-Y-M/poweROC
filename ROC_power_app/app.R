@@ -1512,7 +1512,7 @@ server <- function(input, output, session) {
             apatheme+
             labs(x = "\nFalse ID rate",
                  y = "Correct ID rate\n",
-                 linetype = "Effect",
+                 #linetype = "Effect",
                  color = "Condition")+
             theme(text = element_text(size = 20))
         
@@ -2578,14 +2578,15 @@ server <- function(input, output, session) {
             
             
             ROC_data_plot = ROC_data_wide %>% 
-                ggplot(aes(x = absent, y = present, color = cond, linetype = as.factor(eff)))+
+                ggplot(aes(x = absent, y = present, color = cond))+ 
+                           #linetype = as.factor(eff)))+
                 geom_point(alpha = .5)+
                 geom_line()+
                 geom_vline(xintercept = partial_threshold)+
                 apatheme+
                 labs(x = "\nFalse ID rate",
                      y = "Correct ID rate\n",
-                     linetype = "Effect",
+                     #linetype = "Effect",
                      color = "Condition")+
                 theme(text = element_text(size = 20))
             
@@ -2925,7 +2926,7 @@ server <- function(input, output, session) {
             apatheme+
             labs(x = "\nFalse ID rate",
                  y = "Correct ID rate\n",
-                 linetype = "Effect",
+                 #linetype = "Effect",
                  color = "Condition")+
             ggtitle("Model ROC predictions vs. data")+
             theme(text = element_text(size = 20),
@@ -4845,7 +4846,7 @@ server <- function(input, output, session) {
                 plots$previous_sim_plot = data_files$compendium_data %>% 
                     ggplot(aes(x = N,
                                y = Power,
-                               linetype = `Effect size`,
+                               #linetype = `Effect size`,
                                color = `Effect size`))+
                     geom_line()+
                     scale_x_continuous(breaks = data_files$compendium_data$N)+
