@@ -37,11 +37,12 @@ example_data = data.frame(id_type = sample(c("suspect", "filler", "reject"),
                           cond = sample(c("A", "B"),
                                         100,
                                         replace = TRUE,
-                                        prob = c(.5, .5)))
+                                        prob = c(.5, .5))) %>% 
+    mutate(lineup_size = ifelse(cond == "A", 6, 8))
 
 ### Compendium of open datasets ----
-open_data = read.csv("www/combined_open_data.csv", fileEncoding = 'UTF-8-BOM') %>% 
-    filter(exp != "Colloff et al. (2021b): Exp 2: High vs. Low pose reinstatement") # Filter out this dataset for now until I figure out problems
+open_data = read.csv("www/combined_open_data.csv", fileEncoding = 'UTF-8-BOM') #%>% 
+    #filter(exp != "Colloff et al. (2021b): Exp 2: High vs. Low pose reinstatement") # Filter out this dataset for now until I figure out problems
 
 ### AUC effect sizes ----
 effect_sizes = read.csv("www/auc_ratios.csv", fileEncoding = 'UTF-8-BOM') %>% 
@@ -183,6 +184,17 @@ data_tab <- tabItem(
             tags$li(
                 strong('cond'),
                 ': The between- or within-subjects condition for that participant/lineup (e.g., Simultaneous vs. Sequential). Only necessary to include if you have data with two pre-existing conditions (which is recommended), otherwise the variable will be created and populated automatically. Note that the condition that comes 2nd alphabetically will be the one that effect sizes are applied to.'
+            ),
+            tags$li(
+                strong('lineup_size'),
+                ': The number of individuals in the lineup.'
+            )
+        ),
+        tags$p("And if your data contain sequential lineups:"),
+        tags$ul(
+            tags$li(
+                strong('suspect_position'),
+                ': The position of the suspect in the lineup.'
             )
         ),
         tags$br(),
@@ -208,13 +220,13 @@ data_tab <- tabItem(
                selected = NULL
         )),
         tags$p(strong("Once you have uploaded or chosen a dataset and specified whether your data has a designated innocent suspect, click `Check data` to check your data and generate ROC curves")),
-        hidden(radioButtons(
+        radioButtons(
             "designated_suspect",
-            "Does your data contain a designated innocent suspect?",
+            "Does your data contain a designated innocent suspect? (Automatically selected for open datasets)",
             choices = c("Yes",
                         "No"),
             selected = "Yes"
-        )),
+        ),
         bsTooltip("designated_suspect",
                   "If your data does not contain a designated innocent suspect, the app will automatically convert culprit-absent filler IDs to suspect IDs with a probability of 1/lineup size",
                   placement = "left",
@@ -249,8 +261,8 @@ data_tab <- tabItem(
     box(width = 12,
         collapsible = TRUE,
         title = "ROC Curves",
-        plotOutput("hypothetical_ROC_plot"),
-        textOutput("auc_diff_text")),
+        plotOutput("hypothetical_ROC_plot")),
+        #textOutput("auc_diff_text")),
     box(width = 6,
         collapsible = TRUE,
         title = "Example data",
@@ -1093,10 +1105,33 @@ server <- function(input, output, session) {
         data_files$processed_data = open_data %>% 
             filter(exp == input$open_dataset)
         
-        updateRadioButtons(session,
-                           "designated_suspect",
-                           selected = "Yes"
-                           )
+        # Flag datasets that don't have a designated innocent suspect ----
+        if (data_files$processed_data$exp[1] %in% c("Colloff et al. (2021b): Exp 1: Same-pose vs. Different-pose encoding-test", 
+                       "Colloff et al. (2021b): Exp 1: Same-plus-additional-pose vs. Different-pose encoding-test", 
+                       "Colloff et al. (2021b): Exp 1: Same-plus-additional-pose vs. Same-pose encoding-test", 
+                       "Colloff et al. (2021b): Exp 2: High vs. Low pose reinstatement", 
+                       "Akan et al. (2021): Exp 1: Showup vs. 6-person",
+                       "Morgan et al. (2019): Exp 1: Sleep vs. Wake pre-lineup",
+                       "Morgan et al. (2019): AM vs. PM lineup")) {
+            updateRadioButtons(session,
+                               "designated_suspect",
+                               selected = "No"
+            )
+            
+            updateNumericInput(session,
+                               "lineup_size_1",
+                               value = as.numeric(unique(data_files$processed_data$lineup_size[data_files$processed_data$cond == levels(as.factor(data_files$processed_data$cond))[1]])))
+            
+            updateNumericInput(session,
+                               "lineup_size_2",
+                               value = as.numeric(unique(data_files$processed_data$lineup_size[data_files$processed_data$cond == levels(as.factor(data_files$processed_data$cond))[2]])))
+        } else {
+            updateRadioButtons(session,
+                               "designated_suspect",
+                               selected = "Yes"
+            )
+        }
+        
         
         minimum_conf = min(data_files$processed_data$conf_level)
         
@@ -1146,15 +1181,30 @@ server <- function(input, output, session) {
             
             show("lineup_size_1")
             show("lineup_size_2")
-        }
+            
+            updateNumericInput(session,
+                               "lineup_size_1",
+                               value = as.numeric(unique(data_files$processed_data$lineup_size[data_files$processed_data$cond == levels(as.factor(data_files$processed_data$cond))[1]])))
+            
+            updateNumericInput(session,
+                               "lineup_size_2",
+                               value = as.numeric(unique(data_files$processed_data$lineup_size[data_files$processed_data$cond == levels(as.factor(data_files$processed_data$cond))[2]])))
+            }
     })
 
     observeEvent(input$user_data, {
         data_files$user_data = read_csv(input$user_data$datapath)
         
+        if(!c("suspect_position") %in% colnames(data_files$user_data)) {
+            data_files$user_data$suspect_position = NA
+        } else {
+            data_files$user_data$suspect_position = data_files$user_data$suspect_position
+        }
+        
         if (!c("id_type") %in% colnames(data_files$user_data) |
             !c("culprit_present") %in% colnames(data_files$user_data) |
-            !c("conf_level") %in% colnames(data_files$user_data)) {
+            !c("conf_level") %in% colnames(data_files$user_data) |
+            !c("lineup_size") %in% colnames(data_files$user_data)) {
             showModal(modalDialog(
                 title = "Warning",
                 "Uploaded data file missing required columns. 
@@ -1228,13 +1278,14 @@ server <- function(input, output, session) {
                 }
             message("Processed data with one condition")
             }
+            
             data_files$saved_data = data_files$processed_data
             
             data_files$processed_data = data_files$processed_data %>% 
                 mutate(specificity = NA,
                        auc_diff = NA)
             
-            show("designated_suspect")
+            #show("designated_suspect")
             message("Created processed data")
         }
     })
@@ -1298,13 +1349,13 @@ server <- function(input, output, session) {
         if (input$designated_suspect == "Yes") {
             data_files$processed_data = data_files$saved_data
             
-            updateNumericInput(session,
-                               "lineup_size_1",
-                               value = 6)
-            
-            updateNumericInput(session,
-                               "lineup_size_2",
-                               value = 6)
+            #updateNumericInput(session,
+            #                   "lineup_size_1",
+            #                   value = parameters$cond1_lineup_size)
+            #
+            #updateNumericInput(session,
+            #                   "lineup_size_2",
+            #                   value = parameters$cond2_lineup_size)
             
         } else if (input$designated_suspect == "No") {
             data_files$processed_data = data_files$saved_data %>% 
@@ -1639,21 +1690,95 @@ server <- function(input, output, session) {
         
         parameters$cond2 = as.character(levels(data_files$processed_data$cond)[2])
         
+        parameters$cond1_lineup_size = as.numeric(unique(data_files$processed_data$lineup_size[data_files$processed_data$cond == levels(as.factor(data_files$processed_data$cond))[1]]))
+        
+        parameters$cond2_lineup_size = as.numeric(unique(data_files$processed_data$lineup_size[data_files$processed_data$cond == levels(as.factor(data_files$processed_data$cond))[2]]))
+        
         parameters$n_confs_a = length(unique(data_files$processed_data$conf_level[data_files$processed_data$cond == parameters$cond1]))
         
-        parameters$max_conf_a = max(data_files$processed_data$conf_level[data_files$processed_data$cond == parameters$cond1])
+        parameters$max_conf_a = max(data_files$processed_data$conf_level[data_files$processed_data$cond == parameters$cond1], na.rm = TRUE)
         
-        parameters$min_conf_a = min(data_files$processed_data$conf_level[data_files$processed_data$cond == parameters$cond1])
+        parameters$min_conf_a = min(data_files$processed_data$conf_level[data_files$processed_data$cond == parameters$cond1], na.rm = TRUE)
         
         parameters$n_confs_b = length(unique(data_files$processed_data$conf_level[data_files$processed_data$cond == parameters$cond2]))
         
-        parameters$max_conf_b = max(data_files$processed_data$conf_level[data_files$processed_data$cond == parameters$cond2])
+        parameters$max_conf_b = max(data_files$processed_data$conf_level[data_files$processed_data$cond == parameters$cond2], na.rm = TRUE)
         
-        parameters$min_conf_b = min(data_files$processed_data$conf_level[data_files$processed_data$cond == parameters$cond2])
+        parameters$min_conf_b = min(data_files$processed_data$conf_level[data_files$processed_data$cond == parameters$cond2], na.rm = TRUE)
+        
+        ## Figure out if lineups in one condition are sequential ----
+        cond1_lineup_position = mean(data_files$processed_data$suspect_position[data_files$processed_data$cond == parameters$cond1],
+                                     na.rm = TRUE)
+        
+        if (is.nan(cond1_lineup_position)) {
+            updateRadioButtons(session,
+                               "simultaneous_sequential_sim_a",
+                               selected = "Simultaneous")
+            
+            updateRadioButtons(session,
+                               "sim_seq_a",
+                               selected = "Simultaneous")
+        } else {
+            updateRadioButtons(session,
+                               "simultaneous_sequential_sim_a",
+                               selected = "Sequential")
+            
+            updateRadioButtons(session,
+                               "sim_seq_a",
+                               selected = "Sequential")
+        }
+        
+        cond2_lineup_position = mean(data_files$processed_data$suspect_position[data_files$processed_data$cond == parameters$cond2],
+                                     na.rm = TRUE)
+        
+        if (is.nan(cond2_lineup_position)) {
+            updateRadioButtons(session,
+                               "simultaneous_sequential_sim_b",
+                               selected = "Simultaneous")
+            
+            updateRadioButtons(session,
+                               "sim_seq_b",
+                               selected = "Simultaneous")
+        } else {
+            updateRadioButtons(session,
+                               "simultaneous_sequential_sim_b",
+                               selected = "Sequential")
+            
+            updateRadioButtons(session,
+                               "sim_seq_b",
+                               selected = "Sequential")
+        }
         
         output$cond1_label = renderText({parameters$cond1})
         
         output$cond2_label = renderText({parameters$cond2})
+        
+        ## Update the values for lineup size if there is no designated innocent suspect ----
+        #updateNumericInput(session,
+        #                   "lineup_size_1",
+        #                   value = parameters$cond1_lineup_size)
+        #
+        #updateNumericInput(session,
+        #                   "lineup_size_2",
+        #                   value = parameters$cond2_lineup_size)
+        
+        ## Update the values for lineup size for estimating SDT parameters from data ----
+        updateNumericInput(session,
+                           "lineup_size_sim_a",
+                           value = parameters$cond1_lineup_size)
+        
+        updateNumericInput(session,
+                           "lineup_size_sim_b",
+                           value = parameters$cond2_lineup_size)
+        
+        ## Update the values for lineup sizes in the simulation parameters tab ----
+        updateNumericInput(session,
+                           "lineup_sizes_a",
+                           value = parameters$cond1_lineup_size)
+        
+        updateNumericInput(session,
+                           "lineup_sizes_b",
+                           value = parameters$cond2_lineup_size)
     })
     
     #observeEvent(input$roc_paired, {
@@ -2604,7 +2729,7 @@ server <- function(input, output, session) {
             input$simultaneous_sequential_sim_b,
             input$lineup_size_sim_a,
             input$lineup_size_sim_b,
-            data_files$saved_data)
+            data_files$processed_data)
         
         showModal(modalDialog(HTML(sprintf("Estimating parameters, please wait... <br/>If this takes longer than ~5 minutes it is possible that the data are not suitable for modelling.")),
                               fade = TRUE,
@@ -2613,7 +2738,7 @@ server <- function(input, output, session) {
         
         ### Estimates for Condition A ----
         #### Process data ----
-        data_sdtlu_a = data_files$saved_data %>% 
+        data_sdtlu_a = data_files$processed_data %>% 
             filter(cond == parameters$cond1) %>% 
             mutate(lineup_size = input$lineup_size_sim_a,
                    conf_level = conf_level_rev)
@@ -2659,9 +2784,30 @@ server <- function(input, output, session) {
             )
         )
         
+        #### Add the estimates to the simulation parameters tab ----
+        updateRadioButtons(session,
+                           "sim_seq_a",
+                           selected = input$simultaneous_sequential_sim_a)
+        
+        updateNumericInput(session,
+                        "lineup_sizes_a",
+                        value = input$lineup_size_sim_a)
+        
+        updateNumericInput(session,
+                           "mu_t_a",
+                           value = params_a[2])
+        
+        updateNumericInput(session,
+                           "sigma_t_a",
+                           value = params_a[3])
+        
+        updateTextInput(session,
+                        "cs_a",
+                        value = paste(cs_a, collapse = ", "))
+        
         ### Estimates for Condition B ----
         #### Process data ----
-        data_sdtlu_b = data_files$saved_data %>% 
+        data_sdtlu_b = data_files$processed_data %>% 
             filter(cond == parameters$cond2) %>% 
             mutate(lineup_size = input$lineup_size_sim_b,
                    conf_level = conf_level_rev)
@@ -2706,6 +2852,27 @@ server <- function(input, output, session) {
                 paste(cs_b, collapse = ", ")
             )
         )
+        
+        #### Add the estimates to the simulation parameters tab ----
+        updateRadioButtons(session,
+                           "sim_seq_b",
+                           selected = input$simultaneous_sequential_sim_b)
+        
+        updateNumericInput(session,
+                           "lineup_sizes_b",
+                           value = input$lineup_size_sim_b)
+        
+        updateNumericInput(session,
+                           "mu_t_b",
+                           value = params_b[2])
+        
+        updateNumericInput(session,
+                           "sigma_t_b",
+                           value = params_b[3])
+        
+        updateTextInput(session,
+                        "cs_b",
+                        value = paste(cs_b, collapse = ", "))
         
         data_files$sdtlu_estimates = params_data_a %>% 
             left_join(params_data_b) %>% 

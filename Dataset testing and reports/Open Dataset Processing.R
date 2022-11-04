@@ -260,11 +260,21 @@ write.csv(colloff,
 ## Colloff et al., 2021b ----
 ### Exp 1 ----
 #### Same vs. Different ----
-colloff = read.csv("./Dataset testing and reports/Data/Colloff et al., 2021b/Exp 1/Exp1_Data.csv") %>% 
+colloff = read.csv("./Dataset testing and reports/Data/Colloff et al., 2021b/Exp 1/Exp1_Data.csv") %>%
+    mutate(suspect_position = ifelse(lineup.1 == "perp", 1,
+                                     ifelse(lineup.2 == "perp", 2,
+                                            ifelse(lineup.3 == "perp", 3,
+                                                   ifelse(lineup.4 == "perp", 4,
+                                                          ifelse(lineup.5 == "perp", 5,
+                                                                 ifelse(lineup.6 == "perp", 6,
+                                                                        ifelse(lineup.7 == "perp", 7,
+                                                                               ifelse(lineup.8 == "perp", 8,
+                                                                                      ifelse(lineup.9 == "perp", 9, NA)))))))))) %>% 
     dplyr::select(conditionSameDiff, 
                   targetPresentRaw,
                   participantSelection,
-                  confidence) %>% 
+                  confidence,
+                  suspect_position) %>% 
     mutate(cond = ifelse(conditionSameDiff == 1, "Same",
                          ifelse(conditionSameDiff == 2, "Different", "Same + Different")),
            culprit_present = ifelse(grepl("Present", targetPresentRaw), "present", "absent"),
@@ -272,28 +282,51 @@ colloff = read.csv("./Dataset testing and reports/Data/Colloff et al., 2021b/Exp
            id_type = ifelse(participantSelection == 1, "suspect",
                             ifelse(participantSelection == 2, "filler", "reject")),
            id_type = ifelse(culprit_present == "absent" & id_type == "filler", "suspect", id_type)) %>% 
-    filter(cond != "Same + Different")
+    filter(cond != "Same + Different") %>% 
+    select(id_type, conf_level, culprit_present, cond, suspect_position) %>% 
+    mutate(exp = "Colloff et al. (2021b): Exp 1: Same-pose vs. Different-pose encoding-test",
+           conf_level = (conf_level/10)+1,
+           lineup_size = 9)
 
 write.csv(colloff,
           "./Dataset testing and reports/Data/Colloff et al., 2021b/Exp 1/Exp1_Data_SameVsDiff.csv",
           row.names = FALSE,
           na = "")
 
+write.csv(colloff,
+          "./Dataset testing and reports/Data/01 - All data files for combining/Exp1_Data_SameVsDiff.csv",
+          row.names = FALSE,
+          na = "")
+
 # AUC specificity = .618
 
 #### Same + Different vs. Different ----
-colloff = read.csv("./Dataset testing and reports/Data/Colloff et al., 2021b/Exp 1/Exp1_Data.csv") %>% 
+colloff = read.csv("./Dataset testing and reports/Data/Colloff et al., 2021b/Exp 1/Exp1_Data.csv") %>%
+    mutate(suspect_position = ifelse(lineup.1 == "perp", 1,
+                                     ifelse(lineup.2 == "perp", 2,
+                                            ifelse(lineup.3 == "perp", 3,
+                                                   ifelse(lineup.4 == "perp", 4,
+                                                          ifelse(lineup.5 == "perp", 5,
+                                                                 ifelse(lineup.6 == "perp", 6,
+                                                                        ifelse(lineup.7 == "perp", 7,
+                                                                               ifelse(lineup.8 == "perp", 8,
+                                                                                      ifelse(lineup.9 == "perp", 9, NA)))))))))) %>% 
     dplyr::select(conditionSameDiff, 
                   targetPresentRaw,
                   participantSelection,
-                  confidence) %>% 
+                  confidence,
+                  suspect_position) %>% 
     mutate(cond = ifelse(conditionSameDiff == 1, "Same",
                          ifelse(conditionSameDiff == 2, "Different", "Same + Different")),
            culprit_present = ifelse(grepl("Present", targetPresentRaw), "present", "absent"),
            conf_level = as.numeric(confidence),
            id_type = ifelse(participantSelection == 1, "suspect",
                             ifelse(participantSelection == 2, "filler", "reject")),
-           id_type = ifelse(culprit_present == "absent" & id_type == "filler", "suspect", id_type)) %>% 
+           id_type = ifelse(culprit_present == "absent" & id_type == "filler", "suspect", id_type)) %>%
+    select(id_type, conf_level, culprit_present, cond, suspect_position) %>% 
+    mutate(exp = "Colloff et al. (2021b): Exp 1: Same-plus-additional-pose vs. Different-pose encoding-test",
+           conf_level = (conf_level/10)+1,
+           lineup_size = 9) %>% 
     filter(cond != "Same")
 
 write.csv(colloff,
@@ -301,25 +334,49 @@ write.csv(colloff,
           row.names = FALSE,
           na = "")
 
+write.csv(colloff,
+          "./Dataset testing and reports/Data/01 - All data files for combining/Exp1_Data_SamePlusDiffVsDiff.csv",
+          row.names = FALSE,
+          na = "")
+
 # AUC specificity = .618
 
 #### Same + Different vs. Same ----
-colloff = read.csv("./Dataset testing and reports/Data/Colloff et al., 2021b/Exp 1/Exp1_Data.csv") %>% 
+colloff = read.csv("./Dataset testing and reports/Data/Colloff et al., 2021b/Exp 1/Exp1_Data.csv") %>%
+    mutate(suspect_position = ifelse(lineup.1 == "perp", 1,
+                                     ifelse(lineup.2 == "perp", 2,
+                                            ifelse(lineup.3 == "perp", 3,
+                                                   ifelse(lineup.4 == "perp", 4,
+                                                          ifelse(lineup.5 == "perp", 5,
+                                                                 ifelse(lineup.6 == "perp", 6,
+                                                                        ifelse(lineup.7 == "perp", 7,
+                                                                               ifelse(lineup.8 == "perp", 8,
+                                                                                      ifelse(lineup.9 == "perp", 9, NA)))))))))) %>% 
     dplyr::select(conditionSameDiff, 
                   targetPresentRaw,
                   participantSelection,
-                  confidence) %>% 
+                  confidence,
+                  suspect_position) %>% 
     mutate(cond = ifelse(conditionSameDiff == 1, "Same",
                          ifelse(conditionSameDiff == 2, "Different", "Same + Different")),
            culprit_present = ifelse(grepl("Present", targetPresentRaw), "present", "absent"),
            conf_level = as.numeric(confidence),
            id_type = ifelse(participantSelection == 1, "suspect",
                             ifelse(participantSelection == 2, "filler", "reject")),
-           id_type = ifelse(culprit_present == "absent" & id_type == "filler", "suspect", id_type)) %>% 
+           id_type = ifelse(culprit_present == "absent" & id_type == "filler", "suspect", id_type)) %>%
+    select(id_type, conf_level, culprit_present, cond, suspect_position) %>% 
+    mutate(exp = "Colloff et al. (2021b): Exp 1: Same-plus-additional-pose vs. Same-pose encoding-test",
+           conf_level = (conf_level/10)+1,
+           lineup_size = 9) %>% 
     filter(cond != "Different")
 
 write.csv(colloff,
           "./Dataset testing and reports/Data/Colloff et al., 2021b/Exp 1/Exp1_Data_SamePlusDiffVsSame.csv",
+          row.names = FALSE,
+          na = "")
+
+write.csv(colloff,
+          "./Dataset testing and reports/Data/01 - All data files for combining/Exp1_Data_SamePlusDiffVsSame.csv",
           row.names = FALSE,
           na = "")
 
@@ -344,21 +401,36 @@ write.csv(colloff,
           na = "")
 
 ### Exp 2 ----
-#### Left encoding vs. Right encoding ----
+#### High vs. Low pose reinstatement ----
 colloff = read.csv("./Dataset testing and reports/Data/Colloff et al., 2021b/Exp 2/Exp2_Data.csv") %>% 
-    dplyr::select(EncodingCondition, 
+    dplyr::select(MouseGroup, 
                   TargetPresent,
                   ParticipantSelection,
-                  Confidence) %>% 
+                  Confidence,
+                  contains("Lineup")) %>% 
     mutate(culprit_present = ifelse(TargetPresent == 0, "absent", "present"),
            conf_level = as.numeric(Confidence),
            id_type = ifelse(ParticipantSelection == "target", "suspect",
                             ifelse(ParticipantSelection == "filler", "filler", "reject")),
-           id_type = ifelse(culprit_present == "absent" & id_type == "filler", "suspect", id_type),
-           cond = EncodingCondition)
+           cond = MouseGroup) %>% 
+    mutate(suspect_position = ifelse(Lineup1 == 6, 1,
+                                     ifelse(Lineup2 == 6, 2,
+                                            ifelse(Lineup3 == 6, 3,
+                                                   ifelse(Lineup4 == 6, 4,
+                                                          ifelse(Lineup5 == 6, 5,
+                                                                 ifelse(Lineup6 == 6, 6, NA))))))) %>% 
+    select(id_type, conf_level, culprit_present, cond, suspect_position) %>% 
+    mutate(exp = "Colloff et al. (2021b): Exp 2: High vs. Low pose reinstatement",
+           conf_level = (conf_level/10)+1,
+           lineup_size = 6)
 
 write.csv(colloff,
-          "./Dataset testing and reports/Data/Colloff et al., 2021b/Exp 2/Exp2_Data_LeftRight.csv",
+          "./Dataset testing and reports/Data/Colloff et al., 2021b/Exp 2/Exp2_Data_HighLow.csv",
+          row.names = FALSE,
+          na = "")
+
+write.csv(colloff,
+          "./Dataset testing and reports/Data/01 - All data files for combining/Exp2_Data_HighLow.csv",
           row.names = FALSE,
           na = "")
 
@@ -394,13 +466,20 @@ morgan = read.csv("./Dataset testing and reports/Data/Morgan et al., 2019/RSOS_D
     mutate(culprit_present = ifelse(culprit_present == "Target Present", "present", "absent"),
            id_type = ifelse(culprit_present == "present" & Correct.ID == 1, "suspect",
                             ifelse(culprit_present == "present" & Filler.ID == 1, "filler",
-                                   ifelse(culprit_present == "absent" & Filler.ID == 1, "suspect",
+                                   ifelse(culprit_present == "absent" & Filler.ID == 1, "filler",
                                           "reject"))),
            conf_level = str_remove(conf_level, "%")) %>% 
-    mutate(conf_level = (as.numeric(conf_level)/10)+1)
+    mutate(conf_level = (as.numeric(conf_level)/10)+1,
+           lineup_size = 6,
+           exp = "Morgan et al. (2019): Exp 1: Sleep vs. Wake pre-lineup")
 
 write.csv(morgan,
           "./Dataset testing and reports/Data/Morgan et al., 2019/morgan_processed_sleep_wake.csv",
+          row.names = FALSE,
+          na = "")
+
+write.csv(morgan,
+          "./Dataset testing and reports/Data/01 - All data files for combining/morgan_processed_sleep_wake.csv",
           row.names = FALSE,
           na = "")
 
@@ -414,13 +493,20 @@ morgan = read.csv("./Dataset testing and reports/Data/Morgan et al., 2019/RSOS_D
     mutate(culprit_present = ifelse(culprit_present == "Target Present", "present", "absent"),
            id_type = ifelse(culprit_present == "present" & Correct.ID == 1, "suspect",
                             ifelse(culprit_present == "present" & Filler.ID == 1, "filler",
-                                   ifelse(culprit_present == "absent" & Filler.ID == 1, "suspect",
+                                   ifelse(culprit_present == "absent" & Filler.ID == 1, "filler",
                                           "reject"))),
            conf_level = str_remove(conf_level, "%")) %>% 
-    mutate(conf_level = (as.numeric(conf_level)/10)+1)
+    mutate(conf_level = (as.numeric(conf_level)/10)+1,
+           lineup_size = 6,
+           exp = "Morgan et al. (2019): AM vs. PM lineup")
 
 write.csv(morgan,
           "./Dataset testing and reports/Data/Morgan et al., 2019/morgan_processed_AM_PM.csv",
+          row.names = FALSE,
+          na = "")
+
+write.csv(morgan,
+          "./Dataset testing and reports/Data/01 - All data files for combining/morgan_processed_AM_PM.csv",
           row.names = FALSE,
           na = "")
 
@@ -437,27 +523,34 @@ akan = read.csv("./Dataset testing and reports/Data/Akan et al., 2021/Exp 1/Expe
            conf_level = "Confidence") %>% 
     mutate(culprit_present = ifelse(culprit_present == 1, "present", "absent"),
            id_type = ifelse(grepl("Perpetrator", Response), "reject",
-                            ifelse(Target.Image == Response & !is.na(Target.Image), "suspect", "filler")),
-           false_prob = 1/cond)
+                            ifelse(Target.Image == Response & !is.na(Target.Image), "suspect", "filler")))
 
 # Manually change some TA filler IDs to false IDs
-for (i in 1:nrow(akan)) {
-    if (akan$culprit_present[i] == "absent" & akan$id_type[i] == "filler") {
-        akan$id_type2[i] = sample(c("suspect", "filler"),
-                                  size = 1,
-                                  prob = c(akan$false_prob[i], 1 - akan$false_prob[i]))
-    } else {
-        akan$id_type2[i] = NA
-    }
-} 
+#for (i in 1:nrow(akan)) {
+#    if (akan$culprit_present[i] == "absent" & akan$id_type[i] == "filler") {
+#        akan$id_type2[i] = sample(c("suspect", "filler"),
+#                                  size = 1,
+#                                  prob = c(akan$false_prob[i], 1 - akan$false_prob[i]))
+#    } else {
+#        akan$id_type2[i] = NA
+#    }
+#} 
 
 akan = akan %>% 
-    mutate(id_type = ifelse(!is.na(id_type2), id_type2, id_type))  %>% 
+    #mutate(id_type = ifelse(!is.na(id_type2), id_type2, id_type))  %>% 
     filter(cond == 1 | cond == 6) %>% 
-    mutate(cond = as.factor(cond))
+    mutate(lineup_size = cond,
+           cond = as.factor(cond),
+           conf_level = (conf_level/10)+1,
+           exp = "Akan et al. (2021): Exp 1: Showup vs. 6-person")
 
 write.csv(akan,
           "./Dataset testing and reports/Data/Akan et al., 2021/Exp 1/Experiment1_1vs6.csv",
+          na = "",
+          row.names = FALSE)
+
+write.csv(akan,
+          "./Dataset testing and reports/Data/01 - All data files for combining/Experiment1_1vs6.csv",
           na = "",
           row.names = FALSE)
 
@@ -480,10 +573,17 @@ akan = read.csv("./Dataset testing and reports/Data/Akan et al., 2021/Exp 2/Expe
            id_type = ifelse(id_type == "TargetPick" | id_type == "InnocentPick", "suspect",
                             ifelse(id_type == "FoilPick", "filler", "reject"))) %>% 
     filter(cond == 1 | cond == 3) %>% 
-    mutate(cond = as.factor(cond))
+    mutate(lineup_size = cond,
+           cond = as.factor(cond),
+           exp = "Akan et al. (2021): Exp 2: Showup vs. 3-person")
 
 write.csv(akan,
           "./Dataset testing and reports/Data/Akan et al., 2021/Exp 2/Experiment2_1vs3.csv",
+          row.names = FALSE,
+          na = "")
+
+write.csv(akan,
+          "./Dataset testing and reports/Data/01 - All data files for combining/Experiment2_1vs3.csv",
           row.names = FALSE,
           na = "")
 
@@ -503,9 +603,85 @@ akan = read.csv("./Dataset testing and reports/Data/Akan et al., 2021/Exp 2/Expe
            id_type = ifelse(id_type == "TargetPick" | id_type == "InnocentPick", "suspect",
                             ifelse(id_type == "FoilPick", "filler", "reject"))) %>% 
     filter(cond == 1 | cond == 6) %>% 
-    mutate(cond = as.factor(cond))
+    mutate(lineup_size = cond,
+           cond = as.factor(cond),
+           exp = "Akan et al. (2021): Exp 2: Showup vs. 6-person")
 
 write.csv(akan,
           "./Dataset testing and reports/Data/Akan et al., 2021/Exp 2/Experiment2_1vs6.csv",
+          row.names = FALSE,
+          na = "")
+
+write.csv(akan,
+          "./Dataset testing and reports/Data/01 - All data files for combining/Experiment2_1vs6.csv",
+          row.names = FALSE,
+          na = "")
+
+# Smith et al., 2022 ----
+## Experiment 1 ----
+smith_exp1 = read.csv("./Dataset testing and reports/Data/Smith et al., 2022/exp1.csv") %>% 
+    select(fawarning,
+           parade,
+           resp_expec,
+           target,
+           conf,
+           suspect_id,
+           filler_id,
+           no_id) %>% 
+    mutate(id_type = ifelse(suspect_id == TRUE, "suspect",
+                            ifelse(filler_id == TRUE, "filler", "reject")),
+           suspect_position = ifelse(resp_expec == 7, 7,
+                                     ifelse(resp_expec == 3, 3, NA)),
+           lineup_size = 9) %>% 
+    rename("conf_level" = conf,
+           "culprit_present" = target) %>% 
+    select(-c(suspect_id, filler_id, no_id, resp_expec))
+
+### Serial warning vs. no-warning ----
+smith_exp1_serial = smith_exp1 %>% 
+    filter(parade == "serial") %>% 
+    rename("cond" = fawarning) %>% 
+    select(-parade) %>% 
+    mutate(exp = "Smith et al. (2022): Exp 1: Serial parade warning vs. no-warning")
+
+write.csv(smith_exp1_serial,
+          "./Dataset testing and reports/Data/Smith et al., 2022/exp1_serial_processed.csv",
+          row.names = FALSE,
+          na = "")
+
+### Sequential warning vs. no-warning ----
+smith_exp1_sequential = smith_exp1 %>% 
+    filter(parade == "sequential") %>% 
+    rename("cond" = fawarning) %>% 
+    select(-parade) %>% 
+    mutate(exp = "Smith et al. (2022): Exp 1: Sequential parade warning vs. no-warning")
+
+write.csv(smith_exp1_sequential,
+          "./Dataset testing and reports/Data/Smith et al., 2022/exp1_sequential_processed.csv",
+          row.names = FALSE,
+          na = "")
+
+## Experiment 2 ----
+smith_exp2 = read.csv("./Dataset testing and reports/Data/Smith et al., 2022/exp2_serial.csv") %>% 
+    select(pass,
+           resp_expec,
+           target,
+           conf,
+           suspect_id,
+           filler_id,
+           no_id) %>% 
+    mutate(id_type = ifelse(suspect_id == TRUE, "suspect",
+                            ifelse(filler_id == TRUE, "filler", "reject")),
+           suspect_position = ifelse(resp_expec == 7, 7,
+                                     ifelse(resp_expec == 3, 3, NA)),
+           lineup_size = 9) %>% 
+    rename("conf_level" = conf,
+           "culprit_present" = target,
+           "cond" = pass) %>% 
+    select(-c(suspect_id, filler_id, no_id, resp_expec)) %>% 
+    mutate(exp = "Smith et al. (2022): Exp 2: Serial parade 1-pass vs. 2-passes")
+
+write.csv(smith_exp2,
+          "./Dataset testing and reports/Data/Smith et al., 2022/exp2_serial_processed.csv",
           row.names = FALSE,
           na = "")
