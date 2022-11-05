@@ -1112,7 +1112,10 @@ server <- function(input, output, session) {
                        "Colloff et al. (2021b): Exp 2: High vs. Low pose reinstatement", 
                        "Akan et al. (2021): Exp 1: Showup vs. 6-person",
                        "Morgan et al. (2019): Exp 1: Sleep vs. Wake pre-lineup",
-                       "Morgan et al. (2019): AM vs. PM lineup")) {
+                       "Morgan et al. (2019): AM vs. PM lineup",
+                       "Smith et al. (2022): Exp 1: Sequential parade warning vs. no-warning",
+                       "Smith et al. (2022): Exp 1: Serial parade warning vs. no-warning",
+                       "Smith et al. (2022): Exp 1: Serial parade 1-pass vs. 2-passes")) {
             updateRadioButtons(session,
                                "designated_suspect",
                                selected = "No"
@@ -2741,10 +2744,11 @@ server <- function(input, output, session) {
         data_sdtlu_a = data_files$processed_data %>% 
             filter(cond == parameters$cond1) %>% 
             mutate(lineup_size = input$lineup_size_sim_a,
-                   conf_level = conf_level_rev)
+                   conf_level = (max(conf_level)+1) - conf_level)
         
         data_sdtlu_processed_a = sdtlu_process_data(data_sdtlu_a)
         
+        #### If lineup type is sequential, get the position probabilities ----
         #### Set fitting options ----
         if (input$simultaneous_sequential_sim_a == "Simultaneous") {
             options_a = list(model_type = "sim",
@@ -2753,6 +2757,8 @@ server <- function(input, output, session) {
                              fix_sigma_t = "free",
                              use_restr_data = FALSE,
                              run_bootstrap = FALSE)
+            
+            est_pos_prop_a = NA
         } else {
             options_a = list(model_type = "seq",
                              fit_fcn = "G2",
@@ -2760,6 +2766,8 @@ server <- function(input, output, session) {
                              fix_sigma_t = "free",
                              use_restr_data = FALSE,
                              run_bootstrap = FALSE)
+            
+            est_pos_prop_a = as.character(paste0(data_sdtlu_processed_a$pos_prop, collapse = ", "))
         }
         
         #### Fit the model ----
@@ -2775,12 +2783,14 @@ server <- function(input, output, session) {
             Parameter = c("p",
                           "mu_t",
                           "sigma_t",
-                          "cs"),
+                          "cs",
+                          "pos_prop"),
             vals_a = c(
                 params_a[1],
                 params_a[2],
                 params_a[3],
-                paste(cs_a, collapse = ", ")
+                paste(cs_a, collapse = ", "),
+                est_pos_prop_a
             )
         )
         
@@ -2805,12 +2815,16 @@ server <- function(input, output, session) {
                         "cs_a",
                         value = paste(cs_a, collapse = ", "))
         
+        updateTextInput(session,
+                        "pos_prop_a",
+                        value = est_pos_prop_a)
+        
         ### Estimates for Condition B ----
         #### Process data ----
         data_sdtlu_b = data_files$processed_data %>% 
             filter(cond == parameters$cond2) %>% 
             mutate(lineup_size = input$lineup_size_sim_b,
-                   conf_level = conf_level_rev)
+                   conf_level = (max(conf_level)+1) - conf_level)
         
         data_sdtlu_processed_b = sdtlu_process_data(data_sdtlu_b)
         
@@ -2822,6 +2836,8 @@ server <- function(input, output, session) {
                              fix_sigma_t = "free",
                              use_restr_data = FALSE,
                              run_bootstrap = FALSE)
+            
+            est_pos_prop_b = NA
         } else {
             options_b = list(model_type = "seq",
                              fit_fcn = "G2",
@@ -2829,6 +2845,8 @@ server <- function(input, output, session) {
                              fix_sigma_t = "free",
                              use_restr_data = FALSE,
                              run_bootstrap = FALSE)
+            
+            est_pos_prop_b = as.character(paste0(data_sdtlu_processed_b$pos_prop, collapse = ", "))
         }
         
         #### Fit the model ----
@@ -2844,12 +2862,14 @@ server <- function(input, output, session) {
             Parameter = c("p",
                           "mu_t",
                           "sigma_t",
-                          "cs"),
+                          "cs",
+                          "pos_prop"),
             vals_b = c(
                 params_b[1],
                 params_b[2],
                 params_b[3],
-                paste(cs_b, collapse = ", ")
+                paste(cs_b, collapse = ", "),
+                est_pos_prop_b
             )
         )
         
@@ -2873,6 +2893,10 @@ server <- function(input, output, session) {
         updateTextInput(session,
                         "cs_b",
                         value = paste(cs_b, collapse = ", "))
+        
+        updateTextInput(session,
+                        "pos_prop_b",
+                        value = est_pos_prop_b)
         
         data_files$sdtlu_estimates = params_data_a %>% 
             left_join(params_data_b) %>% 
@@ -2964,15 +2988,40 @@ server <- function(input, output, session) {
         
         #### Model vs. Data response predictions ----
         ##### Condition A ----
+        #model_fit_data_a = data.frame(model_prop = as.vector(sdtlu_fit_a$model_prop),
+        #                            data_resps = as.vector(data_sdtlu_processed_a$resp_data_full),
+        #                            resp_type = rep(c(rep("Suspect", parameters$n_confs_a),
+        #                                              rep("Filler", parameters$n_confs_a),
+        #                                              "Reject"), times = 2),
+        #                            conf_level = rep(c(sort(unique(data_sdtlu_a$conf_level), decreasing = TRUE), 
+        #                                               sort(unique(data_sdtlu_a$conf_level), decreasing = TRUE),
+        #                                               NA),
+        #                                             times = 2),
+        #                            Presence = c(rep("TP", times = parameters$n_confs_a*2+1),
+        #                                         rep("TA", times = parameters$n_confs_a*2+1))) %>% 
+        #    mutate(data_total = sum(data_resps),
+        #           data_prop = data_resps/data_total,
+        #           row = 1:n()) %>% 
+        #    rowwise() %>% 
+        #    mutate(label = paste(Presence, resp_type, conf_level, sep = "_"),
+        #           label = str_replace(label, "_NA", "")) %>% 
+        #    arrange(row) %>% 
+        #    pivot_longer(names_to = "Source",
+        #                 values_to = "Proportion",
+        #                 c(model_prop, data_prop)) %>% 
+        #    mutate(Source = ifelse(grepl("data", Source), "Data", "Model"),
+        #           Condition = parameters$cond1)
+        
         model_fit_data_a = data.frame(model_prop = as.vector(sdtlu_fit_a$model_prop),
-                                    data_resps = as.vector(data_sdtlu_processed_a$resp_data_full),
-                                    resp_type = rep(c(rep("Suspect", parameters$n_confs_a),
-                                                      rep("Filler", parameters$n_confs_a),
-                                                      "Reject"), times = 2),
-                                    conf_level = rep(c(parameters$max_conf_a:parameters$min_conf_a, parameters$max_conf_a:parameters$min_conf_a, NA),
-                                                     times = 2),
-                                    Presence = c(rep("TP", times = parameters$n_confs_a*2+1),
-                                                 rep("TA", times = parameters$n_confs_a*2+1))) %>% 
+                                      data_resps = as.vector(data_sdtlu_processed_a$resp_data_full),
+                                      resp_type = rep(c(rep("Suspect", max(data_sdtlu_a$conf_level)),
+                                                        rep("Filler", max(data_sdtlu_a$conf_level)),
+                                                        "Reject"), times = 2),
+                                      conf_level = rep(c(parameters$max_conf_a:parameters$min_conf_a, 
+                                                         parameters$max_conf_a:parameters$min_conf_a, NA),
+                                                       times = 2),
+                                      Presence = c(rep("TP", times = (max(data_sdtlu_a$conf_level)*2)+1),
+                                                   rep("TA", times = (max(data_sdtlu_a$conf_level)*2)+1))) %>% 
             mutate(data_total = sum(data_resps),
                    data_prop = data_resps/data_total,
                    row = 1:n()) %>% 
@@ -2988,16 +3037,42 @@ server <- function(input, output, session) {
         
         model_fit_data_a$label = reorder(model_fit_data_a$label, model_fit_data_a$row)
         
+        message("Condition A model vs. data summary generated")
+        
         ##### Condition B ----
+        #model_fit_data_b = data.frame(model_prop = as.vector(sdtlu_fit_b$model_prop),
+        #                              data_resps = as.vector(data_sdtlu_processed_b$resp_data_full),
+        #                              resp_type = rep(c(rep("Suspect", parameters$n_confs_b),
+        #                                                rep("Filler", parameters$n_confs_b),
+        #                                                "Reject"), times = 2),
+        #                              conf_level = rep(c(sort(unique(data_sdtlu_b$conf_level), decreasing = TRUE), 
+        #                                                 sort(unique(data_sdtlu_b$conf_level), decreasing = TRUE),
+        #                                                 NA),
+        #                                               times = 2),
+        #                              Presence = c(rep("TP", times = parameters$n_confs_b*2+1),
+        #                                           rep("TA", times = parameters$n_confs_b*2+1))) %>% 
+        #    mutate(data_total = sum(data_resps),
+        #           data_prop = data_resps/data_total,
+        #           row = 1:n()) %>% 
+        #    rowwise() %>% 
+        #    mutate(label = paste(Presence, resp_type, conf_level, sep = "_"),
+        #           label = str_replace(label, "_NA", "")) %>% 
+        #    arrange(row) %>% 
+        #    pivot_longer(names_to = "Source",
+        #                 values_to = "Proportion",
+        #                 c(model_prop, data_prop)) %>% 
+        #    mutate(Source = ifelse(grepl("data", Source), "Data", "Model"),
+        #           Condition = parameters$cond2)
+        
         model_fit_data_b = data.frame(model_prop = as.vector(sdtlu_fit_b$model_prop),
                                       data_resps = as.vector(data_sdtlu_processed_b$resp_data_full),
-                                      resp_type = rep(c(rep("Suspect", parameters$n_confs_b),
-                                                        rep("Filler", parameters$n_confs_b),
+                                      resp_type = rep(c(rep("Suspect", max(data_sdtlu_b$conf_level)),
+                                                        rep("Filler", max(data_sdtlu_b$conf_level)),
                                                         "Reject"), times = 2),
-                                      conf_level = rep(c(parameters$max_conf_b:parameters$min_conf_b, parameters$max_conf_b:parameters$min_conf_b, NA),
+                                      conf_level = rep(c(parameters$max_conf_b:1, parameters$max_conf_b:1, NA),
                                                        times = 2),
-                                      Presence = c(rep("TP", times = parameters$n_confs_b*2+1),
-                                                   rep("TA", times = parameters$n_confs_b*2+1))) %>% 
+                                      Presence = c(rep("TP", times = (max(data_sdtlu_b$conf_level)*2)+1),
+                                                   rep("TA", times = (max(data_sdtlu_b$conf_level)*2)+1))) %>% 
             mutate(data_total = sum(data_resps),
                    data_prop = data_resps/data_total,
                    row = 1:n()) %>% 
@@ -3012,6 +3087,8 @@ server <- function(input, output, session) {
                    Condition = parameters$cond2)
         
         model_fit_data_b$label = reorder(model_fit_data_b$label, model_fit_data_b$row)
+        
+        message("Condition B model vs. data summary generated")
         
         ##### Combine and plot ----
         model_fit_data = rbind(model_fit_data_a,
@@ -3039,6 +3116,8 @@ server <- function(input, output, session) {
         output$model_fit_data_plot = renderPlot({
             model_fit_data_plot
         })
+        
+        message("Generated model vs. data fit plot")
         
         #### Model vs. Data ROC curves ----
         ##### Condition A ----

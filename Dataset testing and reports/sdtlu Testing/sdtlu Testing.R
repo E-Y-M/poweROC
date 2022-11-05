@@ -387,3 +387,115 @@ cs_a = extract("1, 1.5, 2")
 params_a = c(p, mu_t_a, sigma_t_a, cs_a)
 params_a
 params_a[1]
+
+# Testing a sequential lineup dataset ----
+smith_data = read.csv("./Dataset testing and reports/Data/01 - All data files for combining/exp1_sequential_processed.csv")
+
+## Smith et al. (2022) "warning" condition ----
+smith_data_warning = smith_data %>% 
+    filter(cond == "warning") %>% 
+    mutate(conf_level = conf_level + 1,
+           conf_level_rev = (max(smith_data$conf_level)+2)-conf_level) %>% 
+    mutate(conf_level_original = conf_level,
+           conf_level = conf_level_rev)
+
+warning_processed = sdtlu_process_data(smith_data_warning)
+
+warning_processed$resp_data_full
+
+as.character(paste0(warning_processed$pos_prop, collapse = ","))
+
+options = list(model_type = "seq",
+               fit_fcn = "G2",
+               fix_p = "data",
+               fix_sigma_t = "free",
+               use_restr_data = FALSE,
+               run_bootstrap = FALSE,
+               n_bootstrap_samps = 10)
+
+fit_warning = sdtlu_fit(warning_processed,
+                  options = options)
+
+params_warning = fit_warning$best_params_full
+
+fit_warning$model_prop
+warning_processed$resp_data_full
+
+n_confs_a = length(unique(smith_data_warning$conf_level))
+
+## "No-warning" condition
+smith_data_nowarning = smith_data %>% 
+    filter(cond == "no warning") %>% 
+    mutate(conf_level = conf_level + 1)
+
+smith_data_nowarning = smith_data_nowarning %>% 
+    mutate(conf_level_rev = (max(smith_data_nowarning$conf_level)+1)-conf_level) %>% 
+    mutate(conf_level_original = conf_level,
+           conf_level = conf_level_rev)
+
+max(smith_data_nowarning$conf_level)
+
+nowarning_processed = sdtlu_process_data(smith_data_nowarning)
+
+nowarning_processed$resp_data_full
+
+as.character(paste0(nowarning_processed$pos_prop, collapse = ","))
+
+options = list(model_type = "seq",
+               fit_fcn = "G2",
+               fix_p = "data",
+               fix_sigma_t = "free",
+               use_restr_data = FALSE,
+               run_bootstrap = FALSE,
+               n_bootstrap_samps = 10)
+
+fit_nowarning = sdtlu_fit(nowarning_processed,
+                        options = options)
+
+params_nowarning = fit_nowarning$best_params_full
+
+fit_nowarning$model_prop
+nowarning_processed$resp_data_full
+
+n_confs_a = length(unique(smith_data_nowarning$conf_level))
+
+## Missing confidence levels ----
+smith_data_conf = smith_data_nowarning %>% 
+    mutate(conf_level = ifelse(id_type == "reject", 99, conf_level)) %>% 
+    #filter(cond == "warning") %>% 
+    group_by(id_type, conf_level, cond, culprit_present) %>% 
+    count() %>% 
+    mutate(id_type = factor(id_type,
+                            levels = c("suspect", "filler", "reject"))) %>% 
+    arrange(desc(culprit_present),
+            id_type,
+            conf_level)
+
+smith_data_all_confs = data.frame(
+    id_type = rep(c(rep("suspect", times = 10),
+                rep("filler", times = 10),
+                "reject"), times = 2),
+    conf_level = rep(c(1:10,
+                       1:10,
+                       99),
+                     times = 2),
+    culprit_present = rep(c("present", "absent"),
+                          each = 21))
+
+smith_data_conf_combined = smith_data_all_confs %>% 
+    left_join(smith_data_conf) %>% 
+    mutate(n = ifelse(is.na(n), 0, n))
+
+max_conf_smith = max(smith_data_warning$conf_level)
+min_conf_smith = min(smith_data_warning$conf_level)
+
+length(max)
+
+cond1_confs = sort(unique(smith_data$conf_level[smith_data$cond == unique(as.factor(smith_data$cond))[1]]),
+                   decreasing = TRUE)
+cond1_confs
+
+cond2_confs = sort(unique(smith_data$conf_level[smith_data$cond == unique(as.factor(smith_data$cond))[2]]),
+                   decreasing = TRUE)
+
+cond2_confs
