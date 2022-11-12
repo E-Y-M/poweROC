@@ -685,3 +685,156 @@ write.csv(smith_exp2,
           "./Dataset testing and reports/Data/Smith et al., 2022/exp2_serial_processed.csv",
           row.names = FALSE,
           na = "")
+
+# Kaesler et al. (2020) Simultaneous vs. Sequential ----
+kaesler = read.csv("./Dataset testing and reports/Data/Kaesler et al., 2020/Kaesler_2020data.csv") %>% 
+    rename("cond" = Lineup_Method,
+           "culprit_present" = Lineup_Type,
+           "conf_level" = id_confidence,
+           "suspect_position" = Target_Position) %>% 
+    mutate(culprit_present = ifelse(culprit_present == "Target Present", "present", "absent"),
+           conf_level = round(conf_level/10)+1,
+           lineup_size = 6,
+           id_type = ifelse(id_selection == "Silhouette", "reject",
+                            ifelse(target == id_selection, "suspect", "filler"))) %>% 
+    select(cond, culprit_present, id_type, conf_level, suspect_position, lineup_size) %>% 
+    mutate(exp = "Kaesler et al. (2020): Exp 1: Simultaneous vs. Sequential")
+
+write.csv(kaesler,
+          "./Dataset testing and reports/Data/Kaesler et al., 2020/Kaesler_2020data_processed.csv",
+          row.names = FALSE,
+          na = "")
+
+write.csv(kaesler,
+          "./Dataset testing and reports/Data/01 - All data files for combining/Kaesler_2020data_processed.csv",
+          row.names = FALSE,
+          na = "")
+
+## Generating a dataset to use for estimation (i.e., creating designated innocent suspects) ----
+kaesler = read.csv("./Dataset testing and reports/Data/Kaesler et al., 2020/Kaesler_2020data.csv") %>% 
+    rename("cond" = Lineup_Method,
+           "culprit_present" = Lineup_Type,
+           "conf_level" = id_confidence,
+           "suspect_position" = Target_Position) %>% 
+    mutate(culprit_present = ifelse(culprit_present == "Target Present", "present", "absent"),
+           conf_level = round(conf_level/10)+1,
+           lineup_size = 6,
+           id_type = ifelse(id_selection == "Silhouette", "reject",
+                            ifelse(target == id_selection, "suspect", "filler"))) %>% 
+    select(cond, culprit_present, id_type, conf_level, suspect_position, lineup_size) %>% 
+    mutate(exp = "Kaesler et al. (2020): Exp 1: Simultaneous vs. Sequential",
+           suspect_prob = 1/6,
+           filler_prob = 5/6) %>% 
+    rowwise() %>% 
+    mutate(id_type = ifelse(culprit_present == "absent" & id_type == "filler",
+                            sample(c("suspect", "filler"), 1, prob = c(suspect_prob, filler_prob)), id_type),
+           suspect_position = ifelse(suspect_position == 0 & cond == "Sequential",
+                                     sample(c(1:6), 1), suspect_position))
+
+write.csv(kaesler,
+          "./Dataset testing and reports/Data/Kaesler et al., 2020/Kaesler_2020data_processed_for_estimation.csv",
+          row.names = FALSE,
+          na = "")
+
+# Seale-Carlisle & Mickes (2016) US vs. UK lineups ----
+## Image 3 is the culprit ----
+## Generating a dataset to use for estimation (i.e., creating designated innocent suspects) ----
+seale = read.csv("./Dataset testing and reports/Data/Seale-Carlisle & Mickes, 2016/USvUKdata.csv") %>% 
+    `colnames<-` (c("expnumber", "subj", "age", "gender", "cond",
+                    "culprit_present", "img1", "img2", "img3", "img4", "img5", "img6", "img7", "img8", "img9",
+                    "decision", "conf_level", "accuracy", "q1", "q2", "q3", "q4", "q5",
+                    "rep1", "rep2", "rep3", "rep4", "rep5", "rep6", "rep7", "rep8", "rep9",
+                    "rep_sum", "repeated", "absent_present", "include")) %>% 
+    filter(include == 1) %>% 
+    select(cond, culprit_present, contains("img"), decision, conf_level, accuracy) %>% 
+    mutate(culprit_present = ifelse(culprit_present == "Target-present", "present", "absent"))
+
+seale_replaced = data.frame(lapply(seale, function(x) {
+    y = gsub("images.*/", "", x) 
+    gsub(".jpg", "", y)
+}))
+
+seale_replaced = seale_replaced %>% 
+    rowwise() %>% 
+    mutate(random_column = ifelse(cond == "UK", sample(c(3:11), size = 1),
+                                  sample(c(3:8), size = 1)))
+
+for (i in 1:nrow(seale_replaced)) {
+    curr_suspect = seale_replaced[i, seale_replaced$random_column[i]]
+    
+    seale_replaced$random_suspect[i] = curr_suspect
+}
+
+seale = seale_replaced %>% 
+    ungroup() %>% 
+    mutate(suspect = ifelse(culprit_present == "absent", random_suspect, 3),
+           suspect_position = ifelse(img1 == suspect, 1,
+                                     ifelse(img2 == suspect, 2,
+                                            ifelse(img3 == suspect, 3,
+                                                   ifelse(img4 == suspect, 4,
+                                                          ifelse(img5 == suspect, 5,
+                                                                 ifelse(img6 == suspect, 6,
+                                                                        ifelse(img7 == suspect, 7,
+                                                                               ifelse(img8 == suspect, 8, 9))))))))) %>%  
+mutate(suspect_position = ifelse(cond == "US", NA, suspect_position),
+       id_type = ifelse(grepl("present", decision), "reject",
+                        ifelse(decision == suspect, "suspect", "filler")),
+       lineup_size = ifelse(cond == "US", 6, 9)) %>% 
+    select(cond, culprit_present, id_type, conf_level, lineup_size, suspect_position) %>% 
+    mutate(conf_level = (as.numeric(conf_level)/10)+1)
+
+write.csv(seale,
+          "./Dataset testing and reports/Data/Seale-Carlisle & Mickes, 2016/seale_processed_for_estimation.csv",
+          row.names = FALSE,
+          na = "")
+
+## Generating a dataset without modifications ----
+seale = read.csv("./Dataset testing and reports/Data/Seale-Carlisle & Mickes, 2016/USvUKdata.csv") %>% 
+    `colnames<-` (c("expnumber", "subj", "age", "gender", "cond",
+                    "culprit_present", "img1", "img2", "img3", "img4", "img5", "img6", "img7", "img8", "img9",
+                    "decision", "conf_level", "accuracy", "q1", "q2", "q3", "q4", "q5",
+                    "rep1", "rep2", "rep3", "rep4", "rep5", "rep6", "rep7", "rep8", "rep9",
+                    "rep_sum", "repeated", "absent_present", "include")) %>% 
+    filter(include == 1) %>% 
+    select(cond, culprit_present, contains("img"), decision, conf_level, accuracy) %>% 
+    mutate(culprit_present = ifelse(culprit_present == "Target-present", "present", "absent"))
+
+seale_replaced = data.frame(lapply(seale, function(x) {
+    y = gsub("images.*/", "", x) 
+    gsub(".jpg", "", y)
+}))
+
+seale = seale_replaced %>% 
+    ungroup() %>% 
+    mutate(suspect = ifelse(culprit_present == "present", 3, NA),
+           suspect_position = ifelse(img1 == suspect, 1,
+                                     ifelse(img2 == suspect, 2,
+                                            ifelse(img3 == suspect, 3,
+                                                   ifelse(img4 == suspect, 4,
+                                                          ifelse(img5 == suspect, 5,
+                                                                 ifelse(img6 == suspect, 6,
+                                                                        ifelse(img7 == suspect, 7,
+                                                                               ifelse(img8 == suspect, 8, 
+                                                                                      ifelse(img9 == suspect, 9, NA)))))))))) %>%  
+    mutate(suspect_position = ifelse(cond == "US", NA, suspect_position),
+           id_type = ifelse(grepl("present", decision), "reject",
+                            ifelse(decision == suspect, "suspect", "filler")),
+           lineup_size = ifelse(cond == "US", 6, 9)) %>% 
+    select(cond, culprit_present, id_type, conf_level, lineup_size, suspect_position) %>% 
+    mutate(conf_level = (as.numeric(conf_level)/10)+1,
+           id_type = ifelse(is.na(id_type), "filler", id_type),
+           exp = "Seale-Carlisle & Mickes (2015): US vs. UK lineups")
+
+write.csv(seale,
+          "./Dataset testing and reports/Data/Seale-Carlisle & Mickes, 2016/seale_processed.csv",
+          row.names = FALSE,
+          na = "")
+
+# Palmer et al. (2013) Exp. 1: Long- vs. Short-delay ----
+palmer = read.csv("./Dataset testing and reports/Data/Palmer et al., 2013/palmer_delay_2013.csv") %>% 
+    mutate(conf_level = (max(conf_level)+1) - conf_level)
+
+write.csv(palmer,
+          "./Dataset testing and reports/Data/Palmer et al., 2013/palmer_delay_2013_processed.csv",
+          row.names = FALSE,
+          na = "")

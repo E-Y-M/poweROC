@@ -120,14 +120,12 @@ explanation_tab <- tabItem(
     box(width = 12,
         collapsible = TRUE,
         title = "What is this?",
-        tags$p('This app takes as input lineup data with either one condition or two between- or within-subjects conditions (either user-uploaded or selected from a selection of open datasets), and allows users to specify various 
-               simulation/design parameters (sample sizes, effect sizes, alpha level, test tails, AUC specificity, # of TA/TP lineups per participant), 
-               visualize hypothetical ROC curves, simulate datasets by repeatedly sampling from the data under different conditions/effect sizes/sample sizes to provide power estimates, 
-               download summary reports of power simulations, upload simulation results for other users, and view the results of previous simulations uploaded by other users (see the "Previous simulation results" tab).'),
-        tags$p(strong("By using existing data as the basis for simulation, this app avoids assumptions about data-generating process that one would make using other methods (e.g., specifying an SDT model to simulate from). Of course, a critical assumption that this app does make is that the data one uses for simulation will resemble the data one plans to collect. To 
-                      the extent that this assumption does not hold, the power simulation results may not be valid. Any power simulation enterprise requires certain assumptions 
-                      (e.g., about underlying distributions); my aim with this app was to minimize the necessary assumptions and the amount of 
-                      information required (e.g., underlying SDT parameters/processes) for power analyses.")), 
+        tags$p('This app takes as input lineup data with either one condition or two between- or within-subjects conditions (either user-uploaded or chosen from a selection of open datasets), and uses this data to simulate power for partial area under the curve (pAUC) or deviation from perfect performance (DPP; Smith et al., 2019) comparisons.'),
+        tags$br(),
+        tags$p('Power simulations can be done in one of two ways: using estimates of response proportions from the provided data, or by estimating SDT models and parameters from the data via Cohen et al.`s (2021) ', a(href = "https://link.springer.com/article/10.3758%2Fs13428-020-01402-7", 'sdtlu', .noWS = 'outside'), ' R package, and using those models to generate new simulated datasets.'),
+        tags$br(),
+        tags$p('In addition to SDT estimation, this app allows users to specify various simulation/design parameters (sample sizes, alpha level, test tails, AUC specificity, # of TA/TP lineups per participant), visualize hypothetical ROC curves, simulate datasets from base data or SDT models to provide power estimates, and download summary reports of power simulations.'),
+        tags$br(),
         tags$p("This app was inspired by both Boogert et al.`s (2021) ", a(href = 'https://lmickes.github.io/pyWitness/index.html', 'pyWitness', .noWS = "outside"), 
                " program and Cohen et al.`s (2021) ", a(href = "https://link.springer.com/article/10.3758%2Fs13428-020-01402-7", 'sdtlu', .noWS = 'outside'), " R package. 
                Both use pre-existing data and allow for in-depth simulation and analysis of various SDT models from eyewitness lineup data, but simulation for power is not their primary focus. 
@@ -142,7 +140,7 @@ explanation_tab <- tabItem(
         collapsible = TRUE,
         title = "How does it work?",
         tags$p('This app requires a data file containing lineup data (see the “Data Upload” tab for instructions). Users can either upload their own data or use an included open dataset (see the "App validation & testing" tab for references). This file can contain a single condition (e.g., pilot data) or data from two conditions (e.g., data from another experiment similar to the one being powered for). If the former, the app will automatically duplicate data from the single provided condition to use as a basis for effect size adjustment and comparison. Before simulating data, various parameters will need to be specified (e.g., effect/sample sizes to test, number of simulation samples, one- or two-tailed testing protocol, etc.). The simulations themselves operate like so:'),
-        img(src = "SimulationDescription.png", align = "center"),
+        img(src = "SimulationDescriptionNew.png", align = "center"),
         #tags$ol(
         #    tags$li("For each specified effect size:"),
         #    tags$li("   Apply that effect size to the # of correct IDs for the 2nd condition in the data file", style="white-space: pre-wrap"),
@@ -154,7 +152,7 @@ explanation_tab <- tabItem(
         #    tags$li("		 Record test significance", style="white-space: pre-wrap"),
         #    tags$li("Record proportion of significant tests at each effect size/N", style="white-space: pre-wrap")),
         #tags$br(),
-        tags$p(strong('NOTE:'), ' Due to the computationally intensive bootstrap resampling involved in ROC analyses, some simulations can potentially take a long time (e.g., upwards of an hour if several sample/effect sizes are under consideration). Thus, users with access to R/RStudio may want to ', a(href = 'https://github.com/E-Y-M/poweROC', 'download and run a local copy', .noWS = "outside"), " to avoid simulation disruption with dropped internet connections or timeouts. Whether running the web or a local version, it is also recommended that hibernation settings be temporarily disabled.", .noWS = c("after-begin", "before-end"))
+        tags$p(strong('NOTE:'), ' Due to the computationally intensive bootstrap resampling involved in ROC analyses, some simulations can potentially take a long time (e.g., 10 - 30 minutes depending on the number of sample sizes under consideration). Thus, users with access to R/RStudio may want to ', a(href = 'https://github.com/E-Y-M/poweROC', 'download and run a local copy', .noWS = "outside"), " to avoid simulation disruption with dropped internet connections or timeouts. Whether running the web or a local version, it is also recommended that hibernation settings be temporarily disabled.", .noWS = c("after-begin", "before-end"))
     )
 )
 
@@ -194,7 +192,7 @@ data_tab <- tabItem(
         tags$ul(
             tags$li(
                 strong('suspect_position'),
-                ': The position of the suspect in the lineup.'
+                ': The position of the suspect in the lineup (if the data contain both simultaneous and sequential lineups, must be NA or 0 for simultaneous lineups).'
             )
         ),
         tags$br(),
@@ -228,7 +226,7 @@ data_tab <- tabItem(
             selected = "Yes"
         ),
         bsTooltip("designated_suspect",
-                  "If your data does not contain a designated innocent suspect, the app will automatically convert culprit-absent filler IDs to suspect IDs with a probability of 1/lineup size",
+                  "If your data does not contain a designated innocent suspect, the app will automatically convert culprit-absent filler IDs to suspect IDs with a probability of 1/lineup size, and also randomly generate a position in the lineup for the suspect",
                   placement = "left",
                   trigger = "hover"),
         htmlOutput("cond1_lineup_text"),
@@ -1103,7 +1101,9 @@ server <- function(input, output, session) {
     ### If open dataset is selected, create the dataset ----
     observeEvent(input$open_dataset, {
         data_files$processed_data = open_data %>% 
-            filter(exp == input$open_dataset)
+            filter(exp == input$open_dataset) %>% 
+            arrange(cond) %>% 
+            mutate(cond = as.factor(cond))
         
         # Flag datasets that don't have a designated innocent suspect ----
         if (data_files$processed_data$exp[1] %in% c("Colloff et al. (2021b): Exp 1: Same-pose vs. Different-pose encoding-test", 
@@ -1115,7 +1115,9 @@ server <- function(input, output, session) {
                        "Morgan et al. (2019): AM vs. PM lineup",
                        "Smith et al. (2022): Exp 1: Sequential parade warning vs. no-warning",
                        "Smith et al. (2022): Exp 1: Serial parade warning vs. no-warning",
-                       "Smith et al. (2022): Exp 1: Serial parade 1-pass vs. 2-passes")) {
+                       "Smith et al. (2022): Exp 1: Serial parade 1-pass vs. 2-passes",
+                       "Kaesler et al. (2020): Exp 1: Simultaneous vs. Sequential",
+                       "Seale-Carlisle & Mickes (2015): US vs. UK lineups")) {
             updateRadioButtons(session,
                                "designated_suspect",
                                selected = "No"
@@ -1238,20 +1240,20 @@ server <- function(input, output, session) {
                 
                 if (minimum_conf == 0) {
                     data_files$processed_data = data_files$user_data %>% 
+                        arrange(cond) %>% 
                         mutate(id_type = tolower(id_type),
                                culprit_present = tolower(culprit_present),
                                cond = as.factor(cond),
                                conf_level = conf_level + 1,
-                               conf_level_rev = max(conf_level)+1 - conf_level) %>% 
-                        arrange(cond)
+                               conf_level_rev = max(conf_level)+1 - conf_level)
                 } else {
                     data_files$processed_data = data_files$user_data %>% 
+                        arrange(cond) %>% 
                         mutate(id_type = tolower(id_type),
                                culprit_present = tolower(culprit_present),
                                cond = as.factor(cond),
                                conf_level = conf_level,
-                               conf_level_rev = max(conf_level)+1 - conf_level) %>% 
-                        arrange(cond)
+                               conf_level_rev = max(conf_level)+1 - conf_level)
                 }
                 
             message("Processed data with two conditions")
@@ -1366,10 +1368,18 @@ server <- function(input, output, session) {
                        suspect_prob = 1/lineup_size)
             
             for (i in 1:nrow(data_files$processed_data)) {
+                # Randomly convert filler IDs to innocent suspect IDs
                 if (data_files$processed_data$culprit_present[i] == "absent" & data_files$processed_data$id_type[i] == "filler") {
                     data_files$processed_data$id_type[i] = sample(c("filler", "suspect"), 1, prob = c(1-data_files$processed_data$suspect_prob[i], data_files$processed_data$suspect_prob[i]))
                 } else {
                     data_files$processed_data$id_type[i] = data_files$processed_data$id_type[i]
+                }
+                
+                # Randomly assign a suspect position
+                if (data_files$processed_data$culprit_present[i] == "absent" & is.na(data_files$processed_data$suspect_position[i])) {
+                    data_files$processed_data$suspect_position[i] = sample(c(1:data_files$processed_data$lineup_size[i]), size = 1)
+                } else {
+                    data_files$processed_data$suspect_position[i] = data_files$processed_data$suspect_position[i]
                 }
             }
         }
@@ -1710,7 +1720,7 @@ server <- function(input, output, session) {
         parameters$min_conf_b = min(data_files$processed_data$conf_level[data_files$processed_data$cond == parameters$cond2], na.rm = TRUE)
         
         ## Figure out if lineups in one condition are sequential ----
-        cond1_lineup_position = mean(data_files$processed_data$suspect_position[data_files$processed_data$cond == parameters$cond1],
+        cond1_lineup_position = mean(data_files$processed_data$suspect_position[data_files$processed_data$cond == parameters$cond1 & data_files$processed_data$culprit_present == "present"],
                                      na.rm = TRUE)
         
         if (is.nan(cond1_lineup_position)) {
@@ -1731,7 +1741,7 @@ server <- function(input, output, session) {
                                selected = "Sequential")
         }
         
-        cond2_lineup_position = mean(data_files$processed_data$suspect_position[data_files$processed_data$cond == parameters$cond2],
+        cond2_lineup_position = mean(data_files$processed_data$suspect_position[data_files$processed_data$cond == parameters$cond2 & data_files$processed_data$culprit_present == "present"],
                                      na.rm = TRUE)
         
         if (is.nan(cond2_lineup_position)) {
@@ -1988,6 +1998,10 @@ server <- function(input, output, session) {
     observeEvent(input$generate_hypothetical, {
         
         parameters$effs = 0
+        
+        parameters$cond1 = as.character(levels(data_files$processed_data$cond)[1])
+        
+        parameters$cond2 = as.character(levels(data_files$processed_data$cond)[2])
         
         if (input$empirical_theoretical == "Data") {
             req(data_files$processed_data)
@@ -2734,7 +2748,7 @@ server <- function(input, output, session) {
             input$lineup_size_sim_b,
             data_files$processed_data)
         
-        showModal(modalDialog(HTML(sprintf("Estimating parameters, please wait... <br/>If this takes longer than ~5 minutes it is possible that the data are not suitable for modelling.")),
+        showModal(modalDialog(HTML(sprintf("Estimating parameters, please wait... <br/>If this takes longer than ~10 minutes it is possible that the data are not suitable for modelling.")),
                               fade = TRUE,
                               easyClose = FALSE,
                               size = "l"))
@@ -2756,7 +2770,8 @@ server <- function(input, output, session) {
                              fix_p = "data",
                              fix_sigma_t = "free",
                              use_restr_data = FALSE,
-                             run_bootstrap = FALSE)
+                             run_bootstrap = FALSE,
+                             n_fits = 3)
             
             est_pos_prop_a = NA
         } else {
@@ -2765,7 +2780,8 @@ server <- function(input, output, session) {
                              fix_p = "data",
                              fix_sigma_t = "free",
                              use_restr_data = FALSE,
-                             run_bootstrap = FALSE)
+                             run_bootstrap = FALSE,
+                             n_fits = 3)
             
             est_pos_prop_a = as.character(paste0(data_sdtlu_processed_a$pos_prop, collapse = ", "))
         }
@@ -2829,13 +2845,14 @@ server <- function(input, output, session) {
         data_sdtlu_processed_b = sdtlu_process_data(data_sdtlu_b)
         
         #### Set fitting options ----
-        if (input$simultaneous_sequential_sim_a == "Simultaneous") {
+        if (input$simultaneous_sequential_sim_b == "Simultaneous") {
             options_b = list(model_type = "sim",
                              fit_fcn = "G2",
                              fix_p = "data",
                              fix_sigma_t = "free",
                              use_restr_data = FALSE,
-                             run_bootstrap = FALSE)
+                             run_bootstrap = FALSE,
+                             n_fits = 3)
             
             est_pos_prop_b = NA
         } else {
@@ -2844,7 +2861,8 @@ server <- function(input, output, session) {
                              fix_p = "data",
                              fix_sigma_t = "free",
                              use_restr_data = FALSE,
-                             run_bootstrap = FALSE)
+                             run_bootstrap = FALSE,
+                             n_fits = 3)
             
             est_pos_prop_b = as.character(paste0(data_sdtlu_processed_b$pos_prop, collapse = ", "))
         }
@@ -2856,7 +2874,7 @@ server <- function(input, output, session) {
         #### Recover the estimates ----
         params_b = sdtlu_fit_b$best_params_full
         
-        cs_b = params_b[4:length(params_a)]
+        cs_b = params_b[4:length(params_b)]
         
         params_data_b = data.frame(
             Parameter = c("p",
@@ -3302,12 +3320,20 @@ server <- function(input, output, session) {
         dpp_2_store_ci_lwr = matrix(nrow = length(parameters$ns),
                                     ncol = length(parameters$effs))
         
+        ### Experimental: Matrix to store pROC power values ----
+        #proc_power_store = matrix(nrow = length(parameters$ns),
+        #                          ncol = length(parameters$effs))
+        
         show("sim_progress")
         sim_counter = 0
         other_vars$sim_counter = 0
         
         ## If simulating from data ----
         if (input$empirical_theoretical == "Data") {
+            
+            parameters$cond1 = as.character(levels(data_files$processed_data$cond)[1])
+            
+            parameters$cond2 = as.character(levels(data_files$processed_data$cond)[2])
         ### loop over effect sizes ----
             for (g in 1:length(parameters$effs)) {
             eff = parameters$effs[g]
@@ -3380,7 +3406,8 @@ server <- function(input, output, session) {
                                        dpp_diff = rep(NA, times = input$nsims),
                                        dpp_1 = rep(NA, times = input$nsims),
                                        dpp_2 = rep(NA, times = input$nsims),
-                                       sig_dpp = rep(NA, times = input$nsims))
+                                       sig_dpp = rep(NA, times = input$nsims),
+                                       proc_power = rep(NA, times = input$nsims))
                 
                 #curr_n = parameters$ns[h]
                 
@@ -3619,10 +3646,17 @@ server <- function(input, output, session) {
                         
                     message("Completed ROC test")
                         
+                    #### Experimental: Getting power estimate from pROC's power.roc.test ----
+                    #proc_roc_power = power.roc.test(roc_cond1,
+                    #                                roc_cond2,
+                    #                                reuse.auc = TRUE,
+                    #                                method = "bootstrap")
+                    
                         sim_store$auc_diff[i] = as.numeric(roc_test$estimate[1]) - as.numeric(roc_test$estimate[2])
                         sim_store$auc_1[i] = as.numeric(roc_test$estimate[1])
                         sim_store$auc_2[i] = as.numeric(roc_test$estimate[2])
                         sim_store$auc_p[i] = as.numeric(roc_test$p.value)
+                        #sim_store$proc_power[i] = as.numeric(proc_roc_power$power)
                         
                         if (input$test_tails == "2_tail") {
                             sim_store$sig[i] = ifelse(sim_store$auc_p[i] < input$alpha_level, 1, 0)
@@ -3709,69 +3743,69 @@ server <- function(input, output, session) {
                     }
                     
                     ##### TESTING: Save condition data to look at later ----
-                    TA_data_cond1_store = data.frame(
-                        conf_level = TA_data_cond1,
-                        cond = "A",
-                        culprit_present = "TA",
-                        sim = i,
-                        n = curr_n,
-                        eff = eff,
-                        auc1 = ifelse(input$measure == "DPP", NA,
-                                      as.numeric(roc_test$estimate[1])),
-                        auc2 = ifelse(input$measure == "DPP", NA,
-                                      as.numeric(roc_test$estimate[2])),
-                        D_stat = ifelse(input$measure == "DPP", NA,
-                                        as.numeric(roc_test$statistic)),
-                        sd_bootstrap = NA
-                    )
-                    
-                    TP_data_cond1_store = data.frame(
-                        conf_level = TP_data_cond1,
-                        cond = "A",
-                        culprit_present = "TP",
-                        sim = i,
-                        n = curr_n,
-                        eff = eff,
-                        auc1 = ifelse(input$measure == "DPP", NA,
-                                      as.numeric(roc_test$estimate[1])),
-                        auc2 = ifelse(input$measure == "DPP", NA,
-                                      as.numeric(roc_test$estimate[2])),
-                        D_stat = ifelse(input$measure == "DPP", NA,
-                                        as.numeric(roc_test$statistic)),
-                        sd_bootstrap = NA
-                    )
-                    
-                    TA_data_cond2_store = data.frame(
-                        conf_level = TA_data_cond2,
-                        cond = "B",
-                        culprit_present = "TA",
-                        sim = i,
-                        n = curr_n,
-                        eff = eff,
-                        auc1 = ifelse(input$measure == "DPP", NA,
-                                      as.numeric(roc_test$estimate[1])),
-                        auc2 = ifelse(input$measure == "DPP", NA,
-                                      as.numeric(roc_test$estimate[2])),
-                        D_stat = ifelse(input$measure == "DPP", NA,
-                                        as.numeric(roc_test$statistic)),
-                        sd_bootstrap = NA
-                    )
-                    
-                    TP_data_cond2_store = data.frame(
-                        conf_level = TP_data_cond2,
-                        cond = "B",
-                        culprit_present = "TP",
-                        sim = i,
-                        n = curr_n,
-                        eff = eff,
-                        auc1 = ifelse(input$measure == "DPP", NA,
-                                      as.numeric(roc_test$estimate[1])),
-                        auc2 = ifelse(input$measure == "DPP", NA,
-                                      as.numeric(roc_test$estimate[2])),
-                        D_stat = ifelse(input$measure == "DPP", NA,
-                                        as.numeric(roc_test$statistic)),
-                        sd_bootstrap = NA
-                    )
+                    #TA_data_cond1_store = data.frame(
+                    #    conf_level = TA_data_cond1,
+                    #    cond = "A",
+                    #    culprit_present = "TA",
+                    #    sim = i,
+                    #    n = curr_n,
+                    #    eff = eff,
+                    #    auc1 = ifelse(input$measure == "DPP", NA,
+                    #                  as.numeric(roc_test$estimate[1])),
+                    #    auc2 = ifelse(input$measure == "DPP", NA,
+                    #                  as.numeric(roc_test$estimate[2])),
+                    #    D_stat = ifelse(input$measure == "DPP", NA,
+                    #                    as.numeric(roc_test$statistic)),
+                    #    sd_bootstrap = NA
+                    #)
+                    #
+                    #TP_data_cond1_store = data.frame(
+                    #    conf_level = TP_data_cond1,
+                    #    cond = "A",
+                    #    culprit_present = "TP",
+                    #    sim = i,
+                    #    n = curr_n,
+                    #    eff = eff,
+                    #    auc1 = ifelse(input$measure == "DPP", NA,
+                    #                  as.numeric(roc_test$estimate[1])),
+                    #    auc2 = ifelse(input$measure == "DPP", NA,
+                    #                  as.numeric(roc_test$estimate[2])),
+                    #    D_stat = ifelse(input$measure == "DPP", NA,
+                    #                    as.numeric(roc_test$statistic)),
+                    #    sd_bootstrap = NA
+                    #)
+                    #
+                    #TA_data_cond2_store = data.frame(
+                    #    conf_level = TA_data_cond2,
+                    #    cond = "B",
+                    #    culprit_present = "TA",
+                    #    sim = i,
+                    #    n = curr_n,
+                    #    eff = eff,
+                    #    auc1 = ifelse(input$measure == "DPP", NA,
+                    #                  as.numeric(roc_test$estimate[1])),
+                    #    auc2 = ifelse(input$measure == "DPP", NA,
+                    #                  as.numeric(roc_test$estimate[2])),
+                    #    D_stat = ifelse(input$measure == "DPP", NA,
+                    #                    as.numeric(roc_test$statistic)),
+                    #    sd_bootstrap = NA
+                    #)
+                    #
+                    #TP_data_cond2_store = data.frame(
+                    #    conf_level = TP_data_cond2,
+                    #    cond = "B",
+                    #    culprit_present = "TP",
+                    #    sim = i,
+                    #    n = curr_n,
+                    #    eff = eff,
+                    #    auc1 = ifelse(input$measure == "DPP", NA,
+                    #                  as.numeric(roc_test$estimate[1])),
+                    #    auc2 = ifelse(input$measure == "DPP", NA,
+                    #                  as.numeric(roc_test$estimate[2])),
+                    #    D_stat = ifelse(input$measure == "DPP", NA,
+                    #                    as.numeric(roc_test$statistic)),
+                    #    sd_bootstrap = NA
+                    #)
                     
                     #data_files$raw_data_store = rbind(data_files$raw_data_store,
                     #                                  TA_data_cond1_store,
@@ -3861,6 +3895,9 @@ server <- function(input, output, session) {
                 dpp_2_store_ci_lwr[h, g] = quantile(sim_store$dpp_2,
                                                     probs = c(.025, .975),
                                                     na.rm = TRUE)[1]
+                
+                # Experimental: Store pROC power values
+                #proc_power_store[h, g] = mean(sim_store$proc_power)
             }
         }
         } else {
@@ -3871,14 +3908,24 @@ server <- function(input, output, session) {
             parameters$mu_t_a = input$mu_t_a
             parameters$sigma_t_a = input$sigma_t_a
             parameters$cs_a = extract(input$cs_a)
-            parameters$cond1 = "A"
+            
+            if (is.na(parameters$cond1)) {
+                parameters$cond1 = "A"
+            } else {
+                parameters$cond1 = parameters$cond1
+            }
             
             parameters$sim_seq_b = input$sim_seq_b
             parameters$lineup_sizes_b = input$lineup_sizes_b
             parameters$mu_t_b = input$mu_t_b
             parameters$sigma_t_b = input$sigma_t_b
             parameters$cs_b = extract(input$cs_b)
-            parameters$cond2 = "B"
+            
+            if (is.na(parameters$cond2)) {
+                parameters$cond2 = "B"
+            } else {
+                parameters$cond2 = parameters$cond2
+            }
             
             parameters$effs = 0
             
@@ -3907,6 +3954,7 @@ server <- function(input, output, session) {
                                            dpp_1 = rep(NA, times = input$nsims),
                                            dpp_2 = rep(NA, times = input$nsims),
                                            sig_dpp = rep(NA, times = input$nsims))
+                                           #proc_power = rep(NA, times = input$nsims))
                     
                     #curr_n = parameters$ns[h]
                     
@@ -3977,7 +4025,7 @@ server <- function(input, output, session) {
                                                                    simmed_data_a_TP_rej,
                                                                    simmed_data_a_TA_rej),
                                                              !is.na(conf_level))
-                                simmed_data_a_final$cond = "A"
+                                simmed_data_a_final$cond = parameters$cond1
                             }
                         } else {
                             simmed_data_a = as.data.frame(t(as.data.frame(sdtlu_sim_sim(params_a, parameters$lineup_sizes_a, curr_trials, 1))))
@@ -4020,7 +4068,7 @@ server <- function(input, output, session) {
                                                                simmed_data_a_TP_rej,
                                                                simmed_data_a_TA_rej),
                                                          !is.na(conf_level))
-                            simmed_data_a_final$cond = "A"
+                            simmed_data_a_final$cond = parameters$cond1
                         }
                         
                         message("Generated Condition A data for main simulation")
@@ -4079,7 +4127,7 @@ server <- function(input, output, session) {
                                                                    simmed_data_b_TP_rej,
                                                                    simmed_data_b_TA_rej),
                                                              !is.na(conf_level))
-                                simmed_data_b_final$cond = "B"
+                                simmed_data_b_final$cond = parameters$cond2
                             }
                         } else {
                             simmed_data_b = as.data.frame(t(as.data.frame(sdtlu_sim_sim(params_b, parameters$lineup_sizes_b, curr_trials, 1))))
@@ -4119,7 +4167,7 @@ server <- function(input, output, session) {
                                                                simmed_data_b_TP_rej,
                                                                simmed_data_b_TA_rej),
                                                          !is.na(conf_level))
-                            simmed_data_b_final$cond = "B"
+                            simmed_data_b_final$cond = parameters$cond2
                         }
                         
                         #### Combine Condition A & B data ----
@@ -4139,12 +4187,12 @@ server <- function(input, output, session) {
                         }
                         
                         simmed_data_trial$cond = factor(simmed_data_trial$cond,
-                                                        levels = c("A", "B"))
+                                                        levels = c(parameters$cond1, parameters$cond2))
                         
                         ### Generate ROC data ----
                         ###### For Condition 1 ----
                         ####### TA ----
-                        TA_data_cond1 = select(filter(simmed_data_trial, cond == "A" & culprit_present == "absent"),
+                        TA_data_cond1 = select(filter(simmed_data_trial, cond == parameters$cond1 & culprit_present == "absent"),
                                                conf_level, id_type)
                         TA_data_cond1$conf_level = ifelse(TA_data_cond1$id_type == "suspect", 
                                                           TA_data_cond1$conf_level, 0)
@@ -4156,7 +4204,7 @@ server <- function(input, output, session) {
                         cond1_partial = length(TA_data_cond1[TA_data_cond1 > 0]) / length(TA_data_cond1)
                         
                         ####### TP ----
-                        TP_data_cond1 = select(filter(simmed_data_trial, cond == "A" & culprit_present == "present"),
+                        TP_data_cond1 = select(filter(simmed_data_trial, cond == parameters$cond1 & culprit_present == "present"),
                                                conf_level, id_type)
                         TP_data_cond1$conf_level = ifelse(TP_data_cond1$id_type == "suspect", 
                                                           TP_data_cond1$conf_level, 0)
@@ -4167,7 +4215,7 @@ server <- function(input, output, session) {
                         
                         ###### For Condition 2 ----
                         ####### TA ----
-                        TA_data_cond2 = select(filter(simmed_data_trial, cond == "B" & culprit_present == "absent"),
+                        TA_data_cond2 = select(filter(simmed_data_trial, cond == parameters$cond2 & culprit_present == "absent"),
                                                conf_level, id_type)
                         TA_data_cond2$conf_level = ifelse(TA_data_cond2$id_type == "suspect", 
                                                           TA_data_cond2$conf_level, 0)
@@ -4179,7 +4227,7 @@ server <- function(input, output, session) {
                         cond2_partial = length(TA_data_cond2[TA_data_cond2 > 0]) / length(TA_data_cond2)
                         
                         ####### TP ----
-                        TP_data_cond2 = select(filter(simmed_data_trial, cond == "B" & culprit_present == "present"),
+                        TP_data_cond2 = select(filter(simmed_data_trial, cond == parameters$cond2 & culprit_present == "present"),
                                                conf_level, id_type)
                         TP_data_cond2$conf_level = ifelse(TP_data_cond2$id_type == "suspect", 
                                                           TP_data_cond2$conf_level, 0)
@@ -4377,19 +4425,19 @@ server <- function(input, output, session) {
                         if (input$measure != "pAUC") {
                             TA_dataframe_cond1 = data.frame(conf = TA_data_cond1,
                                                             tpORta = 0,
-                                                            cond = "A")
+                                                            cond = parameters$cond1)
                             
                             TP_dataframe_cond1 = data.frame(conf = TP_data_cond1,
                                                             tpORta = 1,
-                                                            cond = "A")
+                                                            cond = parameters$cond1)
                             
                             TA_dataframe_cond2 = data.frame(conf = TA_data_cond2,
                                                             tpORta = 0,
-                                                            cond = "B")
+                                                            cond = parameters$cond2)
                             
                             TP_dataframe_cond2 = data.frame(conf = TP_data_cond2,
                                                             tpORta = 1,
-                                                            cond = "B")
+                                                            cond = parameters$cond2)
                             
                             data_DPP = rbind(TA_dataframe_cond1,
                                              TP_dataframe_cond1,
@@ -4445,69 +4493,69 @@ server <- function(input, output, session) {
                         }
                         
                         ##### TESTING: Save condition data to look at later ----
-                        TA_data_cond1_store = data.frame(
-                            conf_level = TA_data_cond1,
-                            cond = "A",
-                            culprit_present = "TA",
-                            sim = i,
-                            n = curr_n,
-                            eff = NA,
-                            auc1 = ifelse(input$measure == "DPP", NA,
-                                          as.numeric(roc_test$estimate[1])),
-                            auc2 = ifelse(input$measure == "DPP", NA,
-                                          as.numeric(roc_test$estimate[2])),
-                            D_stat = ifelse(input$measure == "DPP", NA,
-                                            as.numeric(roc_test$statistic)),
-                            sd_bootstrap = NA
-                        )
-                        
-                        TP_data_cond1_store = data.frame(
-                            conf_level = TP_data_cond1,
-                            cond = "A",
-                            culprit_present = "TP",
-                            sim = i,
-                            n = curr_n,
-                            eff = NA,
-                            auc1 = ifelse(input$measure == "DPP", NA,
-                                          as.numeric(roc_test$estimate[1])),
-                            auc2 = ifelse(input$measure == "DPP", NA,
-                                          as.numeric(roc_test$estimate[2])),
-                            D_stat = ifelse(input$measure == "DPP", NA,
-                                            as.numeric(roc_test$statistic)),
-                            sd_bootstrap = NA
-                        )
-                        
-                        TA_data_cond2_store = data.frame(
-                            conf_level = TA_data_cond2,
-                            cond = "B",
-                            culprit_present = "TA",
-                            sim = i,
-                            n = curr_n,
-                            eff = NA,
-                            auc1 = ifelse(input$measure == "DPP", NA,
-                                          as.numeric(roc_test$estimate[1])),
-                            auc2 = ifelse(input$measure == "DPP", NA,
-                                          as.numeric(roc_test$estimate[2])),
-                            D_stat = ifelse(input$measure == "DPP", NA,
-                                            as.numeric(roc_test$statistic)),
-                            sd_bootstrap = NA
-                        )
-                        
-                        TP_data_cond2_store = data.frame(
-                            conf_level = TP_data_cond2,
-                            cond = "B",
-                            culprit_present = "TP",
-                            sim = i,
-                            n = curr_n,
-                            eff = NA,
-                            auc1 = ifelse(input$measure == "DPP", NA,
-                                          as.numeric(roc_test$estimate[1])),
-                            auc2 = ifelse(input$measure == "DPP", NA,
-                                          as.numeric(roc_test$estimate[2])),
-                            D_stat = ifelse(input$measure == "DPP", NA,
-                                            as.numeric(roc_test$statistic)),
-                            sd_bootstrap = NA
-                        )
+                        #TA_data_cond1_store = data.frame(
+                        #    conf_level = TA_data_cond1,
+                        #    cond = parameters$cond1,
+                        #    culprit_present = "TA",
+                        #    sim = i,
+                        #    n = curr_n,
+                        #    eff = NA,
+                        #    auc1 = ifelse(input$measure == "DPP", NA,
+                        #                  as.numeric(roc_test$estimate[1])),
+                        #    auc2 = ifelse(input$measure == "DPP", NA,
+                        #                  as.numeric(roc_test$estimate[2])),
+                        #    D_stat = ifelse(input$measure == "DPP", NA,
+                        #                    as.numeric(roc_test$statistic)),
+                        #    sd_bootstrap = NA
+                        #)
+                        #
+                        #TP_data_cond1_store = data.frame(
+                        #    conf_level = TP_data_cond1,
+                        #    cond = parameters$cond1,
+                        #    culprit_present = "TP",
+                        #    sim = i,
+                        #    n = curr_n,
+                        #    eff = NA,
+                        #    auc1 = ifelse(input$measure == "DPP", NA,
+                        #                  as.numeric(roc_test$estimate[1])),
+                        #    auc2 = ifelse(input$measure == "DPP", NA,
+                        #                  as.numeric(roc_test$estimate[2])),
+                        #    D_stat = ifelse(input$measure == "DPP", NA,
+                        #                    as.numeric(roc_test$statistic)),
+                        #    sd_bootstrap = NA
+                        #)
+                        #
+                        #TA_data_cond2_store = data.frame(
+                        #    conf_level = TA_data_cond2,
+                        #    cond = parameters$cond2,
+                        #    culprit_present = "TA",
+                        #    sim = i,
+                        #    n = curr_n,
+                        #    eff = NA,
+                        #    auc1 = ifelse(input$measure == "DPP", NA,
+                        #                  as.numeric(roc_test$estimate[1])),
+                        #    auc2 = ifelse(input$measure == "DPP", NA,
+                        #                  as.numeric(roc_test$estimate[2])),
+                        #    D_stat = ifelse(input$measure == "DPP", NA,
+                        #                    as.numeric(roc_test$statistic)),
+                        #    sd_bootstrap = NA
+                        #)
+                        #
+                        #TP_data_cond2_store = data.frame(
+                        #    conf_level = TP_data_cond2,
+                        #    cond = parameters$cond2,
+                        #    culprit_present = "TP",
+                        #    sim = i,
+                        #    n = curr_n,
+                        #    eff = NA,
+                        #    auc1 = ifelse(input$measure == "DPP", NA,
+                        #                  as.numeric(roc_test$estimate[1])),
+                        #    auc2 = ifelse(input$measure == "DPP", NA,
+                        #                  as.numeric(roc_test$estimate[2])),
+                        #    D_stat = ifelse(input$measure == "DPP", NA,
+                        #                    as.numeric(roc_test$statistic)),
+                        #    sd_bootstrap = NA
+                        #)
                         
                         #data_files$raw_data_store = rbind(data_files$raw_data_store,
                         #                                  TA_data_cond1_store,

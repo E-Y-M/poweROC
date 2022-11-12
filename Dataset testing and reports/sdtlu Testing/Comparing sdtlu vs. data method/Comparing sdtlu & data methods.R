@@ -18,21 +18,22 @@ apatheme <-
 `%nin%` = Negate(`%in%`)
 
 # Names of data files to loop over ----
-simulated_datafiles = list.files("./Dataset testing and reports/sdtlu Testing/Simulated data")
+simulated_datafiles = list.files("./Dataset testing and reports/sdtlu Testing/Simulated data/Datafiles for looking at sdtlu vs data resampling variability/")
 datafile_names = str_replace(simulated_datafiles, ".csv", "")
+datafile_ns = parse_number(gsub(".*_", "", datafile_names))
 
 data_method_raw = list.files("./Dataset testing and reports/sdtlu Testing/Comparing sdtlu vs. data method/Data resampling method")
 data_method_sdtlu = list.files("./Dataset testing and reports/sdtlu Testing/Comparing sdtlu vs. data method/sdtlu method")
 
-data_method_raw = data_method_raw[!grepl("html", data_method_raw)]
-data_method_sdtlu = data_method_sdtlu[!grepl("html", data_method_sdtlu)]
+data_method_raw = data_method_raw[!grepl("html", data_method_raw) & !grepl("New", data_method_raw)]
+data_method_sdtlu = data_method_sdtlu[!grepl("html", data_method_sdtlu) & !grepl("New", data_method_sdtlu)]
 
+ROC_variability_store = data.frame()
 # Loop over datasets ----
-a = 1
 for (a in 1:length(datafile_names)) {
         # Get original data and ROC values ----
     
-    data_original = read.csv(paste0("./Dataset testing and reports/sdtlu Testing/Simulated data/", simulated_datafiles[a])) 
+    data_original = read.csv(paste0("./Dataset testing and reports/sdtlu Testing/Simulated data/Datafiles for looking at sdtlu vs data resampling variability/", simulated_datafiles[a])) 
     
     conds = unique(data_original$cond)
     
@@ -56,7 +57,8 @@ for (a in 1:length(datafile_names)) {
     for (i in 1:length(unique(data_original$sim))) {
         curr_data = filter(data_original, sim == unique(data_original$sim)[i]) %>% 
             mutate(method = "original",
-                   sim_method = "original")
+                   sim_method = "original",
+                   exp = datafile_names[a])
         
         # Check if any confidence levels are missing ----
         missing_confs = conf_levels[conf_levels %nin% curr_data$conf_level]
@@ -100,7 +102,8 @@ for (a in 1:length(datafile_names)) {
         
         # Bind current data back into the main dataframe ----
         roc_data_store_original = rbind(roc_data_store_original,
-                                        curr_data)
+                                        curr_data) %>% 
+            mutate(exp = datafile_names[a])
     }
     
     # Read in both data files and bind them together ----
@@ -174,6 +177,7 @@ for (a in 1:length(datafile_names)) {
     }
     
     roc_data_plotting = roc_data_store %>% 
+        mutate(exp = datafile_names[a]) %>% 
         rbind(roc_data_store_original %>% 
                   mutate(method = "data")) %>% 
         rbind(roc_data_store_original %>% 
@@ -186,31 +190,106 @@ for (a in 1:length(datafile_names)) {
         mutate(sim = as.factor(sim),
                conf_level = as.numeric(conf_level)) %>% 
         mutate(color = ifelse(sim == 0, "Original", cond),
-               method = ifelse(method == "data", "Data resampling", "sdtlu"))
+               method = ifelse(method == "data", "Data resampling", "sdtlu"),
+               exp = datafile_names[a],
+               n_subjs = datafile_ns[a])
     
-    roc_data_plotting %>%
-        arrange(sim, method, desc(conf_level)) %>% 
-        ggplot(aes(x = TA, y = TP, group = interaction(cond, sim), color = color, alpha = color, size = color))+
+    ROC_variability_store = rbind(ROC_variability_store,
+                                  roc_data_plotting)
+    
+    #roc_data_plotting %>%
+    #    arrange(sim, method, desc(conf_level)) %>% 
+    #    ggplot(aes(x = TA, y = TP, group = interaction(cond, sim), color = color, alpha = color, size = color))+
+    #    scale_color_manual(values = c("red", "blue", "black"))+
+    #    scale_alpha_manual(values = c(.3, .3, 1))+
+    #    scale_size_manual(values = c(1, 1, 2))+
+    #    facet_grid(rows = vars(method))+
+    #    geom_point()+
+    #    geom_line()+
+    #    labs(x = "False ID rate",
+    #         y = "Correct ID rate",
+    #         color = "Condition")+
+    #    guides(alpha = "none",
+    #           size = "none")+
+    #    apatheme+
+    #    ggtitle(datafile_names[a])+
+    #    theme(text = element_text(size = 25),
+    #          plot.title = element_text(hjust = .5))
+    #
+    #ggsave(paste0("./Dataset testing and reports/sdtlu Testing/Comparing sdtlu vs. data method/Figures/", datafile_names[a], ".png"),
+    #       dpi = 300,
+    #       height = 20, 
+    #       width = 15,
+    #       units = "in")
+}
+
+write.csv(ROC_variability_store,
+          "./Dataset testing and reports/sdtlu Testing/Comparing sdtlu vs. data method/Resampling vs. sdtlu variability.csv",
+          row.names = FALSE,
+          na = "")
+
+ROC_variability_plotting = ROC_variability_store %>% 
+    mutate(exp = gsub("_.*", "", exp),
+           n_subjs = as.character(n_subjs)) %>% 
+    mutate(n_subjs = factor(n_subjs, 
+                            levels = c("500", 
+                                       "3000", 
+                                       "6000")))
+
+ROC_variability_plotting %>%
+        filter(grepl("Colloff", exp)) %>% 
+        arrange(exp, n_subjs, sim, method, desc(conf_level)) %>% 
+        group_by(exp, n_subjs) %>% 
+        ggplot(aes(x = TA, y = TP, group = interaction(cond, sim, exp, n_subjs), color = color, alpha = color, size = color))+
+        facet_grid(rows = vars(method),
+                   cols = vars(n_subjs))+
         scale_color_manual(values = c("red", "blue", "black"))+
         scale_alpha_manual(values = c(.3, .3, 1))+
         scale_size_manual(values = c(1, 1, 2))+
-        facet_grid(rows = vars(method))+
+        #facet_grid(rows = vars(method))+
         geom_point()+
         geom_line()+
         labs(x = "False ID rate",
              y = "Correct ID rate",
              color = "Condition")+
-        guides(alpha = "none",
-               size = "none")+
-        apatheme+
-        ggtitle(datafile_names[a])+
-        theme(text = element_text(size = 25),
-              plot.title = element_text(hjust = .5))
-    
-    ggsave(paste0("./Dataset testing and reports/sdtlu Testing/Comparing sdtlu vs. data method/Figures/", datafile_names[a], ".png"),
-           dpi = 300,
-           height = 20, 
-           width = 15,
-           units = "in")
-}
+    guides(alpha = "none",
+           size = "none")+
+    apatheme+
+    ggtitle("Colloff et al., (2021a): Exp 2: High- vs. Low-similarity fillers")+
+    theme(text = element_text(size = 25),
+          plot.title = element_text(hjust = .5))
 
+ggsave(paste0("./Dataset testing and reports/sdtlu Testing/Comparing sdtlu vs. data method/Figures/sdtlu_resampling_variability_colloff.png"),
+       dpi = 300,
+       height = 15, 
+       width = 20,
+       units = "in")
+
+ROC_variability_plotting %>%
+    filter(grepl("Palmer", exp)) %>% 
+    arrange(exp, n_subjs, sim, method, desc(conf_level)) %>% 
+    group_by(exp, n_subjs) %>% 
+    ggplot(aes(x = TA, y = TP, group = interaction(cond, sim, exp, n_subjs), color = color, alpha = color, size = color))+
+    facet_grid(rows = vars(method),
+               cols = vars(n_subjs))+
+    scale_color_manual(values = c("red", "blue", "black"))+
+    scale_alpha_manual(values = c(.3, .3, 1))+
+    scale_size_manual(values = c(1, 1, 2))+
+    #facet_grid(rows = vars(method))+
+    geom_point()+
+    geom_line()+
+    labs(x = "False ID rate",
+         y = "Correct ID rate",
+         color = "Condition")+
+    guides(alpha = "none",
+           size = "none")+
+    apatheme+
+    ggtitle("Palmer et al., (2013): Exp 1: Short- vs. Long-delay")+
+    theme(text = element_text(size = 25),
+          plot.title = element_text(hjust = .5))
+
+ggsave(paste0("./Dataset testing and reports/sdtlu Testing/Comparing sdtlu vs. data method/Figures/sdtlu_resampling_variability_palmer.png"),
+       dpi = 300,
+       height = 15, 
+       width = 20,
+       units = "in")
