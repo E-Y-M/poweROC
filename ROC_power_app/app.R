@@ -1117,7 +1117,8 @@ server <- function(input, output, session) {
                        "Smith et al. (2022): Exp 1: Serial parade warning vs. no-warning",
                        "Smith et al. (2022): Exp 1: Serial parade 1-pass vs. 2-passes",
                        "Kaesler et al. (2020): Exp 1: Simultaneous vs. Sequential",
-                       "Seale-Carlisle & Mickes (2015): US vs. UK lineups")) {
+                       "Seale-Carlisle & Mickes (2015): US vs. UK lineups",
+                       "Wilson et al. (2017): Exp 2: Verbal description vs. Control")) {
             updateRadioButtons(session,
                                "designated_suspect",
                                selected = "No"

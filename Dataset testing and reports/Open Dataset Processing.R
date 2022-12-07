@@ -838,3 +838,28 @@ write.csv(palmer,
           "./Dataset testing and reports/Data/Palmer et al., 2013/palmer_delay_2013_processed.csv",
           row.names = FALSE,
           na = "")
+
+# Wilson et al. (2017) Exp. 2: Verbal descriptions vs. Control ----
+wilson = read.csv("./Dataset testing and reports/Data/Wilson et al., 2017/wilson_exp1_exp2.csv",
+                  fileEncoding = "UTF-8-BOM") %>% 
+    filter(Exp == 2) %>% 
+    rename("cond" = Group,
+           "culprit_present" = Target.Absent.or.Present,
+           "conf_level" = Confidence) %>% 
+    mutate(culprit_present = ifelse(grepl("absent", culprit_present), "absent", "present"),
+           exp = "Wilson et al. (2017): Exp 2: Verbal description vs. Control",
+           id_type = ifelse(Present.or.Absent.Response == "Absent", "reject",
+                            ifelse(Present.or.Absent.Response == "Present" & Accuracy == 0, "filler", "suspect")),
+           lineup_size = 6,
+           suspect_position = NA) %>% 
+    select(exp, cond, culprit_present, id_type, conf_level, lineup_size, suspect_position)
+
+write.csv(wilson,
+          "./Dataset testing and reports/Data/Wilson et al., 2017/wilson_exp2_processed.csv",
+          row.names = FALSE,
+          na = "")
+
+write.csv(wilson,
+          "./Dataset testing and reports/Data/01 - All data files for combining/wilson_exp2_processed.csv",
+          row.names = FALSE,
+          na = "")
