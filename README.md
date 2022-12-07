@@ -14,6 +14,6 @@ An R Shiny app to run power simulations for two-condition (e.g., Simultaneous li
 5. In RStudio, navigate to the "ROC_power_app" folder and open "app.R"
 6. Click "Run App", then "Open in Browser"
 
-You can also download app validation/testing results [here](https://github.com/E-Y-M/poweROC/blob/main/Dataset%20testing%20and%20reports/App-Testing-Results.html)
+You can also download app validation/testing results [here](https://github.com/E-Y-M/poweROC/blob/main/Dataset%20testing%20and%20reports/App-Testing-Results.html).
 
 This app is in the beta stage so feedback/comments are greatly appreciated (these can be posted in "Issues"). 
