@@ -43,7 +43,7 @@ pwr_data = read.csv(here("./Dataset testing and reports/Power Estimate Stability
                         ifelse(sim == "Niter2000", "NBootIter X2", "Default")))
 ```
 
-## AUC Recovery
+## 1. AUC Recovery
 At a basic level, simulation validity depends on the ability of the simulations to recover AUC values close to those in the original dataset. The figure below depicts original AUC estimates from various papers with open data (5 papers, 8 experiments, 22 ROC curves computed using the same N's/pAUC cutoffs in the original papers), along with simulated estimates and intervals:
 
 ```{r echo=FALSE, out.width = "100%", warning=FALSE}
@@ -72,7 +72,7 @@ knitr::include_graphics(here("./Dataset testing and reports/AUCRecovery.png"))
 
 Testing the ability of the simulation to recover AUC values from experiments. Open circles represent original AUC values, all other points represent simulation estimates under various conditions ("NSims" = Number of simulated datasets per effect size/N, "NBootIter" = Number of bootstrap iterations per AUC comparison). Error bars = 95% quantiles on the mean estimated AUC for the simulations. Overall, simulations demonstrate excellent ability to recover original AUC values, even under default settings (NSims = 100, NBootIter = 1000).
 
-## Simulation precision under different conditions
+## 2. Simulation precision under different conditions
 Still, the question remains as to whether increasing the number of simulations or bootstrap iterations increases power. The figure below shows the width of the 95% quantile intervals for the AUC estimates above, as a function of the simulation conditions.
 
 ```{r echo=FALSE, out.width = "100%", warning=FALSE}
@@ -109,7 +109,7 @@ knitr::include_graphics(here("./Dataset testing and reports/CIWidth.png"))
 
 Based on these simulations, it does not seem that increasing the number of simulations or bootstrap iterations necessarily or substantially increases the precision of the simulation beyond the default settings, suggesting that the default settings will result in reasonable estimates.
 
-## Power estimates under different conditions
+## 3. Power estimates under different conditions
 It is not clear whether the default simulation settings result in the most accurate power estimates. I simulated power for 13 ROC comparisons from the papers above. I also conducted two simulation runs of a dataset with a prespecified null effect (using the "Medium Similarity" condition from Colloff et al., 2021a as a base) to compare with the normative Type I Error Rate of .05, all under the three different simulation conditions. These power estimates are plotted below:
 
 ```{r echo=FALSE, out.width = "100%", warning=FALSE}
@@ -147,7 +147,7 @@ knitr::include_graphics(here("./Dataset testing and reports/PwrPlot.png"))
 
 Power estimates differed slightly across the different simulation conditions, but no clear patterns emerged. In these examples, the maximum range of estimated power was .10. Importantly, power estimates in the two null effect simulations were close to the nominal Type I Error Rate of .05 (though the non-default settings resulted in slightly higher estimates). 
 
-## Power curves in a full simulation example
+## 3. Power curves in a full simulation example
 Finally, I examined the behaviour of the different simulation settings for a full simulation example (i.e., involving multiple N's/sample sizes). I simulated power for 5 effect sizes and 3 sample sizes (1000, 3000, 5000), again using the "Medium Similarity" condition data from Colloff et al. (2021a) as a base. For each simulation setting I ran two simulations to get a basic idea of run-to-run consistency. First, the hypothetical ROCs that were tested for this analysis:
 
 ```{r echo=FALSE, out.width = "100%", warning=FALSE}
@@ -196,7 +196,7 @@ knitr::include_graphics(here("./Dataset testing and reports/Full Simulation Test
 
 These simulations result in the same general expected pattern, but there are a few things worth noting. First, it appears that the default settings (though the fastest for simulation) result in a good amount of run-to-run variability, and a violation of power simulation expectations (i.e., higher power for a smaller effect size with the same sample size). Between increasing the bootstrap iterations and increasing the # of sims, increasing the # of sims seems to result in more run-to-run consistency while maintaining the expected patterns of results, at the cost of increasing the required simulation time. At least in these examples, upping the default values of both NSims and NIter did not seem to offer substantial benefit over increasing NSims, and increasing NSims beyond 200 did not seem to result in a substantial gain.
 
-## DPP testing
+## 4. DPP testing
 I tested a) the ability of the app to recover published DPP values (from Smith et al., 2019, who used the "concealment" and "nothing" condition data from Colloff et al., 2016). The reported DPP values in Smith et al., 2019 were .86 and .82 respectively, with a DPP difference of .04 (95% CI [.007, .087]). In an initial simulation run using the same data and sample size (and using 100 simulated samples and 2200 bootstraps per DPP test), the simulation DPPs were .87 and .82, with an estimated DPP difference of .05 (95% CI [-.008, .10]). In a second simulation run, the simulation DPPs were .87 and .82, with an estimated DPP difference of .05 (95% CI [-.006, .11]). Aside from some discrepancies with the DPP difference CIs due to slightly different calculation methods, powe(R)OC recovered the DPP values accurately and consistently across different simulation runs.
 
 In a test of long-run Type I error rates, across two simulations using base data with a null effect the DPP Type I error rate was .04 and .03 (slightly outperforming pAUC, which had a Type I error rate of .07 in both cases).
@@ -224,9 +224,65 @@ knitr::include_graphics(here("./Dataset testing and reports/DPP/Sim testing resu
 
 Again, power estimates differed slightly across runs (mostly at smaller sample sizes), but results were consistent overall. Interestingly, in this case it appears that power to detect the differences is substantially higher for DPP than for pAUC. I hesitate to draw any general conclusions, given that this is a single simulation (and additionally, in the validation using the data from Colloff et al., 2016, pAUC held a power advantage over DPP). However, this does suggest that power can differ substantially depending on the measure used, and suggests some further avenues for testing when one measure provides more power than the other.
 
+## 5. Comparing sdtlu and data methods for simulation
+
+powe(R)OC offers two means for users to simulate data: 1) resampling new data using confidence-response proportions from the original dataset or 2) generating new data from an sdtlu model fit to the data. The below sections detail some initial comparisons of these methods.
+
+### A. Comparing simulation variability across methods
+
+First, I examined and compared the degree of variability in ROCs generated via the two available methods in the app. This was done for two datasets -- the Colloff et al. (2021a) Experiment 2 High- vs. Low-similarity fillers, and the Palmer et al. (2013) Experiment 1 Short- vs. Long-delay. For each dataset, I generated new datasets with 500, 3000, and 6000 lineup trials (via resampling), and then for the 6 new datasets I simulated 50 ROC curves using either method (data vs. sdtlu). Results are shown below, with the simulated ROC curves plotted against the ROC curve in the base data:
+
+```{r echo=FALSE, out.width = "100%", warning=FALSE}
+knitr::include_graphics(here("./Dataset testing and reports/sdtlu Testing/Comparing sdtlu vs. data method/Figures/sdtlu_resampling_variability_colloff.png"))
+```
+
+```{r echo=FALSE, out.width = "100%", warning=FALSE}
+knitr::include_graphics(here("./Dataset testing and reports/sdtlu Testing/Comparing sdtlu vs. data method/Figures/sdtlu_resampling_variability_palmer.png"))
+```
+
+The data and sdtlu methods resulted in slightly different simulated ROC curves, which is not necessarily unexpected (e.g., due to varying fit of the sdtlu models). Importantly though, both methods generally recovered the original ROC curves, and variability in simulated ROCs was similar across methods (and reduced with larger #s of trials).
+
+### Comparing power estimates across methods and base data sample sizes
+
+Of greater interest is the agreement (or lack thereof) between the data and sdtlu methods in terms of power estimates, and whether this agreement varies as a function of the sample size of the base data used. To address these questions, I conducted full power simulation tests (as in Section 3) using four datasets:
+
+- Colloff et al., 2021a (Exp 2): High- vs. Low-similarity fillers
+- Palmer et al., 2013: Long- vs. short-delay
+- Seale-Carlisle & Mickes (2016): US simultaneous vs. UK sequential lineups
+- Kaesler et al., (2020): Simultaneous vs. Sequential
+
+The two new datasets also permitted tests of analyses of sequential datasets. For each of these datasets, sdtlu models were fit, and using these models four base datasets (*N* = 1000, 2000, 4000, 6000 trials) were simulated to use in the power simulations. Two full power simulation were then conducted for each of the 16 datasets -- one using the data method and one using the sdtlu method. The power curves for these simulations are shown below:
+
+```{r echo=FALSE, out.width = "100%", warning=FALSE}
+knitr::include_graphics(here("./Dataset testing and reports/sdtlu Testing/Comparing sdtlu vs. data method/Figures/sdtlu_resampling_power.png"))
+```
+
+For the Colloff et al. (2021) and Palmer et al. (2013) datasets that were previously tested, power analyses were generally similar across methods and base sample sizes. However, there was variability in power results for the Seale-Carlisle (2016) and Kaesler (2020) datasets. For the former, there was disagreement even at the highest sample sizes (although for the latter, for sample sizes >= 4000 the sdtlu and data results were similar). 
+
+One possible cause for this variability in power estimates is simply variability in the data produced by the sdtlu model simulated data. To examine this, I looked at the estimated pAUC differences in each of the simulated datasets. These values (with 95% bootstrapped quantile intervals on each difference) are plotted below:
+
+```{r echo=FALSE, out.width = "100%", warning=FALSE}
+knitr::include_graphics(here("./Dataset testing and reports/sdtlu Testing/Comparing sdtlu vs. data method/Figures/AUC variability (from sdtlu generation).png"))
+```
+
+Importantly, the estimated pAUC differences in each dataset map closely onto the power estimates (e.g., sdtlu difference estimates for the Seale-Carlisle and Mickes (2016) data were highest for the *N* = 1000 and *N* = 6000 datasets, which maps onto the higher power curves for these datasets). Thus, it appears that **the observed variability in power estimates is not due to faults in the methods used, but primarily to the "sampling variability" from the base data. Although power results will be affected by the degree to which specific data/model parameters reflect the population of interest, the simulation methods will faithfully reproduce the provided data/model parameters**. Another important insight from these tests is that the sdtlu method seems to provide more consistent results, both in terms of estimated pAUC differences and power curves. 
+
+#### Using subsets of base data files
+
+#### Comparing to a published power analysis (Holdstock et al., 2022) using another program -- pyWitness (Mickes et al., 2022)
+
+As described in the manuscript, Mickes et al. (2022) have recently developed pyWitness, a Python program for analyzing eyewitness data. Although not specialized for pROC power analysis, pyWitness includes some functionality to simulate power using models estimated from data. One recent paper reported such an analysis (Holdstock et al., 2022) using data from an eyewitness verbal overshadowing experiment (Wilson et al., 2018; Exp. 2). This permitted the opportunity to compare the results of powe(R)OC with another similar app. I obtained the data used to seed the simulations and conducted new simulations with various *N*s (including the final sample size selected by Holdstock et al., 2022), and using both the data resampling and sdtlu methods. 
+
 ## Recommendations for users
 In light of these testing results, I recommend that users: 
-a) Use the default simulation parameters if analysis time is a concern, but to up the # of simulations per sample/effect size to 200 if time is not a concern, b) select only a few effect sizes/sample sizes for simulation (e.g., based on prior results documented in the app), c) set final planned sample size slightly higher than their target power (e.g., + .05-.10), and d) conduct a couple simulation runs (e.g., one with default settings to get a general idea of the sample size, then a finer-grained simulation including only a few sample sizes and using more simulations & bootstrap iterations).
+a) **If possible, use sdtlu-generated models as the basis for simulation**. Simulating directly from uploaded data is still a viable option if model estimation is not possible, or if model misfit is severe.
+
+b) **Using the default simulation parameters is fine**, but upping the # of simulations per sample size to 200 and pROC bootstrap iterations to 2000 will provide more stable power estimates.
+
+
+c) **Set final planned sample size slightly higher than their target power** (e.g., + .05-.10), and 
+
+d) **Conduct a couple simulation runs** (e.g., one with default settings to get a general idea of the sample size, then a finer-grained simulation including only a few sample sizes and using more simulations & bootstrap iterations).
 
 ## References
 --Akan, M., Robinson, M. M., Mickes, L., Wixted, J. T., & Benjamin, A. S. (2021). The effect of lineup size on eyewitness identification. Journal of Experimental Psychology: Applied, 27(2), 369–392. https://doi.org/10.1037/xap0000340
@@ -245,15 +301,24 @@ a) Use the default simulation parameters if analysis time is a concern, but to u
 
 --Gronlund, S. D., Carlson, C. A., Neuschatz, J. S., Goodsell, C. A., Wetmore, S. A., Wooten, A., & Graham, M. (2012). Showups versus lineups: An evaluation using ROC analysis. Journal of Applied Research in Memory and Cognition, 1(4), 221–228. https://doi.org/10.1016/j.jarmac.2012.09.003
 
+--Holdstock, J. S., Dalton, P., May, K. A., Boogert, S., & Mickes, L. (2022). Lineup identification in young and older witnesses: Does describing the criminal help or hinder? Cognitive Research: Principles and Implications, 7(1), 51. https://doi.org/10.1186/s41235-022-00399-1
+
+--Kaesler, M., Dunn, J. C., Ransom, K., & Semmler, C. (2020). Do sequential lineups impair underlying discriminability? Cognitive Research: Principles and Implications, 5(1), 35. https://doi.org/10.1186/s41235-020-00234-5
+
+--Mickes, L., Seale-Carlisle, T., Chen, X., & Boogert, S. (2022). pyWitness 1.0: A Python eyewitness identification analysis toolkit. 10.31234/osf.io/5ruks
+
 --Mickes, L., Flowe, H. D., & Wixted, J. T. (2012). Receiver operating characteristic analysis of eyewitness memory: Comparing the diagnostic accuracy of simultaneous versus sequential lineups. Journal of Experimental Psychology: Applied, 18(4), 361–376. https://doi.org/10.1037/a0030609
 
 --Morgan, D. P., Tamminen, J., Seale-Carlisle, T. M., & Mickes, L. (2019). The impact of sleep on eyewitness identifications. Royal Society Open Science, 6(12), 170501. https://doi.org/10.1098/rsos.170501
+
+--Palmer, M. A., Brewer, N., Weber, N., & Nagesh, A. (2013). The confidence-accuracy relationship for eyewitness identification decisions: Effects of exposure duration, retention interval, and divided attention. Journal of Experimental Psychology: Applied, 19(1), 55–71. https://doi.org/10.1037/a0031602
 
 --Seale-Carlisle, T. M., & Mickes, L. (2016). US line-ups outperform UK line-ups. Royal Society Open Science, 3(9), 160300. https://doi.org/10.1098/rsos.160300
 
 --Smith, A. M., Lampinen, J. M., Wells, G. L., Smalarz, L., & Mackovichova, S. (2019). Deviation from Perfect Performance Measures the Diagnostic Utility of Eyewitness Lineups but Partial Area Under the ROC Curve Does Not. Journal of Applied Research in Memory and Cognition, 8(1), 50–59. https://doi.org/10.1016/j.jarmac.2018.09.003
 
+--Smith, H. M. J., Roeser, J., Pautz, N., Davis, J. P., Robson, J., Wright, D., Braber, N., & Stacey, P. C. (2022). Evaluating earwitness identification procedures: Adapting pre-parade instructions and parade procedure. Memory, 1–15. https://doi.org/10.1080/09658211.2022.2129065
+
 --Wetmore, S. A., Neuschatz, J. S., Gronlund, S. D., Wooten, A., Goodsell, C. A., & Carlson, C. A. (2015). Effect of retention interval on showup and lineup performance. Journal of Applied Research in Memory and Cognition, 4(1), 8–14. https://doi.org/10.1016/j.jarmac.2014.07.003
 
-
-
+--Wilson, B. M., Seale-Carlisle, T. M., & Mickes, L. (2018). The effects of verbal descriptions on performance in lineups and showups. Journal of Experimental Psychology: General, 147(1), 113–124. https://doi.org/10.1037/xge0000354

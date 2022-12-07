@@ -1,0 +1,562 @@
+subj,lineup,fawarning,parade,target,resp_expec,resp_given,conf,conf_cat,normal_hearing,gender,age,suspect_id,filler_id,no_id,is_target,say_target,is_corr,CFMT
+70,1,no warning,serial,present,7,7,10,high,Yes,Male,56,TRUE,FALSE,FALSE,TRUE,TRUE,TRUE,87
+466,1,no warning,serial,present,7,4,7,high,Yes,Female,57,FALSE,TRUE,FALSE,TRUE,FALSE,FALSE,91
+132,1,no warning,serial,present,7,7,5,med,Yes,Female,42,TRUE,FALSE,FALSE,TRUE,TRUE,TRUE,68
+19,1,no warning,serial,present,7,2,6,med,Yes,Male,37,FALSE,TRUE,FALSE,TRUE,FALSE,FALSE,93
+289,1,no warning,serial,present,7,7,8,high,No,Prefer not to say,55,TRUE,FALSE,FALSE,TRUE,TRUE,TRUE,93
+157,1,no warning,serial,present,7,7,10,high,Yes,Male,34,TRUE,FALSE,FALSE,TRUE,TRUE,TRUE,85
+152,1,no warning,serial,present,7,2,7,high,Yes,Female,49,FALSE,TRUE,FALSE,TRUE,FALSE,FALSE,93
+112,1,no warning,serial,present,7,7,8,high,Yes,Female,42,TRUE,FALSE,FALSE,TRUE,TRUE,TRUE,93
+233,1,no warning,serial,present,7,2,5,med,Yes,Female,48,FALSE,TRUE,FALSE,TRUE,FALSE,FALSE,92
+195,1,no warning,serial,present,7,7,10,high,Yes,Female,46,TRUE,FALSE,FALSE,TRUE,TRUE,TRUE,88
+144,1,no warning,serial,present,7,7,6,med,Yes,Female,49,TRUE,FALSE,FALSE,TRUE,TRUE,TRUE,82
+275,1,no warning,serial,present,7,7,2,low,Yes,Female,35,TRUE,FALSE,FALSE,TRUE,TRUE,TRUE,93
+146,2,no warning,serial,absent,0,1,9,high,Yes,Male,55,FALSE,TRUE,FALSE,FALSE,TRUE,FALSE,85
+405,2,no warning,serial,absent,0,8,7,high,Yes,Female,33,FALSE,TRUE,FALSE,FALSE,TRUE,FALSE,80
+439,2,no warning,serial,absent,0,3,7,high,Yes,Female,31,FALSE,TRUE,FALSE,FALSE,TRUE,FALSE,90
+335,2,no warning,serial,absent,0,9,4,med,No,Male,35,FALSE,TRUE,FALSE,FALSE,TRUE,FALSE,92
+481,2,no warning,serial,absent,0,3,9,high,Yes,Female,69,FALSE,TRUE,FALSE,FALSE,TRUE,FALSE,84
+473,2,no warning,serial,absent,0,2,5,med,Yes,Female,65,FALSE,TRUE,FALSE,FALSE,TRUE,FALSE,81
+316,2,no warning,serial,absent,0,3,9,high,Yes,Male,51,FALSE,TRUE,FALSE,FALSE,TRUE,FALSE,86
+398,2,no warning,serial,absent,0,8,6,med,Yes,Male,59,FALSE,TRUE,FALSE,FALSE,TRUE,FALSE,88
+109,2,no warning,serial,absent,0,7,7,high,Yes,Male,41,FALSE,TRUE,FALSE,FALSE,TRUE,FALSE,91
+397,2,no warning,serial,absent,0,3,7,high,Yes,Female,34,FALSE,TRUE,FALSE,FALSE,TRUE,FALSE,100
+137,2,no warning,serial,absent,0,4,7,high,No,Male,56,FALSE,TRUE,FALSE,FALSE,TRUE,FALSE,57
+75,2,no warning,serial,absent,0,3,8,high,Yes,Male,52,FALSE,TRUE,FALSE,FALSE,TRUE,FALSE,94
+553,3,no warning,serial,present,3,3,5,med,Yes,Female,38,TRUE,FALSE,FALSE,TRUE,TRUE,TRUE,86
+9,3,no warning,serial,present,3,3,9,high,Yes,Male,50,TRUE,FALSE,FALSE,TRUE,TRUE,TRUE,89
+419,3,no warning,serial,present,3,0,7,high,Yes,Female,22,FALSE,FALSE,TRUE,TRUE,FALSE,FALSE,93
+261,3,no warning,serial,present,3,5,6,med,Yes,Female,21,FALSE,TRUE,FALSE,TRUE,FALSE,FALSE,94
+351,3,no warning,serial,present,3,7,8,high,Yes,Female,54,FALSE,TRUE,FALSE,TRUE,FALSE,FALSE,84
+460,3,no warning,serial,present,3,3,8,high,Yes,Male,30,TRUE,FALSE,FALSE,TRUE,TRUE,TRUE,81
+74,3,no warning,serial,present,3,3,8,high,Yes,Male,43,TRUE,FALSE,FALSE,TRUE,TRUE,TRUE,90
+10,3,no warning,serial,present,3,5,6,med,Yes,Female,38,FALSE,TRUE,FALSE,TRUE,FALSE,FALSE,90
+89,3,no warning,serial,present,3,3,8,high,Yes,Female,52,TRUE,FALSE,FALSE,TRUE,TRUE,TRUE,84
+484,3,no warning,serial,present,3,3,10,high,Yes,Female,54,TRUE,FALSE,FALSE,TRUE,TRUE,TRUE,98
+467,3,no warning,serial,present,3,3,9,high,Yes,Female,34,TRUE,FALSE,FALSE,TRUE,TRUE,TRUE,101
+28,3,no warning,serial,present,3,3,10,high,Yes,Female,31,TRUE,FALSE,FALSE,TRUE,TRUE,TRUE,96
+471,1,no warning,serial,absent,0,5,6,med,Yes,Female,73,FALSE,TRUE,FALSE,FALSE,TRUE,FALSE,85
+57,1,no warning,serial,absent,0,0,10,high,Yes,Female,50,FALSE,FALSE,TRUE,FALSE,FALSE,TRUE,74
+369,1,no warning,serial,absent,0,3,8,high,Yes,Female,69,FALSE,TRUE,FALSE,FALSE,TRUE,FALSE,96
+551,1,no warning,serial,absent,0,6,6,med,Yes,Male,28,FALSE,TRUE,FALSE,FALSE,TRUE,FALSE,59
+25,1,no warning,serial,absent,0,5,4,med,Yes,Male,60,FALSE,TRUE,FALSE,FALSE,TRUE,FALSE,82
+371,1,no warning,serial,absent,0,1,8,high,Yes,Female,55,FALSE,TRUE,FALSE,FALSE,TRUE,FALSE,83
+245,1,no warning,serial,absent,0,4,9,high,Yes,Female,54,FALSE,TRUE,FALSE,FALSE,TRUE,FALSE,90
+542,1,no warning,serial,absent,0,0,3,low,Yes,Male,38,FALSE,FALSE,TRUE,FALSE,FALSE,TRUE,80
+78,1,no warning,serial,absent,0,0,5,med,Yes,Female,44,FALSE,FALSE,TRUE,FALSE,FALSE,TRUE,99
+312,1,no warning,serial,absent,0,4,1,low,No,Female,75,FALSE,TRUE,FALSE,FALSE,TRUE,FALSE,87
+492,1,no warning,serial,absent,0,0,9,high,Yes,Male,37,FALSE,FALSE,TRUE,FALSE,FALSE,TRUE,87
+342,1,no warning,serial,absent,0,6,10,high,No,Male,54,FALSE,TRUE,FALSE,FALSE,TRUE,FALSE,NA
+36,3,warning,serial,absent,0,3,9,high,Yes,Male,50,FALSE,TRUE,FALSE,FALSE,TRUE,FALSE,89
+247,3,warning,serial,absent,0,3,7,high,Yes,Male,41,FALSE,TRUE,FALSE,FALSE,TRUE,FALSE,78
+478,3,warning,serial,absent,0,3,9,high,Yes,Female,58,FALSE,TRUE,FALSE,FALSE,TRUE,FALSE,64
+117,3,warning,serial,absent,0,3,6,med,Yes,Male,23,FALSE,TRUE,FALSE,FALSE,TRUE,FALSE,77
+80,3,warning,serial,absent,0,3,8,high,Yes,Female,45,FALSE,TRUE,FALSE,FALSE,TRUE,FALSE,85
+168,3,warning,serial,absent,0,3,8,high,Yes,Female,69,FALSE,TRUE,FALSE,FALSE,TRUE,FALSE,93
+331,3,warning,serial,absent,0,3,10,high,Yes,Female,44,FALSE,TRUE,FALSE,FALSE,TRUE,FALSE,83
+508,3,warning,serial,absent,0,3,7,high,Yes,Female,61,FALSE,TRUE,FALSE,FALSE,TRUE,FALSE,64
+367,3,warning,serial,absent,0,3,9,high,Yes,Female,48,FALSE,TRUE,FALSE,FALSE,TRUE,FALSE,80
+430,3,warning,serial,absent,0,5,8,high,Yes,Female,31,FALSE,TRUE,FALSE,FALSE,TRUE,FALSE,87
+37,3,warning,serial,absent,0,4,9,high,Yes,Male,51,FALSE,TRUE,FALSE,FALSE,TRUE,FALSE,91
+76,3,warning,serial,absent,0,0,7,high,Yes,Male,62,FALSE,FALSE,TRUE,FALSE,FALSE,TRUE,71
+257,3,warning,serial,absent,0,3,8,high,Yes,Female,48,FALSE,TRUE,FALSE,FALSE,TRUE,FALSE,82
+424,2,warning,serial,present,7,0,6,med,Yes,Male,51,FALSE,FALSE,TRUE,TRUE,FALSE,FALSE,89
+142,2,warning,serial,present,7,5,10,high,Yes,Male,36,FALSE,TRUE,FALSE,TRUE,FALSE,FALSE,86
+393,2,warning,serial,present,7,7,7,high,Yes,Female,52,TRUE,FALSE,FALSE,TRUE,TRUE,TRUE,93
+174,2,warning,serial,present,7,2,8,high,No,Female,41,FALSE,TRUE,FALSE,TRUE,FALSE,FALSE,97
+279,2,warning,serial,present,7,0,0,low,Yes,Male,40,FALSE,FALSE,TRUE,TRUE,FALSE,FALSE,94
+403,2,warning,serial,present,7,7,4,med,Yes,Male,72,TRUE,FALSE,FALSE,TRUE,TRUE,TRUE,85
+414,2,warning,serial,present,7,7,8,high,Yes,Male,38,TRUE,FALSE,FALSE,TRUE,TRUE,TRUE,93
+150,2,warning,serial,present,7,9,8,high,Yes,Female,42,FALSE,TRUE,FALSE,TRUE,FALSE,FALSE,93
+52,2,warning,serial,present,7,0,2,low,Yes,Female,42,FALSE,FALSE,TRUE,TRUE,FALSE,FALSE,91
+465,2,warning,serial,present,7,0,3,low,Yes,Male,65,FALSE,FALSE,TRUE,TRUE,FALSE,FALSE,82
+549,2,warning,serial,present,7,8,6,med,Yes,Male,26,FALSE,TRUE,FALSE,TRUE,FALSE,FALSE,90
+531,1,warning,serial,absent,0,0,5,med,Yes,Male,57,FALSE,FALSE,TRUE,FALSE,FALSE,TRUE,88
+346,1,warning,serial,absent,0,6,7,high,Yes,Female,70,FALSE,TRUE,FALSE,FALSE,TRUE,FALSE,82
+480,1,warning,serial,absent,0,0,6,med,Yes,Male,60,FALSE,FALSE,TRUE,FALSE,FALSE,TRUE,88
+488,1,warning,serial,absent,0,7,6,med,Yes,Male,55,FALSE,TRUE,FALSE,FALSE,TRUE,FALSE,95
+281,1,warning,serial,absent,0,9,8,high,Yes,Male,63,FALSE,TRUE,FALSE,FALSE,TRUE,FALSE,75
+418,1,warning,serial,absent,0,0,2,low,Yes,Female,43,FALSE,FALSE,TRUE,FALSE,FALSE,TRUE,84
+311,1,warning,serial,absent,0,0,4,med,Yes,Female,65,FALSE,FALSE,TRUE,FALSE,FALSE,TRUE,76
+300,1,warning,serial,absent,0,0,5,med,Yes,Female,52,FALSE,FALSE,TRUE,FALSE,FALSE,TRUE,79
+273,1,warning,serial,absent,0,0,7,high,Yes,Female,55,FALSE,FALSE,TRUE,FALSE,FALSE,TRUE,96
+106,1,warning,serial,absent,0,3,6,med,Yes,Female,54,FALSE,TRUE,FALSE,FALSE,TRUE,FALSE,75
+511,1,warning,serial,absent,0,9,6,med,Yes,Female,50,FALSE,TRUE,FALSE,FALSE,TRUE,FALSE,93
+16,1,warning,serial,absent,0,2,7,high,Yes,Female,34,FALSE,TRUE,FALSE,FALSE,TRUE,FALSE,81
+546,2,warning,serial,absent,0,7,4,med,Yes,Male,31,FALSE,TRUE,FALSE,FALSE,TRUE,FALSE,88
+85,2,warning,serial,absent,0,0,9,high,Yes,Female,45,FALSE,FALSE,TRUE,FALSE,FALSE,TRUE,88
+530,2,warning,serial,absent,0,0,4,med,Yes,Female,60,FALSE,FALSE,TRUE,FALSE,FALSE,TRUE,82
+121,2,warning,serial,absent,0,3,5,med,Yes,Female,51,FALSE,TRUE,FALSE,FALSE,TRUE,FALSE,96
+181,2,warning,serial,absent,0,2,5,med,Yes,Male,55,FALSE,TRUE,FALSE,FALSE,TRUE,FALSE,98
+199,2,warning,serial,absent,0,0,9,high,Yes,Female,65,FALSE,FALSE,TRUE,FALSE,FALSE,TRUE,62
+411,2,warning,serial,absent,0,3,8,high,Yes,Female,47,FALSE,TRUE,FALSE,FALSE,TRUE,FALSE,89
+53,2,warning,serial,absent,0,7,5,med,Yes,Male,57,FALSE,TRUE,FALSE,FALSE,TRUE,FALSE,87
+92,2,warning,serial,absent,0,3,3,low,Yes,Female,37,FALSE,TRUE,FALSE,FALSE,TRUE,FALSE,85
+3,2,warning,serial,absent,0,8,7,high,Yes,Male,25,FALSE,TRUE,FALSE,FALSE,TRUE,FALSE,78
+384,2,warning,serial,absent,0,2,4,med,Yes,Male,50,FALSE,TRUE,FALSE,FALSE,TRUE,FALSE,86
+501,2,warning,serial,absent,0,5,6,med,Yes,Female,40,FALSE,TRUE,FALSE,FALSE,TRUE,FALSE,65
+241,2,warning,serial,absent,0,0,8,high,Yes,Female,54,FALSE,FALSE,TRUE,FALSE,FALSE,TRUE,86
+392,2,warning,serial,absent,0,3,8,high,Yes,Female,54,FALSE,TRUE,FALSE,FALSE,TRUE,FALSE,88
+269,1,warning,serial,present,3,3,8,high,Yes,Female,41,TRUE,FALSE,FALSE,TRUE,TRUE,TRUE,96
+228,1,warning,serial,present,3,3,10,high,Yes,Female,65,TRUE,FALSE,FALSE,TRUE,TRUE,TRUE,79
+226,1,warning,serial,present,3,3,8,high,Yes,Female,44,TRUE,FALSE,FALSE,TRUE,TRUE,TRUE,92
+559,1,warning,serial,present,3,3,10,high,Yes,Female,49,TRUE,FALSE,FALSE,TRUE,TRUE,TRUE,96
+314,1,warning,serial,present,3,0,8,high,Yes,Female,48,FALSE,FALSE,TRUE,TRUE,FALSE,FALSE,83
+550,1,warning,serial,present,3,3,9,high,Yes,Female,37,TRUE,FALSE,FALSE,TRUE,TRUE,TRUE,86
+438,1,warning,serial,present,3,3,8,high,Yes,Male,52,TRUE,FALSE,FALSE,TRUE,TRUE,TRUE,92
+30,1,warning,serial,present,3,3,8,high,Yes,Male,47,TRUE,FALSE,FALSE,TRUE,TRUE,TRUE,93
+358,1,warning,serial,present,3,3,10,high,Yes,Male,60,TRUE,FALSE,FALSE,TRUE,TRUE,TRUE,80
+47,1,warning,serial,present,3,3,7,high,Yes,Female,58,TRUE,FALSE,FALSE,TRUE,TRUE,TRUE,63
+326,1,warning,serial,present,3,0,7,high,Yes,Female,56,FALSE,FALSE,TRUE,TRUE,FALSE,FALSE,73
+196,1,warning,serial,present,3,0,4,med,Yes,Male,44,FALSE,FALSE,TRUE,TRUE,FALSE,FALSE,75
+383,1,warning,serial,present,3,3,8,high,Yes,Female,38,TRUE,FALSE,FALSE,TRUE,TRUE,TRUE,97
+66,1,warning,serial,absent,0,0,9,high,Yes,Female,42,FALSE,FALSE,TRUE,FALSE,FALSE,TRUE,94
+204,1,warning,serial,absent,0,4,6,med,Yes,Female,28,FALSE,TRUE,FALSE,FALSE,TRUE,FALSE,101
+251,1,warning,serial,absent,0,0,10,high,Yes,Female,69,FALSE,FALSE,TRUE,FALSE,FALSE,TRUE,84
+161,1,warning,serial,absent,0,5,2,low,Yes,Male,39,FALSE,TRUE,FALSE,FALSE,TRUE,FALSE,95
+353,1,warning,serial,absent,0,3,2,low,Yes,Female,43,FALSE,TRUE,FALSE,FALSE,TRUE,FALSE,78
+26,1,warning,serial,absent,0,0,2,low,Yes,Female,59,FALSE,FALSE,TRUE,FALSE,FALSE,TRUE,86
+27,1,warning,serial,absent,0,5,7,high,Yes,Male,54,FALSE,TRUE,FALSE,FALSE,TRUE,FALSE,77
+227,1,warning,serial,absent,0,5,10,high,Yes,Female,54,FALSE,TRUE,FALSE,FALSE,TRUE,FALSE,93
+71,1,warning,serial,absent,0,9,10,high,No,Male,35,FALSE,TRUE,FALSE,FALSE,TRUE,FALSE,85
+468,1,warning,serial,absent,0,5,10,high,Yes,Male,58,FALSE,TRUE,FALSE,FALSE,TRUE,FALSE,85
+338,1,warning,serial,absent,0,5,8,high,Yes,Female,28,FALSE,TRUE,FALSE,FALSE,TRUE,FALSE,84
+310,3,no warning,serial,absent,0,3,5,med,Yes,Female,52,FALSE,TRUE,FALSE,FALSE,TRUE,FALSE,96
+490,3,no warning,serial,absent,0,5,5,med,Yes,Female,51,FALSE,TRUE,FALSE,FALSE,TRUE,FALSE,82
+427,3,no warning,serial,absent,0,0,7,high,Yes,Male,51,FALSE,FALSE,TRUE,FALSE,FALSE,TRUE,64
+325,3,no warning,serial,absent,0,3,8,high,Yes,Female,36,FALSE,TRUE,FALSE,FALSE,TRUE,FALSE,62
+128,3,no warning,serial,absent,0,3,9,high,Yes,Female,37,FALSE,TRUE,FALSE,FALSE,TRUE,FALSE,83
+163,3,no warning,serial,absent,0,7,7,high,Yes,Male,29,FALSE,TRUE,FALSE,FALSE,TRUE,FALSE,70
+262,3,no warning,serial,absent,0,3,10,high,Yes,Male,59,FALSE,TRUE,FALSE,FALSE,TRUE,FALSE,98
+307,3,no warning,serial,absent,0,3,8,high,Yes,Female,65,FALSE,TRUE,FALSE,FALSE,TRUE,FALSE,92
+194,3,no warning,serial,absent,0,3,8,high,Yes,Female,56,FALSE,TRUE,FALSE,FALSE,TRUE,FALSE,76
+522,3,no warning,serial,absent,0,3,6,med,Yes,Female,55,FALSE,TRUE,FALSE,FALSE,TRUE,FALSE,94
+533,3,no warning,serial,absent,0,5,8,high,Yes,Male,56,FALSE,TRUE,FALSE,FALSE,TRUE,FALSE,98
+190,3,no warning,serial,absent,0,3,8,high,Yes,Male,26,FALSE,TRUE,FALSE,FALSE,TRUE,FALSE,NA
+15,3,warning,serial,present,3,0,2,low,Yes,Male,34,FALSE,FALSE,TRUE,TRUE,FALSE,FALSE,76
+240,3,warning,serial,present,3,0,6,med,Yes,Female,29,FALSE,FALSE,TRUE,TRUE,FALSE,FALSE,95
+381,3,warning,serial,present,3,3,9,high,Yes,Female,29,TRUE,FALSE,FALSE,TRUE,TRUE,TRUE,89
+38,3,warning,serial,present,3,3,10,high,Yes,Female,37,TRUE,FALSE,FALSE,TRUE,TRUE,TRUE,78
+270,3,warning,serial,present,3,0,3,low,Yes,Female,45,FALSE,FALSE,TRUE,TRUE,FALSE,FALSE,89
+390,3,warning,serial,present,3,3,10,high,Yes,Female,58,TRUE,FALSE,FALSE,TRUE,TRUE,TRUE,90
+224,3,warning,serial,present,3,7,4,med,Yes,Female,28,FALSE,TRUE,FALSE,TRUE,FALSE,FALSE,74
+278,3,warning,serial,present,3,3,8,high,Yes,Female,37,TRUE,FALSE,FALSE,TRUE,TRUE,TRUE,97
+349,3,warning,serial,present,3,3,8,high,Yes,Male,67,TRUE,FALSE,FALSE,TRUE,TRUE,TRUE,89
+119,3,warning,serial,present,3,0,6,med,No,Prefer not to say,25,FALSE,FALSE,TRUE,TRUE,FALSE,FALSE,87
+355,3,warning,serial,absent,0,0,2,low,Yes,Female,37,FALSE,FALSE,TRUE,FALSE,FALSE,TRUE,95
+448,3,warning,serial,absent,0,0,2,low,Yes,Female,37,FALSE,FALSE,TRUE,FALSE,FALSE,TRUE,95
+364,3,warning,serial,absent,0,3,7,high,Yes,Male,35,FALSE,TRUE,FALSE,FALSE,TRUE,FALSE,94
+249,3,warning,serial,absent,0,3,3,low,Yes,Female,41,FALSE,TRUE,FALSE,FALSE,TRUE,FALSE,97
+61,3,warning,serial,absent,0,5,8,high,Yes,Male,47,FALSE,TRUE,FALSE,FALSE,TRUE,FALSE,97
+188,3,warning,serial,absent,0,5,9,high,Yes,Female,38,FALSE,TRUE,FALSE,FALSE,TRUE,FALSE,91
+360,3,warning,serial,absent,0,5,5,med,Yes,Male,42,FALSE,TRUE,FALSE,FALSE,TRUE,FALSE,65
+560,3,warning,serial,absent,0,5,3,low,Yes,Female,49,FALSE,TRUE,FALSE,FALSE,TRUE,FALSE,86
+17,3,warning,serial,absent,0,0,3,low,Yes,Male,48,FALSE,FALSE,TRUE,FALSE,FALSE,TRUE,89
+129,3,warning,serial,absent,0,3,8,high,Yes,Female,73,FALSE,TRUE,FALSE,FALSE,TRUE,FALSE,77
+329,3,warning,serial,absent,0,7,5,med,Yes,Female,43,FALSE,TRUE,FALSE,FALSE,TRUE,FALSE,91
+516,3,warning,serial,absent,0,5,1,low,Yes,Female,41,FALSE,TRUE,FALSE,FALSE,TRUE,FALSE,88
+435,3,warning,serial,absent,0,7,9,high,Yes,Female,49,FALSE,TRUE,FALSE,FALSE,TRUE,FALSE,94
+345,3,warning,serial,absent,0,7,7,high,Yes,Female,44,FALSE,TRUE,FALSE,FALSE,TRUE,FALSE,79
+433,2,warning,serial,present,3,1,8,high,Yes,Female,64,FALSE,TRUE,FALSE,TRUE,FALSE,FALSE,93
+209,2,warning,serial,present,3,2,6,med,Yes,Female,27,FALSE,TRUE,FALSE,TRUE,FALSE,FALSE,84
+469,2,warning,serial,present,3,3,9,high,Yes,Female,45,TRUE,FALSE,FALSE,TRUE,TRUE,TRUE,92
+153,2,warning,serial,present,3,0,7,high,Yes,Male,41,FALSE,FALSE,TRUE,TRUE,FALSE,FALSE,66
+361,2,warning,serial,present,3,8,5,med,Yes,Female,52,FALSE,TRUE,FALSE,TRUE,FALSE,FALSE,80
+513,2,warning,serial,present,3,2,8,high,Yes,Female,37,FALSE,TRUE,FALSE,TRUE,FALSE,FALSE,97
+455,2,warning,serial,present,3,7,7,high,Yes,Female,59,FALSE,TRUE,FALSE,TRUE,FALSE,FALSE,84
+555,2,warning,serial,present,3,3,5,med,Yes,Female,62,TRUE,FALSE,FALSE,TRUE,TRUE,TRUE,69
+377,2,warning,serial,present,3,0,8,high,Yes,Female,57,FALSE,FALSE,TRUE,TRUE,FALSE,FALSE,68
+497,2,warning,serial,present,3,7,3,low,Yes,Female,30,FALSE,TRUE,FALSE,TRUE,FALSE,FALSE,88
+220,2,warning,serial,present,3,3,2,low,Yes,Female,47,TRUE,FALSE,FALSE,TRUE,TRUE,TRUE,77
+350,2,no warning,serial,present,3,2,7,high,Yes,Female,44,FALSE,TRUE,FALSE,TRUE,FALSE,FALSE,96
+222,2,no warning,serial,present,3,1,7,high,Yes,Male,40,FALSE,TRUE,FALSE,TRUE,FALSE,FALSE,96
+277,2,no warning,serial,present,3,1,7,high,Yes,Female,34,FALSE,TRUE,FALSE,TRUE,FALSE,FALSE,76
+394,2,no warning,serial,present,3,3,5,med,Yes,Male,63,TRUE,FALSE,FALSE,TRUE,TRUE,TRUE,92
+557,2,no warning,serial,present,3,2,7,high,Yes,Male,31,FALSE,TRUE,FALSE,TRUE,FALSE,FALSE,97
+243,2,no warning,serial,present,3,3,6,med,Yes,Female,51,TRUE,FALSE,FALSE,TRUE,TRUE,TRUE,93
+124,2,no warning,serial,present,3,8,6,med,Yes,Female,37,FALSE,TRUE,FALSE,TRUE,FALSE,FALSE,91
+231,2,no warning,serial,present,3,4,6,med,Yes,Female,68,FALSE,TRUE,FALSE,TRUE,FALSE,FALSE,88
+437,2,no warning,serial,present,3,0,9,high,Yes,Male,47,FALSE,FALSE,TRUE,TRUE,FALSE,FALSE,73
+42,2,no warning,serial,present,3,2,7,high,Yes,Female,27,FALSE,TRUE,FALSE,TRUE,FALSE,FALSE,69
+256,2,no warning,serial,present,3,9,7,high,Yes,Female,53,FALSE,TRUE,FALSE,TRUE,FALSE,FALSE,100
+203,2,no warning,serial,present,3,0,5,med,Yes,Female,27,FALSE,FALSE,TRUE,TRUE,FALSE,FALSE,92
+354,2,no warning,serial,present,7,0,8,high,Yes,Female,47,FALSE,FALSE,TRUE,TRUE,FALSE,FALSE,94
+162,2,no warning,serial,present,7,8,7,high,Yes,Female,65,FALSE,TRUE,FALSE,TRUE,FALSE,FALSE,96
+207,2,no warning,serial,present,7,4,8,high,Yes,Female,72,FALSE,TRUE,FALSE,TRUE,FALSE,FALSE,91
+166,2,no warning,serial,present,7,4,9,high,Yes,Female,44,FALSE,TRUE,FALSE,TRUE,FALSE,FALSE,82
+73,2,no warning,serial,present,7,0,6,med,Yes,Male,62,FALSE,FALSE,TRUE,TRUE,FALSE,FALSE,98
+505,2,no warning,serial,present,7,7,9,high,Yes,Female,40,TRUE,FALSE,FALSE,TRUE,TRUE,TRUE,94
+301,2,no warning,serial,present,7,7,6,med,Yes,Female,56,TRUE,FALSE,FALSE,TRUE,TRUE,TRUE,91
+81,2,no warning,serial,present,7,5,6,med,Yes,Female,47,FALSE,TRUE,FALSE,TRUE,FALSE,FALSE,84
+244,2,no warning,serial,present,7,2,5,med,Yes,Male,68,FALSE,TRUE,FALSE,TRUE,FALSE,FALSE,93
+143,2,no warning,serial,present,7,7,6,med,Yes,Female,51,TRUE,FALSE,FALSE,TRUE,TRUE,TRUE,91
+99,2,no warning,serial,present,7,9,10,high,Yes,Male,68,FALSE,TRUE,FALSE,TRUE,FALSE,FALSE,87
+185,3,no warning,serial,present,7,7,9,high,Yes,Female,35,TRUE,FALSE,FALSE,TRUE,TRUE,TRUE,86
+248,3,no warning,serial,present,7,1,6,med,Yes,Female,33,FALSE,TRUE,FALSE,TRUE,FALSE,FALSE,98
+317,3,no warning,serial,present,7,7,9,high,Yes,Male,44,TRUE,FALSE,FALSE,TRUE,TRUE,TRUE,99
+225,3,no warning,serial,present,7,7,7,high,Yes,Female,38,TRUE,FALSE,FALSE,TRUE,TRUE,TRUE,86
+295,3,no warning,serial,present,7,1,4,med,Yes,Female,47,FALSE,TRUE,FALSE,TRUE,FALSE,FALSE,80
+94,3,no warning,serial,present,7,7,6,med,Yes,Female,46,TRUE,FALSE,FALSE,TRUE,TRUE,TRUE,100
+291,3,no warning,serial,present,7,1,10,high,Yes,Male,37,FALSE,TRUE,FALSE,TRUE,FALSE,FALSE,85
+171,3,no warning,serial,present,7,4,4,med,Yes,Female,69,FALSE,TRUE,FALSE,TRUE,FALSE,FALSE,84
+2,3,no warning,serial,present,7,7,9,high,Yes,Female,21,TRUE,FALSE,FALSE,TRUE,TRUE,TRUE,76
+282,3,no warning,serial,present,7,1,10,high,Yes,Male,63,FALSE,TRUE,FALSE,TRUE,FALSE,FALSE,86
+504,3,no warning,serial,present,7,7,0,low,Yes,Female,64,TRUE,FALSE,FALSE,TRUE,TRUE,TRUE,60
+380,3,no warning,serial,present,7,0,5,med,Yes,Female,50,FALSE,FALSE,TRUE,TRUE,FALSE,FALSE,95
+223,3,warning,serial,present,7,7,7,high,Yes,Female,36,TRUE,FALSE,FALSE,TRUE,TRUE,TRUE,94
+110,3,warning,serial,present,7,7,9,high,Yes,Female,43,TRUE,FALSE,FALSE,TRUE,TRUE,TRUE,96
+266,3,warning,serial,present,7,2,5,med,Yes,Male,55,FALSE,TRUE,FALSE,TRUE,FALSE,FALSE,98
+237,3,warning,serial,present,7,3,2,low,Yes,Male,47,FALSE,TRUE,FALSE,TRUE,FALSE,FALSE,88
+14,3,warning,serial,present,7,0,5,med,Yes,Male,57,FALSE,FALSE,TRUE,TRUE,FALSE,FALSE,82
+352,3,warning,serial,present,7,1,8,high,Yes,Female,45,FALSE,TRUE,FALSE,TRUE,FALSE,FALSE,98
+120,3,warning,serial,present,7,1,7,high,Yes,Female,66,FALSE,TRUE,FALSE,TRUE,FALSE,FALSE,46
+499,3,warning,serial,present,7,7,5,med,Yes,Female,45,TRUE,FALSE,FALSE,TRUE,TRUE,TRUE,87
+43,3,warning,serial,present,7,1,8,high,Yes,Male,36,FALSE,TRUE,FALSE,TRUE,FALSE,FALSE,87
+141,3,warning,serial,present,7,7,8,high,Yes,Female,26,TRUE,FALSE,FALSE,TRUE,TRUE,TRUE,93
+258,3,warning,serial,present,7,7,7,high,Yes,Female,49,TRUE,FALSE,FALSE,TRUE,TRUE,TRUE,93
+86,1,no warning,serial,absent,0,5,7,high,No,Male,27,FALSE,TRUE,FALSE,FALSE,TRUE,FALSE,95
+140,1,no warning,serial,absent,0,0,8,high,Yes,Male,60,FALSE,FALSE,TRUE,FALSE,FALSE,TRUE,73
+114,1,no warning,serial,absent,0,8,7,high,Yes,Female,35,FALSE,TRUE,FALSE,FALSE,TRUE,FALSE,93
+59,1,no warning,serial,absent,0,4,8,high,Yes,Male,39,FALSE,TRUE,FALSE,FALSE,TRUE,FALSE,88
+167,1,no warning,serial,absent,0,9,9,high,Yes,Male,67,FALSE,TRUE,FALSE,FALSE,TRUE,FALSE,83
+147,1,no warning,serial,absent,0,9,8,high,Yes,Female,49,FALSE,TRUE,FALSE,FALSE,TRUE,FALSE,92
+520,1,no warning,serial,absent,0,6,6,med,Yes,Female,32,FALSE,TRUE,FALSE,FALSE,TRUE,FALSE,82
+407,1,no warning,serial,absent,0,7,5,med,Yes,Female,61,FALSE,TRUE,FALSE,FALSE,TRUE,FALSE,89
+44,1,no warning,serial,absent,0,2,7,high,Yes,Male,56,FALSE,TRUE,FALSE,FALSE,TRUE,FALSE,55
+6,1,no warning,serial,absent,0,9,7,high,No,Male,35,FALSE,TRUE,FALSE,FALSE,TRUE,FALSE,93
+337,1,no warning,serial,absent,0,9,10,high,Yes,Male,32,FALSE,TRUE,FALSE,FALSE,TRUE,FALSE,96
+387,1,no warning,serial,absent,0,2,5,med,Yes,Female,52,FALSE,TRUE,FALSE,FALSE,TRUE,FALSE,77
+521,2,warning,serial,absent,0,0,7,high,Yes,Male,51,FALSE,FALSE,TRUE,FALSE,FALSE,TRUE,97
+356,2,warning,serial,absent,0,8,9,high,Yes,Female,62,FALSE,TRUE,FALSE,FALSE,TRUE,FALSE,84
+294,2,warning,serial,absent,0,0,0,low,Yes,Female,43,FALSE,FALSE,TRUE,FALSE,FALSE,TRUE,93
+512,2,warning,serial,absent,0,3,5,med,Yes,Male,40,FALSE,TRUE,FALSE,FALSE,TRUE,FALSE,95
+184,2,warning,serial,absent,0,3,5,med,Yes,Female,50,FALSE,TRUE,FALSE,FALSE,TRUE,FALSE,89
+496,2,warning,serial,absent,0,3,10,high,Yes,Female,73,FALSE,TRUE,FALSE,FALSE,TRUE,FALSE,88
+494,2,warning,serial,absent,0,3,6,med,Yes,Male,23,FALSE,TRUE,FALSE,FALSE,TRUE,FALSE,NA
+389,2,warning,serial,absent,0,1,8,high,Yes,Female,36,FALSE,TRUE,FALSE,FALSE,TRUE,FALSE,84
+525,2,warning,serial,absent,0,0,6,med,Yes,Male,56,FALSE,FALSE,TRUE,FALSE,FALSE,TRUE,75
+154,2,warning,serial,absent,0,3,7,high,Yes,Male,45,FALSE,TRUE,FALSE,FALSE,TRUE,FALSE,64
+532,2,no warning,serial,absent,0,1,9,high,Yes,Female,47,FALSE,TRUE,FALSE,FALSE,TRUE,FALSE,90
+148,2,no warning,serial,absent,0,3,8,high,Yes,Male,42,FALSE,TRUE,FALSE,FALSE,TRUE,FALSE,96
+97,2,no warning,serial,absent,0,8,6,med,Yes,Female,36,FALSE,TRUE,FALSE,FALSE,TRUE,FALSE,85
+327,2,no warning,serial,absent,0,0,10,high,Yes,Male,31,FALSE,FALSE,TRUE,FALSE,FALSE,TRUE,88
+444,2,no warning,serial,absent,0,8,6,med,Yes,Female,64,FALSE,TRUE,FALSE,FALSE,TRUE,FALSE,77
+29,2,no warning,serial,absent,0,6,10,high,Yes,Male,40,FALSE,TRUE,FALSE,FALSE,TRUE,FALSE,88
+503,2,no warning,serial,absent,0,0,7,high,Yes,Male,43,FALSE,FALSE,TRUE,FALSE,FALSE,TRUE,94
+399,2,no warning,serial,absent,0,8,8,high,Yes,Female,75,FALSE,TRUE,FALSE,FALSE,TRUE,FALSE,73
+539,2,no warning,serial,absent,0,9,6,med,Yes,Female,18,FALSE,TRUE,FALSE,FALSE,TRUE,FALSE,81
+201,2,no warning,serial,absent,0,3,9,high,Yes,Female,28,FALSE,TRUE,FALSE,FALSE,TRUE,FALSE,81
+382,2,no warning,serial,absent,0,7,10,high,Yes,Female,71,FALSE,TRUE,FALSE,FALSE,TRUE,FALSE,54
+155,1,warning,serial,present,7,7,8,high,Yes,Female,43,TRUE,FALSE,FALSE,TRUE,TRUE,TRUE,86
+50,1,warning,serial,present,7,5,7,high,Yes,Male,25,FALSE,TRUE,FALSE,TRUE,FALSE,FALSE,97
+357,1,warning,serial,present,7,5,8,high,No,Female,44,FALSE,TRUE,FALSE,TRUE,FALSE,FALSE,95
+408,1,warning,serial,present,7,4,7,high,Yes,Male,53,FALSE,TRUE,FALSE,TRUE,FALSE,FALSE,96
+173,1,warning,serial,present,7,7,10,high,No,Male,44,TRUE,FALSE,FALSE,TRUE,TRUE,TRUE,85
+302,1,warning,serial,present,7,0,6,med,No,Female,66,FALSE,FALSE,TRUE,TRUE,FALSE,FALSE,78
+69,1,warning,serial,present,7,7,6,med,Yes,Female,35,TRUE,FALSE,FALSE,TRUE,TRUE,TRUE,65
+517,1,warning,serial,present,7,2,6,med,Yes,Male,53,FALSE,TRUE,FALSE,TRUE,FALSE,FALSE,100
+72,1,warning,serial,present,7,5,8,high,Yes,Male,49,FALSE,TRUE,FALSE,TRUE,FALSE,FALSE,87
+51,1,warning,serial,present,7,9,2,low,Yes,Female,38,FALSE,TRUE,FALSE,TRUE,FALSE,FALSE,88
+219,1,warning,serial,present,7,3,10,high,Yes,Male,49,FALSE,TRUE,FALSE,TRUE,FALSE,FALSE,95
+216,3,no warning,serial,absent,0,3,9,high,Yes,Female,51,FALSE,TRUE,FALSE,FALSE,TRUE,FALSE,99
+180,3,no warning,serial,absent,0,3,8,high,Yes,Female,52,FALSE,TRUE,FALSE,FALSE,TRUE,FALSE,75
+297,3,no warning,serial,absent,0,0,5,med,Yes,Female,35,FALSE,FALSE,TRUE,FALSE,FALSE,TRUE,100
+287,3,no warning,serial,absent,0,3,8,high,Yes,Female,50,FALSE,TRUE,FALSE,FALSE,TRUE,FALSE,100
+391,3,no warning,serial,absent,0,3,5,med,Yes,Female,22,FALSE,TRUE,FALSE,FALSE,TRUE,FALSE,83
+105,3,no warning,serial,absent,0,3,9,high,Yes,Female,34,FALSE,TRUE,FALSE,FALSE,TRUE,FALSE,92
+127,3,no warning,serial,absent,0,5,7,high,Yes,Female,32,FALSE,TRUE,FALSE,FALSE,TRUE,FALSE,87
+290,3,no warning,serial,absent,0,3,8,high,Yes,Female,64,FALSE,TRUE,FALSE,FALSE,TRUE,FALSE,81
+255,3,no warning,serial,absent,0,6,4,med,No,Female,50,FALSE,TRUE,FALSE,FALSE,TRUE,FALSE,91
+462,3,no warning,serial,absent,0,7,7,high,Yes,Male,45,FALSE,TRUE,FALSE,FALSE,TRUE,FALSE,93
+554,3,no warning,serial,absent,0,7,7,high,Yes,Male,66,FALSE,TRUE,FALSE,FALSE,TRUE,FALSE,69
+214,1,no warning,serial,present,3,3,7,high,Yes,Female,62,TRUE,FALSE,FALSE,TRUE,TRUE,TRUE,85
+285,1,no warning,serial,present,3,5,7,high,Yes,Male,61,FALSE,TRUE,FALSE,TRUE,FALSE,FALSE,89
+276,1,no warning,serial,present,3,3,10,high,Yes,Female,54,TRUE,FALSE,FALSE,TRUE,TRUE,TRUE,88
+135,1,no warning,serial,present,3,8,7,high,Yes,Female,42,FALSE,TRUE,FALSE,TRUE,FALSE,FALSE,92
+217,1,no warning,serial,present,3,8,6,med,Yes,Male,67,FALSE,TRUE,FALSE,TRUE,FALSE,FALSE,78
+420,1,no warning,serial,present,3,3,7,high,No,Female,47,TRUE,FALSE,FALSE,TRUE,TRUE,TRUE,97
+485,1,no warning,serial,present,3,3,10,high,Yes,Female,48,TRUE,FALSE,FALSE,TRUE,TRUE,TRUE,96
+336,1,no warning,serial,present,3,5,7,high,Yes,Male,34,FALSE,TRUE,FALSE,TRUE,FALSE,FALSE,96
+205,1,no warning,serial,present,3,3,9,high,Yes,Female,43,TRUE,FALSE,FALSE,TRUE,TRUE,TRUE,95
+324,1,no warning,serial,present,3,3,8,high,Yes,Male,32,TRUE,FALSE,FALSE,TRUE,TRUE,TRUE,84
+1,1,no warning,serial,present,3,3,8,high,Yes,Female,40,TRUE,FALSE,FALSE,TRUE,TRUE,TRUE,98
+4,3,warning,sequential,absent,0,3,8,high,Yes,Female,28,FALSE,TRUE,FALSE,FALSE,TRUE,FALSE,99
+458,3,warning,sequential,absent,0,3,8,high,Yes,Male,59,FALSE,TRUE,FALSE,FALSE,TRUE,FALSE,79
+514,3,warning,sequential,absent,0,3,8,high,Yes,Male,32,FALSE,TRUE,FALSE,FALSE,TRUE,FALSE,99
+213,3,warning,sequential,absent,0,2,9,high,Yes,Female,49,FALSE,TRUE,FALSE,FALSE,TRUE,FALSE,79
+292,3,warning,sequential,absent,0,7,7,high,Yes,Female,50,FALSE,TRUE,FALSE,FALSE,TRUE,FALSE,91
+191,3,warning,sequential,absent,0,3,8,high,Yes,Female,45,FALSE,TRUE,FALSE,FALSE,TRUE,FALSE,87
+436,3,warning,sequential,absent,0,3,9,high,Yes,Male,31,FALSE,TRUE,FALSE,FALSE,TRUE,FALSE,94
+315,3,warning,sequential,absent,0,5,8,high,Yes,Female,66,FALSE,TRUE,FALSE,FALSE,TRUE,FALSE,83
+113,2,no warning,sequential,present,3,7,7,high,Yes,Male,63,FALSE,TRUE,FALSE,TRUE,FALSE,FALSE,88
+77,2,no warning,sequential,present,3,3,9,high,Yes,Female,45,TRUE,FALSE,FALSE,TRUE,TRUE,TRUE,90
+373,2,no warning,sequential,present,3,8,2,low,Yes,Male,29,FALSE,TRUE,FALSE,TRUE,FALSE,FALSE,85
+330,2,no warning,sequential,present,3,3,4,med,Yes,Male,34,TRUE,FALSE,FALSE,TRUE,TRUE,TRUE,90
+242,2,no warning,sequential,present,3,3,9,high,Yes,Female,53,TRUE,FALSE,FALSE,TRUE,TRUE,TRUE,48
+537,2,no warning,sequential,present,3,1,6,med,Yes,Female,53,FALSE,TRUE,FALSE,TRUE,FALSE,FALSE,88
+96,2,no warning,sequential,present,3,1,7,high,Yes,Male,44,FALSE,TRUE,FALSE,TRUE,FALSE,FALSE,94
+172,2,no warning,sequential,present,3,1,9,high,Yes,Female,48,FALSE,TRUE,FALSE,TRUE,FALSE,FALSE,76
+272,2,no warning,sequential,present,3,3,8,high,Yes,Male,30,TRUE,FALSE,FALSE,TRUE,TRUE,TRUE,92
+182,2,no warning,sequential,present,3,1,9,high,Yes,Female,28,FALSE,TRUE,FALSE,TRUE,FALSE,FALSE,88
+103,1,warning,sequential,present,3,3,8,high,Yes,Male,26,TRUE,FALSE,FALSE,TRUE,TRUE,TRUE,93
+84,1,warning,sequential,present,3,3,10,high,Yes,Female,28,TRUE,FALSE,FALSE,TRUE,TRUE,TRUE,80
+446,1,warning,sequential,present,3,3,10,high,Yes,Female,25,TRUE,FALSE,FALSE,TRUE,TRUE,TRUE,79
+493,1,warning,sequential,present,3,3,9,high,Yes,Male,38,TRUE,FALSE,FALSE,TRUE,TRUE,TRUE,93
+527,1,warning,sequential,present,3,3,6,med,Yes,Male,63,TRUE,FALSE,FALSE,TRUE,TRUE,TRUE,NA
+221,1,warning,sequential,present,3,1,9,high,Yes,Female,70,FALSE,TRUE,FALSE,TRUE,FALSE,FALSE,86
+49,1,warning,sequential,present,3,3,8,high,Yes,Female,61,TRUE,FALSE,FALSE,TRUE,TRUE,TRUE,95
+165,1,warning,sequential,present,3,3,9,high,Yes,Female,40,TRUE,FALSE,FALSE,TRUE,TRUE,TRUE,89
+198,1,warning,sequential,present,3,3,3,low,Yes,Male,38,TRUE,FALSE,FALSE,TRUE,TRUE,TRUE,95
+229,1,warning,sequential,present,3,2,7,high,Yes,Female,46,FALSE,TRUE,FALSE,TRUE,FALSE,FALSE,96
+5,1,warning,sequential,present,3,3,10,high,Yes,Female,66,TRUE,FALSE,FALSE,TRUE,TRUE,TRUE,78
+40,1,warning,sequential,present,3,1,7,high,Yes,Female,67,FALSE,TRUE,FALSE,TRUE,FALSE,FALSE,69
+535,1,warning,sequential,absent,0,9,7,high,Yes,Female,36,FALSE,TRUE,FALSE,FALSE,TRUE,FALSE,85
+376,1,warning,sequential,absent,0,5,7,high,Yes,Female,32,FALSE,TRUE,FALSE,FALSE,TRUE,FALSE,87
+263,1,warning,sequential,absent,0,2,8,high,Yes,Male,33,FALSE,TRUE,FALSE,FALSE,TRUE,FALSE,96
+23,1,warning,sequential,absent,0,5,7,high,Yes,Female,56,FALSE,TRUE,FALSE,FALSE,TRUE,FALSE,96
+498,1,warning,sequential,absent,0,2,9,high,Yes,Male,49,FALSE,TRUE,FALSE,FALSE,TRUE,FALSE,88
+545,1,warning,sequential,absent,0,9,9,high,Yes,Female,41,FALSE,TRUE,FALSE,FALSE,TRUE,FALSE,85
+495,1,warning,sequential,absent,0,2,5,med,Yes,Female,70,FALSE,TRUE,FALSE,FALSE,TRUE,FALSE,82
+415,1,warning,sequential,absent,0,2,9,high,Yes,Male,56,FALSE,TRUE,FALSE,FALSE,TRUE,FALSE,NA
+98,1,warning,sequential,absent,0,5,10,high,Yes,Female,40,FALSE,TRUE,FALSE,FALSE,TRUE,FALSE,97
+293,1,warning,sequential,absent,0,4,8,high,Yes,Male,46,FALSE,TRUE,FALSE,FALSE,TRUE,FALSE,80
+68,1,warning,sequential,absent,0,9,8,high,Yes,Female,64,FALSE,TRUE,FALSE,FALSE,TRUE,FALSE,85
+306,2,no warning,sequential,absent,0,3,7,high,Yes,Female,22,FALSE,TRUE,FALSE,FALSE,TRUE,FALSE,88
+48,2,no warning,sequential,absent,0,5,4,med,Yes,Male,24,FALSE,TRUE,FALSE,FALSE,TRUE,FALSE,98
+451,2,no warning,sequential,absent,0,2,9,high,Yes,Female,33,FALSE,TRUE,FALSE,FALSE,TRUE,FALSE,85
+95,2,no warning,sequential,absent,0,1,7,high,Yes,Female,58,FALSE,TRUE,FALSE,FALSE,TRUE,FALSE,80
+284,2,no warning,sequential,absent,0,7,4,med,Yes,Female,62,FALSE,TRUE,FALSE,FALSE,TRUE,FALSE,77
+288,2,no warning,sequential,absent,0,1,10,high,Yes,Male,56,FALSE,TRUE,FALSE,FALSE,TRUE,FALSE,81
+170,2,no warning,sequential,absent,0,2,10,high,Yes,Female,45,FALSE,TRUE,FALSE,FALSE,TRUE,FALSE,87
+431,2,no warning,sequential,absent,0,2,6,med,Yes,Female,43,FALSE,TRUE,FALSE,FALSE,TRUE,FALSE,95
+212,2,no warning,sequential,absent,0,3,9,high,Yes,Female,33,FALSE,TRUE,FALSE,FALSE,TRUE,FALSE,93
+429,2,no warning,sequential,absent,0,2,9,high,Yes,Female,54,FALSE,TRUE,FALSE,FALSE,TRUE,FALSE,75
+158,2,no warning,sequential,absent,0,3,10,high,Yes,Male,46,FALSE,TRUE,FALSE,FALSE,TRUE,FALSE,97
+450,2,no warning,sequential,absent,0,2,10,high,Yes,Female,27,FALSE,TRUE,FALSE,FALSE,TRUE,FALSE,85
+442,3,warning,sequential,present,3,3,5,med,Yes,Female,37,TRUE,FALSE,FALSE,TRUE,TRUE,TRUE,71
+39,3,warning,sequential,present,3,3,9,high,Yes,Female,34,TRUE,FALSE,FALSE,TRUE,TRUE,TRUE,97
+313,3,warning,sequential,present,3,7,8,high,Yes,Male,44,FALSE,TRUE,FALSE,TRUE,FALSE,FALSE,80
+259,3,warning,sequential,present,3,3,10,high,Yes,Female,29,TRUE,FALSE,FALSE,TRUE,TRUE,TRUE,93
+348,3,warning,sequential,present,3,3,8,high,Yes,Female,40,TRUE,FALSE,FALSE,TRUE,TRUE,TRUE,84
+45,3,warning,sequential,present,3,3,9,high,Yes,Female,59,TRUE,FALSE,FALSE,TRUE,TRUE,TRUE,89
+491,3,warning,sequential,present,3,3,10,high,Yes,Male,53,TRUE,FALSE,FALSE,TRUE,TRUE,TRUE,76
+93,3,warning,sequential,present,3,3,7,high,Yes,Male,65,TRUE,FALSE,FALSE,TRUE,TRUE,TRUE,85
+305,3,warning,sequential,present,3,3,8,high,Yes,Female,39,TRUE,FALSE,FALSE,TRUE,TRUE,TRUE,96
+409,3,warning,sequential,present,3,3,2,low,Yes,Female,45,TRUE,FALSE,FALSE,TRUE,TRUE,TRUE,87
+8,2,no warning,sequential,present,7,2,8,high,Yes,Male,33,FALSE,TRUE,FALSE,TRUE,FALSE,FALSE,92
+456,2,no warning,sequential,present,7,5,5,med,Yes,Female,54,FALSE,TRUE,FALSE,TRUE,FALSE,FALSE,96
+179,2,no warning,sequential,present,7,3,9,high,Yes,Female,56,FALSE,TRUE,FALSE,TRUE,FALSE,FALSE,83
+548,2,no warning,sequential,present,7,7,9,high,Yes,Female,38,TRUE,FALSE,FALSE,TRUE,TRUE,TRUE,92
+169,2,no warning,sequential,present,7,2,3,low,No,Female,29,FALSE,TRUE,FALSE,TRUE,FALSE,FALSE,75
+34,2,no warning,sequential,present,7,2,9,high,Yes,Female,54,FALSE,TRUE,FALSE,TRUE,FALSE,FALSE,78
+347,2,no warning,sequential,present,7,5,10,high,Yes,Female,56,FALSE,TRUE,FALSE,TRUE,FALSE,FALSE,92
+298,2,no warning,sequential,present,7,4,7,high,Yes,Female,59,FALSE,TRUE,FALSE,TRUE,FALSE,FALSE,99
+156,2,no warning,sequential,present,7,7,7,high,Yes,Female,33,TRUE,FALSE,FALSE,TRUE,TRUE,TRUE,98
+441,2,no warning,sequential,present,7,2,7,high,Yes,Male,24,FALSE,TRUE,FALSE,TRUE,FALSE,FALSE,53
+151,2,no warning,sequential,present,7,8,8,high,Yes,Male,35,FALSE,TRUE,FALSE,TRUE,FALSE,FALSE,81
+529,2,no warning,sequential,present,7,2,5,med,Yes,Female,36,FALSE,TRUE,FALSE,TRUE,FALSE,FALSE,80
+426,1,no warning,sequential,absent,0,5,7,high,Yes,Male,44,FALSE,TRUE,FALSE,FALSE,TRUE,FALSE,81
+264,1,no warning,sequential,absent,0,2,7,high,Yes,Male,65,FALSE,TRUE,FALSE,FALSE,TRUE,FALSE,86
+145,1,no warning,sequential,absent,0,9,6,med,Yes,Female,33,FALSE,TRUE,FALSE,FALSE,TRUE,FALSE,88
+343,1,no warning,sequential,absent,0,2,8,high,Yes,Male,70,FALSE,TRUE,FALSE,FALSE,TRUE,FALSE,57
+536,1,no warning,sequential,absent,0,2,9,high,Yes,Female,48,FALSE,TRUE,FALSE,FALSE,TRUE,FALSE,91
+260,1,no warning,sequential,absent,0,4,9,high,Yes,Male,40,FALSE,TRUE,FALSE,FALSE,TRUE,FALSE,94
+506,1,no warning,sequential,absent,0,8,7,high,Yes,Prefer not to say,38,FALSE,TRUE,FALSE,FALSE,TRUE,FALSE,93
+111,1,no warning,sequential,absent,0,5,8,high,Yes,Male,55,FALSE,TRUE,FALSE,FALSE,TRUE,FALSE,76
+402,1,no warning,sequential,absent,0,5,9,high,Yes,Male,56,FALSE,TRUE,FALSE,FALSE,TRUE,FALSE,91
+138,1,no warning,sequential,absent,0,4,9,high,Yes,Male,27,FALSE,TRUE,FALSE,FALSE,TRUE,FALSE,99
+54,1,no warning,sequential,absent,0,8,6,med,Yes,Female,29,FALSE,TRUE,FALSE,FALSE,TRUE,FALSE,80
+46,1,no warning,sequential,absent,0,5,8,high,Yes,Female,39,FALSE,TRUE,FALSE,FALSE,TRUE,FALSE,77
+115,1,no warning,sequential,present,3,3,10,high,Yes,Female,43,TRUE,FALSE,FALSE,TRUE,TRUE,TRUE,96
+406,1,no warning,sequential,present,3,3,7,high,Yes,Male,40,TRUE,FALSE,FALSE,TRUE,TRUE,TRUE,91
+12,1,no warning,sequential,present,3,3,10,high,Yes,Male,36,TRUE,FALSE,FALSE,TRUE,TRUE,TRUE,97
+234,1,no warning,sequential,present,3,3,10,high,Yes,Male,40,TRUE,FALSE,FALSE,TRUE,TRUE,TRUE,91
+206,1,no warning,sequential,present,3,3,2,low,Yes,Female,37,TRUE,FALSE,FALSE,TRUE,TRUE,TRUE,100
+67,1,no warning,sequential,present,3,3,10,high,Yes,Female,21,TRUE,FALSE,FALSE,TRUE,TRUE,TRUE,80
+41,1,no warning,sequential,present,3,3,10,high,Yes,Female,49,TRUE,FALSE,FALSE,TRUE,TRUE,TRUE,87
+375,1,no warning,sequential,present,3,8,3,low,Yes,Female,67,FALSE,TRUE,FALSE,TRUE,FALSE,FALSE,86
+11,1,no warning,sequential,present,3,2,9,high,No,Male,33,FALSE,TRUE,FALSE,TRUE,FALSE,FALSE,85
+328,1,no warning,sequential,present,3,3,8,high,Yes,Female,58,TRUE,FALSE,FALSE,TRUE,TRUE,TRUE,77
+286,1,no warning,sequential,present,3,2,5,med,Yes,Male,49,FALSE,TRUE,FALSE,TRUE,FALSE,FALSE,90
+88,1,no warning,sequential,present,3,1,7,high,Yes,Female,65,FALSE,TRUE,FALSE,TRUE,FALSE,FALSE,91
+487,3,no warning,sequential,present,3,3,9,high,Yes,Male,32,TRUE,FALSE,FALSE,TRUE,TRUE,TRUE,80
+519,3,no warning,sequential,present,3,3,10,high,No,Female,61,TRUE,FALSE,FALSE,TRUE,TRUE,TRUE,NA
+101,3,no warning,sequential,present,3,3,10,high,Yes,Female,39,TRUE,FALSE,FALSE,TRUE,TRUE,TRUE,96
+459,3,no warning,sequential,present,3,3,10,high,Yes,Male,38,TRUE,FALSE,FALSE,TRUE,TRUE,TRUE,94
+423,3,no warning,sequential,present,3,3,10,high,Yes,Female,55,TRUE,FALSE,FALSE,TRUE,TRUE,TRUE,89
+515,3,no warning,sequential,present,3,3,10,high,Yes,Female,37,TRUE,FALSE,FALSE,TRUE,TRUE,TRUE,94
+452,3,no warning,sequential,present,3,7,6,med,Yes,Male,59,FALSE,TRUE,FALSE,TRUE,FALSE,FALSE,85
+65,3,no warning,sequential,present,3,3,10,high,Yes,Female,50,TRUE,FALSE,FALSE,TRUE,TRUE,TRUE,88
+543,3,no warning,sequential,present,3,7,6,med,Yes,Male,57,FALSE,TRUE,FALSE,TRUE,FALSE,FALSE,76
+104,3,no warning,sequential,present,3,3,9,high,Yes,Female,63,TRUE,FALSE,FALSE,TRUE,TRUE,TRUE,78
+561,3,no warning,sequential,present,3,3,10,high,Yes,Female,24,TRUE,FALSE,FALSE,TRUE,TRUE,TRUE,77
+107,1,warning,sequential,absent,0,4,7,high,Yes,Female,43,FALSE,TRUE,FALSE,FALSE,TRUE,FALSE,93
+280,1,warning,sequential,absent,0,1,8,high,Yes,Female,26,FALSE,TRUE,FALSE,FALSE,TRUE,FALSE,71
+370,1,warning,sequential,absent,0,8,7,high,Yes,Male,53,FALSE,TRUE,FALSE,FALSE,TRUE,FALSE,96
+500,1,warning,sequential,absent,0,6,5,med,Yes,Female,57,FALSE,TRUE,FALSE,FALSE,TRUE,FALSE,84
+368,1,warning,sequential,absent,0,4,7,high,Yes,Female,29,FALSE,TRUE,FALSE,FALSE,TRUE,FALSE,91
+334,1,warning,sequential,absent,0,4,9,high,Yes,Female,44,FALSE,TRUE,FALSE,FALSE,TRUE,FALSE,85
+211,1,warning,sequential,absent,0,4,7,high,Yes,Female,44,FALSE,TRUE,FALSE,FALSE,TRUE,FALSE,86
+558,1,warning,sequential,absent,0,5,6,med,Yes,Male,68,FALSE,TRUE,FALSE,FALSE,TRUE,FALSE,88
+134,3,warning,sequential,present,7,2,8,high,Yes,Female,45,FALSE,TRUE,FALSE,TRUE,FALSE,FALSE,80
+200,3,warning,sequential,present,7,7,6,med,Yes,Male,18,TRUE,FALSE,FALSE,TRUE,TRUE,TRUE,57
+189,3,warning,sequential,present,7,4,7,high,Yes,Female,33,FALSE,TRUE,FALSE,TRUE,FALSE,FALSE,74
+482,3,warning,sequential,present,7,6,8,high,Yes,Female,52,FALSE,TRUE,FALSE,TRUE,FALSE,FALSE,86
+483,3,warning,sequential,present,7,1,9,high,Yes,Female,20,FALSE,TRUE,FALSE,TRUE,FALSE,FALSE,78
+178,3,warning,sequential,present,7,1,9,high,Yes,Male,52,FALSE,TRUE,FALSE,TRUE,FALSE,FALSE,89
+425,3,warning,sequential,present,7,1,5,med,Yes,Female,54,FALSE,TRUE,FALSE,TRUE,FALSE,FALSE,96
+474,3,warning,sequential,present,7,6,2,low,Yes,Female,51,FALSE,TRUE,FALSE,TRUE,FALSE,FALSE,92
+202,3,warning,sequential,present,7,4,4,med,Yes,Male,53,FALSE,TRUE,FALSE,TRUE,FALSE,FALSE,87
+502,3,warning,sequential,present,7,6,8,high,Yes,Female,28,FALSE,TRUE,FALSE,TRUE,FALSE,FALSE,98
+528,3,warning,sequential,present,7,1,3,low,Yes,Female,51,FALSE,TRUE,FALSE,TRUE,FALSE,FALSE,88
+20,2,warning,sequential,present,7,7,6,med,Yes,Male,45,TRUE,FALSE,FALSE,TRUE,TRUE,TRUE,92
+265,2,warning,sequential,present,7,2,9,high,Yes,Male,54,FALSE,TRUE,FALSE,TRUE,FALSE,FALSE,89
+102,2,warning,sequential,present,7,5,5,med,Yes,Male,66,FALSE,TRUE,FALSE,TRUE,FALSE,FALSE,40
+267,2,warning,sequential,present,7,4,7,high,Yes,Female,43,FALSE,TRUE,FALSE,TRUE,FALSE,FALSE,98
+323,2,warning,sequential,present,7,7,10,high,Yes,Female,48,TRUE,FALSE,FALSE,TRUE,TRUE,TRUE,93
+218,2,warning,sequential,present,7,5,9,high,Yes,Male,58,FALSE,TRUE,FALSE,TRUE,FALSE,FALSE,95
+118,2,warning,sequential,present,7,1,7,high,Yes,Male,50,FALSE,TRUE,FALSE,TRUE,FALSE,FALSE,90
+283,2,warning,sequential,present,7,7,10,high,Yes,Male,48,TRUE,FALSE,FALSE,TRUE,TRUE,TRUE,94
+518,2,warning,sequential,present,7,7,7,high,Yes,Female,38,TRUE,FALSE,FALSE,TRUE,TRUE,TRUE,95
+24,2,warning,sequential,absent,0,9,9,high,No,Female,40,FALSE,TRUE,FALSE,FALSE,TRUE,FALSE,99
+454,2,warning,sequential,absent,0,7,9,high,No,Male,59,FALSE,TRUE,FALSE,FALSE,TRUE,FALSE,98
+175,2,warning,sequential,absent,0,2,6,med,Yes,Female,23,FALSE,TRUE,FALSE,FALSE,TRUE,FALSE,87
+339,2,warning,sequential,absent,0,2,7,high,No,Female,30,FALSE,TRUE,FALSE,FALSE,TRUE,FALSE,93
+13,2,warning,sequential,absent,0,8,9,high,No,Female,38,FALSE,TRUE,FALSE,FALSE,TRUE,FALSE,95
+416,2,warning,sequential,absent,0,1,8,high,Yes,Female,61,FALSE,TRUE,FALSE,FALSE,TRUE,FALSE,90
+524,2,warning,sequential,absent,0,2,8,high,Yes,Female,28,FALSE,TRUE,FALSE,FALSE,TRUE,FALSE,NA
+55,2,warning,sequential,absent,0,3,8,high,Yes,Female,44,FALSE,TRUE,FALSE,FALSE,TRUE,FALSE,70
+108,2,warning,sequential,absent,0,2,8,high,Yes,Female,49,FALSE,TRUE,FALSE,FALSE,TRUE,FALSE,100
+477,2,warning,sequential,absent,0,3,9,high,Yes,Male,46,FALSE,TRUE,FALSE,FALSE,TRUE,FALSE,91
+540,2,warning,sequential,absent,0,3,7,high,Yes,Female,50,FALSE,TRUE,FALSE,FALSE,TRUE,FALSE,59
+461,2,warning,sequential,absent,0,3,10,high,Yes,Female,29,FALSE,TRUE,FALSE,FALSE,TRUE,FALSE,100
+187,2,warning,sequential,absent,0,7,5,med,Yes,Male,69,FALSE,TRUE,FALSE,FALSE,TRUE,FALSE,79
+250,2,warning,sequential,absent,0,1,7,high,Yes,Male,40,FALSE,TRUE,FALSE,FALSE,TRUE,FALSE,97
+238,2,warning,sequential,absent,0,8,9,high,No,Male,25,FALSE,TRUE,FALSE,FALSE,TRUE,FALSE,74
+56,2,warning,sequential,absent,0,3,8,high,Yes,Male,55,FALSE,TRUE,FALSE,FALSE,TRUE,FALSE,84
+82,2,warning,sequential,absent,0,9,8,high,Yes,Male,39,FALSE,TRUE,FALSE,FALSE,TRUE,FALSE,85
+541,2,warning,sequential,absent,0,8,5,med,Yes,Female,51,FALSE,TRUE,FALSE,FALSE,TRUE,FALSE,94
+271,2,warning,sequential,absent,0,7,5,med,Yes,Male,49,FALSE,TRUE,FALSE,FALSE,TRUE,FALSE,95
+544,2,warning,sequential,absent,0,3,6,med,Yes,Female,68,FALSE,TRUE,FALSE,FALSE,TRUE,FALSE,72
+268,2,warning,sequential,absent,0,3,9,high,No,Female,47,FALSE,TRUE,FALSE,FALSE,TRUE,FALSE,NA
+91,2,warning,sequential,absent,0,3,7,high,Yes,Female,42,FALSE,TRUE,FALSE,FALSE,TRUE,FALSE,84
+246,2,warning,sequential,present,3,7,6,med,Yes,Male,39,FALSE,TRUE,FALSE,TRUE,FALSE,FALSE,78
+479,2,warning,sequential,present,3,7,5,med,Yes,Female,40,FALSE,TRUE,FALSE,TRUE,FALSE,FALSE,86
+447,2,warning,sequential,present,3,2,8,high,Yes,Female,69,FALSE,TRUE,FALSE,TRUE,FALSE,FALSE,74
+122,2,warning,sequential,present,3,2,4,med,Yes,Female,61,FALSE,TRUE,FALSE,TRUE,FALSE,FALSE,95
+160,2,warning,sequential,present,3,3,10,high,Yes,Male,43,TRUE,FALSE,FALSE,TRUE,TRUE,TRUE,91
+320,2,warning,sequential,present,3,2,5,med,No,Female,39,FALSE,TRUE,FALSE,TRUE,FALSE,FALSE,86
+401,2,warning,sequential,present,3,3,7,high,Yes,Male,37,TRUE,FALSE,FALSE,TRUE,TRUE,TRUE,85
+139,2,warning,sequential,present,3,3,8,high,Yes,Female,20,TRUE,FALSE,FALSE,TRUE,TRUE,TRUE,84
+363,2,warning,sequential,present,3,1,8,high,Yes,Male,56,FALSE,TRUE,FALSE,TRUE,FALSE,FALSE,64
+509,2,warning,sequential,present,3,3,10,high,Yes,Male,37,TRUE,FALSE,FALSE,TRUE,TRUE,TRUE,96
+319,2,warning,sequential,present,3,1,8,high,Yes,Female,53,FALSE,TRUE,FALSE,TRUE,FALSE,FALSE,95
+299,1,no warning,sequential,absent,0,5,10,high,Yes,Female,64,FALSE,TRUE,FALSE,FALSE,TRUE,FALSE,90
+432,1,no warning,sequential,absent,0,5,10,high,Yes,Female,54,FALSE,TRUE,FALSE,FALSE,TRUE,FALSE,71
+318,1,no warning,sequential,absent,0,2,9,high,Yes,Male,37,FALSE,TRUE,FALSE,FALSE,TRUE,FALSE,72
+32,1,no warning,sequential,absent,0,7,5,med,Yes,Female,60,FALSE,TRUE,FALSE,FALSE,TRUE,FALSE,89
+378,1,no warning,sequential,absent,0,4,6,med,Yes,Female,29,FALSE,TRUE,FALSE,FALSE,TRUE,FALSE,90
+443,1,no warning,sequential,absent,0,2,8,high,Yes,Female,28,FALSE,TRUE,FALSE,FALSE,TRUE,FALSE,86
+538,1,no warning,sequential,absent,0,5,6,med,Yes,Male,48,FALSE,TRUE,FALSE,FALSE,TRUE,FALSE,93
+457,1,no warning,sequential,absent,0,4,10,high,Yes,Female,30,FALSE,TRUE,FALSE,FALSE,TRUE,FALSE,92
+58,2,no warning,sequential,absent,0,9,8,high,Yes,Female,20,FALSE,TRUE,FALSE,FALSE,TRUE,FALSE,91
+523,2,no warning,sequential,absent,0,8,9,high,Yes,Male,35,FALSE,TRUE,FALSE,FALSE,TRUE,FALSE,NA
+116,2,no warning,sequential,absent,0,7,6,med,Yes,Female,24,FALSE,TRUE,FALSE,FALSE,TRUE,FALSE,83
+422,2,no warning,sequential,absent,0,1,8,high,Yes,Male,56,FALSE,TRUE,FALSE,FALSE,TRUE,FALSE,88
+440,2,no warning,sequential,absent,0,6,10,high,No,Male,47,FALSE,TRUE,FALSE,FALSE,TRUE,FALSE,86
+385,2,no warning,sequential,absent,0,3,5,med,Yes,Male,44,FALSE,TRUE,FALSE,FALSE,TRUE,FALSE,85
+332,2,no warning,sequential,absent,0,7,7,high,Yes,Female,46,FALSE,TRUE,FALSE,FALSE,TRUE,FALSE,92
+476,2,no warning,sequential,absent,0,2,8,high,Yes,Female,45,FALSE,TRUE,FALSE,FALSE,TRUE,FALSE,81
+449,2,no warning,sequential,absent,0,8,10,high,Yes,Male,31,FALSE,TRUE,FALSE,FALSE,TRUE,FALSE,87
+254,2,no warning,sequential,absent,0,5,6,med,Yes,Female,49,FALSE,TRUE,FALSE,FALSE,TRUE,FALSE,93
+379,2,no warning,sequential,absent,0,3,6,med,Yes,Male,34,FALSE,TRUE,FALSE,FALSE,TRUE,FALSE,99
+486,3,no warning,sequential,present,7,1,9,high,Yes,Female,36,FALSE,TRUE,FALSE,TRUE,FALSE,FALSE,86
+79,3,no warning,sequential,present,7,6,8,high,Yes,Male,49,FALSE,TRUE,FALSE,TRUE,FALSE,FALSE,89
+239,3,no warning,sequential,present,7,7,10,high,Yes,Male,41,TRUE,FALSE,FALSE,TRUE,TRUE,TRUE,94
+333,3,no warning,sequential,present,7,1,9,high,Yes,Female,32,FALSE,TRUE,FALSE,TRUE,FALSE,FALSE,76
+33,3,no warning,sequential,present,7,1,8,high,Yes,Female,32,FALSE,TRUE,FALSE,TRUE,FALSE,FALSE,79
+464,3,no warning,sequential,present,7,7,7,high,Yes,Female,46,TRUE,FALSE,FALSE,TRUE,TRUE,TRUE,87
+235,3,no warning,sequential,present,7,5,8,high,Yes,Female,49,FALSE,TRUE,FALSE,TRUE,FALSE,FALSE,90
+193,3,no warning,sequential,present,7,6,5,med,Yes,Female,33,FALSE,TRUE,FALSE,TRUE,FALSE,FALSE,87
+547,3,no warning,sequential,present,7,6,4,med,Yes,Female,56,FALSE,TRUE,FALSE,TRUE,FALSE,FALSE,92
+274,3,no warning,sequential,present,7,6,10,high,Yes,Male,43,FALSE,TRUE,FALSE,TRUE,FALSE,FALSE,97
+366,3,no warning,sequential,absent,0,1,10,high,Yes,Male,72,FALSE,TRUE,FALSE,FALSE,TRUE,FALSE,69
+395,3,no warning,sequential,absent,0,1,7,high,Yes,Female,42,FALSE,TRUE,FALSE,FALSE,TRUE,FALSE,83
+125,3,no warning,sequential,absent,0,3,7,high,Yes,Female,49,FALSE,TRUE,FALSE,FALSE,TRUE,FALSE,59
+396,3,no warning,sequential,absent,0,3,9,high,Yes,Female,49,FALSE,TRUE,FALSE,FALSE,TRUE,FALSE,68
+90,3,no warning,sequential,absent,0,3,8,high,Yes,Female,43,FALSE,TRUE,FALSE,FALSE,TRUE,FALSE,92
+489,3,no warning,sequential,absent,0,5,8,high,Yes,Female,49,FALSE,TRUE,FALSE,FALSE,TRUE,FALSE,76
+404,3,no warning,sequential,absent,0,2,7,high,Yes,Male,26,FALSE,TRUE,FALSE,FALSE,TRUE,FALSE,92
+21,3,no warning,sequential,absent,0,3,5,med,Yes,Female,33,FALSE,TRUE,FALSE,FALSE,TRUE,FALSE,80
+31,3,no warning,sequential,absent,0,2,10,high,Yes,Male,42,FALSE,TRUE,FALSE,FALSE,TRUE,FALSE,94
+507,3,no warning,sequential,absent,0,6,7,high,Yes,Female,30,FALSE,TRUE,FALSE,FALSE,TRUE,FALSE,92
+362,3,no warning,sequential,absent,0,1,5,med,Yes,Male,28,FALSE,TRUE,FALSE,FALSE,TRUE,FALSE,NA
+556,3,no warning,sequential,absent,0,3,6,med,Yes,Male,56,FALSE,TRUE,FALSE,FALSE,TRUE,FALSE,94
+60,3,no warning,sequential,absent,0,7,8,high,Yes,Female,39,FALSE,TRUE,FALSE,FALSE,TRUE,FALSE,88
+534,3,no warning,sequential,absent,0,7,9,high,Yes,Female,36,FALSE,TRUE,FALSE,FALSE,TRUE,FALSE,83
+126,3,no warning,sequential,absent,0,5,9,high,Yes,Male,36,FALSE,TRUE,FALSE,FALSE,TRUE,FALSE,88
+35,1,no warning,sequential,present,7,3,8,high,Yes,Male,56,FALSE,TRUE,FALSE,TRUE,FALSE,FALSE,87
+232,1,no warning,sequential,present,7,7,9,high,Yes,Male,51,TRUE,FALSE,FALSE,TRUE,TRUE,TRUE,91
+177,1,no warning,sequential,present,7,3,9,high,Yes,Female,67,FALSE,TRUE,FALSE,TRUE,FALSE,FALSE,85
+215,1,no warning,sequential,present,7,2,10,high,Yes,Female,46,FALSE,TRUE,FALSE,TRUE,FALSE,FALSE,89
+133,1,no warning,sequential,present,7,4,7,high,Yes,Male,46,FALSE,TRUE,FALSE,TRUE,FALSE,FALSE,84
+552,1,no warning,sequential,present,7,5,10,high,Yes,Male,52,FALSE,TRUE,FALSE,TRUE,FALSE,FALSE,82
+453,1,no warning,sequential,present,7,4,10,high,Yes,Female,42,FALSE,TRUE,FALSE,TRUE,FALSE,FALSE,88
+63,1,no warning,sequential,present,7,5,8,high,Yes,Female,40,FALSE,TRUE,FALSE,TRUE,FALSE,FALSE,97
+159,1,no warning,sequential,present,7,5,8,high,Yes,Female,54,FALSE,TRUE,FALSE,TRUE,FALSE,FALSE,94
+308,1,no warning,sequential,present,7,5,5,med,No,Female,36,FALSE,TRUE,FALSE,TRUE,FALSE,FALSE,96
+341,1,no warning,sequential,present,7,5,8,high,Yes,Female,38,FALSE,TRUE,FALSE,TRUE,FALSE,FALSE,86
+131,1,no warning,sequential,present,7,1,7,high,Yes,Male,51,FALSE,TRUE,FALSE,TRUE,FALSE,FALSE,79
+183,3,warning,sequential,absent,0,3,8,high,Yes,Female,29,FALSE,TRUE,FALSE,FALSE,TRUE,FALSE,88
+428,3,warning,sequential,absent,0,3,6,med,Yes,Female,55,FALSE,TRUE,FALSE,FALSE,TRUE,FALSE,89
+22,3,warning,sequential,absent,0,3,7,high,Yes,Male,50,FALSE,TRUE,FALSE,FALSE,TRUE,FALSE,83
+64,3,warning,sequential,absent,0,5,8,high,Yes,Female,57,FALSE,TRUE,FALSE,FALSE,TRUE,FALSE,90
+413,3,warning,sequential,absent,0,6,9,high,Yes,Male,45,FALSE,TRUE,FALSE,FALSE,TRUE,FALSE,85
+475,3,warning,sequential,absent,0,3,8,high,Yes,Male,58,FALSE,TRUE,FALSE,FALSE,TRUE,FALSE,87
+164,3,warning,sequential,absent,0,3,10,high,Yes,Male,48,FALSE,TRUE,FALSE,FALSE,TRUE,FALSE,91
+186,3,warning,sequential,absent,0,4,7,high,No,Female,51,FALSE,TRUE,FALSE,FALSE,TRUE,FALSE,83
+230,1,warning,sequential,present,7,7,9,high,Yes,Female,43,TRUE,FALSE,FALSE,TRUE,TRUE,TRUE,83
+7,1,warning,sequential,present,7,3,7,high,Yes,Female,48,FALSE,TRUE,FALSE,TRUE,FALSE,FALSE,96
+410,1,warning,sequential,present,7,3,8,high,Yes,Female,45,FALSE,TRUE,FALSE,TRUE,FALSE,FALSE,71
+304,1,warning,sequential,present,7,7,8,high,Yes,Female,22,TRUE,FALSE,FALSE,TRUE,TRUE,TRUE,85
+359,1,warning,sequential,present,7,7,7,high,Yes,Female,70,TRUE,FALSE,FALSE,TRUE,TRUE,TRUE,88
+386,1,warning,sequential,present,7,3,10,high,Yes,Female,42,FALSE,TRUE,FALSE,TRUE,FALSE,FALSE,86
+296,1,warning,sequential,present,7,3,10,high,Yes,Male,47,FALSE,TRUE,FALSE,TRUE,FALSE,FALSE,70
+340,1,warning,sequential,present,7,7,7,high,Yes,Female,44,TRUE,FALSE,FALSE,TRUE,TRUE,TRUE,82
+303,1,warning,sequential,present,7,3,10,high,Yes,Female,32,FALSE,TRUE,FALSE,TRUE,FALSE,FALSE,94
+62,1,warning,sequential,present,7,3,6,med,Yes,Female,27,FALSE,TRUE,FALSE,TRUE,FALSE,FALSE,91
+208,1,warning,sequential,present,7,4,7,high,Yes,Male,47,FALSE,TRUE,FALSE,TRUE,FALSE,FALSE,99
+321,3,warning,sequential,absent,0,0,8,high,Yes,Female,54,FALSE,FALSE,TRUE,FALSE,FALSE,TRUE,92
+421,3,warning,sequential,absent,0,0,7,high,Yes,Male,53,FALSE,FALSE,TRUE,FALSE,FALSE,TRUE,97
+372,3,warning,sequential,absent,0,0,10,high,Yes,Female,34,FALSE,FALSE,TRUE,FALSE,FALSE,TRUE,72
+100,3,warning,sequential,absent,0,0,9,high,Yes,Female,65,FALSE,FALSE,TRUE,FALSE,FALSE,TRUE,85
+192,2,no warning,sequential,present,3,0,4,med,Yes,Female,28,FALSE,FALSE,TRUE,TRUE,FALSE,FALSE,95
+412,1,warning,sequential,absent,0,0,10,high,Yes,Female,63,FALSE,FALSE,TRUE,FALSE,FALSE,TRUE,85
+322,1,warning,sequential,absent,0,0,8,high,Yes,Female,40,FALSE,FALSE,TRUE,FALSE,FALSE,TRUE,99
+149,2,no warning,sequential,absent,0,0,8,high,Yes,Male,39,FALSE,FALSE,TRUE,FALSE,FALSE,TRUE,86
+344,2,no warning,sequential,absent,0,0,1,low,Yes,Male,20,FALSE,FALSE,TRUE,FALSE,FALSE,TRUE,93
+123,3,warning,sequential,present,3,0,10,high,Yes,Male,39,FALSE,FALSE,TRUE,TRUE,FALSE,FALSE,93
+309,2,no warning,sequential,present,7,0,10,high,Yes,Female,31,FALSE,FALSE,TRUE,TRUE,FALSE,FALSE,94
+472,1,warning,sequential,absent,0,0,5,med,Yes,Female,51,FALSE,FALSE,TRUE,FALSE,FALSE,TRUE,94
+130,1,warning,sequential,absent,0,0,10,high,Yes,Female,35,FALSE,FALSE,TRUE,FALSE,FALSE,TRUE,73
+445,1,warning,sequential,absent,0,0,8,high,Yes,Female,38,FALSE,FALSE,TRUE,FALSE,FALSE,TRUE,82
+374,1,warning,sequential,absent,0,0,9,high,Yes,Female,44,FALSE,FALSE,TRUE,FALSE,FALSE,TRUE,88
+252,2,warning,sequential,present,7,0,6,med,Yes,Female,52,FALSE,FALSE,TRUE,TRUE,FALSE,FALSE,84
+470,2,warning,sequential,present,7,0,10,high,Yes,Female,35,FALSE,FALSE,TRUE,TRUE,FALSE,FALSE,100
+463,2,warning,sequential,absent,0,0,7,high,Yes,Male,50,FALSE,FALSE,TRUE,FALSE,FALSE,TRUE,88
+434,2,warning,sequential,absent,0,0,9,high,Yes,Female,40,FALSE,FALSE,TRUE,FALSE,FALSE,TRUE,81
+83,2,warning,sequential,absent,0,0,0,low,Yes,Male,40,FALSE,FALSE,TRUE,FALSE,FALSE,TRUE,94
+526,2,warning,sequential,absent,0,0,2,low,Yes,Female,57,FALSE,FALSE,TRUE,FALSE,FALSE,TRUE,100
+176,1,no warning,sequential,absent,0,0,6,med,Yes,Male,48,FALSE,FALSE,TRUE,FALSE,FALSE,TRUE,74
+236,1,no warning,sequential,absent,0,0,10,high,Yes,Male,50,FALSE,FALSE,TRUE,FALSE,FALSE,TRUE,93
+210,1,no warning,sequential,absent,0,0,10,high,Yes,Male,56,FALSE,FALSE,TRUE,FALSE,FALSE,TRUE,96
+136,2,no warning,sequential,absent,0,0,10,high,Yes,Female,54,FALSE,FALSE,TRUE,FALSE,FALSE,TRUE,84
+400,2,no warning,sequential,absent,0,0,9,high,Yes,Male,64,FALSE,FALSE,TRUE,FALSE,FALSE,TRUE,81
+510,3,no warning,sequential,absent,0,0,10,high,Yes,Male,63,FALSE,FALSE,TRUE,FALSE,FALSE,TRUE,89
+365,3,no warning,sequential,absent,0,0,3,low,Yes,Female,24,FALSE,FALSE,TRUE,FALSE,FALSE,TRUE,80
+417,3,no warning,sequential,absent,0,0,10,high,Yes,Female,36,FALSE,FALSE,TRUE,FALSE,FALSE,TRUE,94
+253,1,no warning,sequential,present,7,0,10,high,Yes,Female,27,FALSE,FALSE,TRUE,TRUE,FALSE,FALSE,95
+388,3,warning,sequential,absent,0,0,7,high,Yes,Male,60,FALSE,FALSE,TRUE,FALSE,FALSE,TRUE,92
+87,3,warning,sequential,absent,0,0,10,high,Yes,Female,51,FALSE,FALSE,TRUE,FALSE,FALSE,TRUE,99
+18,3,warning,sequential,absent,0,0,8,high,Yes,Female,20,FALSE,FALSE,TRUE,FALSE,FALSE,TRUE,63
+197,3,warning,sequential,absent,0,0,10,high,Yes,Female,54,FALSE,FALSE,TRUE,FALSE,FALSE,TRUE,93
