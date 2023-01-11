@@ -167,7 +167,9 @@ colloff = read.csv("./Dataset testing and reports/Data/Colloff et al. 2021a/Exp 
     mutate(cond = ifelse(cond == 1, "high_similarity",
                          ifelse(cond == 2, "med_similarity", "low_similarity"))) %>% 
     filter(cond != "med_similarity") %>% 
-    mutate(cond = as.character(cond))
+    mutate(cond = as.character(cond),
+           suspect_position = NA,
+           lineup_size = 6)
 
 sum(table(colloff$cond))
 
@@ -196,10 +198,38 @@ colloff = read.csv("./Dataset testing and reports/Data/Colloff et al. 2021a/Exp 
     mutate(cond = ifelse(cond == 1, "high_similarity",
                          ifelse(cond == 2, "med_similarity", "low_similarity"))) %>% 
     filter(cond != "low_similarity") %>% 
-    mutate(cond = as.character(cond))
+    mutate(cond = as.character(cond),
+           suspect_position = NA,
+           lineup_size = 6)
 
 write.csv(colloff,
           "./Dataset testing and reports/Data/Colloff et al. 2021a/Exp 1/colloff_2021_processed_high_med.csv",
+          row.names = FALSE,
+          na = "")
+
+#### Low similarity vs. Medium similarity ----
+colloff = read.csv("./Dataset testing and reports/Data/Colloff et al. 2021a/Exp 1/Experiment1.csv") %>% 
+    filter(include == "yes") %>% 
+    select(condition, targetPresent, participantIDdecision, confidence) %>% 
+    rename(cond = "condition",
+           culprit_present = "targetPresent",
+           id_type = "participantIDdecision",
+           conf_level1 = "confidence") %>% 
+    mutate(id_type = ifelse(grepl("reject", id_type, ignore.case = TRUE), "reject",
+                            ifelse(grepl("filler", id_type, ignore.case = TRUE), "filler", "suspect")),
+           culprit_present = ifelse(culprit_present == 0, "absent", "present")) %>% 
+    ungroup() %>% 
+    mutate(conf_level = round(conf_level1 / 10)+1) %>% 
+    mutate(conf_level_rev = max(conf_level)+1 - conf_level) %>% 
+    mutate(cond = ifelse(cond == 1, "high_similarity",
+                         ifelse(cond == 2, "med_similarity", "low_similarity"))) %>% 
+    filter(cond != "high_similarity") %>% 
+    mutate(cond = as.character(cond),
+           suspect_position = NA,
+           lineup_size = 6)
+
+write.csv(colloff,
+          "./Dataset testing and reports/Data/Colloff et al. 2021a/Exp 1/colloff_2021_processed_low_med.csv",
           row.names = FALSE,
           na = "")
 
