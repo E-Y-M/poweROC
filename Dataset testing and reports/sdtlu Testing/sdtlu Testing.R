@@ -4,6 +4,8 @@ library(sdtlu)
 library(bayestestR)
 source("./ROC_power_app/scripts/func.R")
 
+pchisq(6.63, df = 1, lower.tail = FALSE)
+
 test_cs = "1, 1.5, 2"
 test_cs_vector = extract(test_cs)
 test_cs_vector[1]
@@ -28,7 +30,7 @@ sim_low = sdtlu_process_data(data_low)
 sim_high = sdtlu_process_data(data_high)
 sim_low
 options = list(model_type = "sim",
-               fit_fcn = "G2",
+               fit_fcn = "chi-square",
                fix_p = "data",
                fix_sigma_t = "free",
                use_restr_data = FALSE,
@@ -406,7 +408,7 @@ warning_processed$resp_data_full
 as.character(paste0(warning_processed$pos_prop, collapse = ","))
 
 options = list(model_type = "seq",
-               fit_fcn = "G2",
+               fit_fcn = "chi_square",
                fix_p = "data",
                fix_sigma_t = "free",
                use_restr_data = FALSE,
@@ -417,6 +419,10 @@ fit_warning = sdtlu_fit(warning_processed,
                   options = options)
 
 params_warning = fit_warning$best_params_full
+
+fit_warning$best_fit_measure
+
+pchisq(fit_warning$best_fit_measure, 1, lower.tail = FALSE)
 
 fit_warning$model_prop
 warning_processed$resp_data_full
@@ -442,7 +448,7 @@ nowarning_processed$resp_data_full
 as.character(paste0(nowarning_processed$pos_prop, collapse = ","))
 
 options = list(model_type = "seq",
-               fit_fcn = "G2",
+               fit_fcn = "chi-square",
                fix_p = "data",
                fix_sigma_t = "free",
                use_restr_data = FALSE,

@@ -18,6 +18,9 @@ suppressPackageStartupMessages({
 source("scripts/func.R") # helper functions
 source("scripts/gs4.R") # google sheets functions
 
+filter <- dplyr::filter
+summarize <- dplyr::summarize
+
 ## Google Sheets setup ----
 #setwd("./ROC_power_app")
 #gs4_deauth()
@@ -41,8 +44,8 @@ example_data = data.frame(id_type = sample(c("suspect", "filler", "reject"),
     mutate(lineup_size = ifelse(cond == "A", 6, 8))
 
 ### Compendium of open datasets ----
-open_data = read.csv("www/combined_open_data.csv", fileEncoding = 'UTF-8-BOM') #%>% 
-    #filter(exp != "Colloff et al. (2021b): Exp 2: High vs. Low pose reinstatement") # Filter out this dataset for now until I figure out problems
+open_data = read.csv("www/combined_open_data.csv", fileEncoding = 'UTF-8-BOM') %>% 
+    filter(!grepl("Smith", exp)) # Filter out these sequential datasets with no designated suspect
 
 ### AUC effect sizes ----
 effect_sizes = read.csv("www/auc_ratios.csv", fileEncoding = 'UTF-8-BOM') %>% 
@@ -259,7 +262,8 @@ data_tab <- tabItem(
     box(width = 12,
         collapsible = TRUE,
         title = "ROC Curves",
-        plotOutput("hypothetical_ROC_plot")),
+        plotOutput("hypothetical_ROC_plot"),
+        tags$p("Points falling on the y-axis indicate that some confidence levels were not associated with any culprit/suspect IDs. This is only a visual indicator and does not preclude simulation from the data.")),
         #textOutput("auc_diff_text")),
     box(width = 6,
         collapsible = TRUE,
@@ -277,7 +281,23 @@ sdtlu_tab = tabItem(tabName = "sdtlu_tab",
                         title = "SDT parameter estimates from data",
                         tags$p("If you wish to generate data for simulation from an SDT model, you may want to get an idea of what parameter values to use, either from your own data or from one of the available open datasets. This tab allows you to estimate SDT parameters from an uploaded dataset using functions from Cohen et al.`s (2021) ", a(href = "https://link.springer.com/article/10.3758%2Fs13428-020-01402-7", 'sdtlu', .noWS = 'outside'), " R package."),
                         tags$br(),
-                        tags$p("To estimate parameters, fill in the following information about your dataset below and click `Get SDT parameter estimates`. Once estimation is complete, this page will display estimated parameter values, and several sdtlu plots, including: model-implied SDT distributions and model-predicted vs. data ROCs and response frequencies.")),
+                        tags$p("To estimate parameters, fill in the following information about your dataset below and click `Get SDT parameter estimates`. Once estimation is complete, this page will display estimated parameter values, and several sdtlu plots, including: model-implied SDT distributions and model-predicted vs. data ROCs and response frequencies."),
+                        tags$br(),
+                        radioButtons(
+                            "sdtlu_fit_fcn",
+                            "Fit measure to use",
+                            choices = c("G2",
+                                        "chi_square"),
+                            selected = "G2"
+                        ),
+                        numericInput("sdtlu_n_fits",
+                                     "Number of sdtlu fits",
+                                     value = 3,
+                                     min = 1),
+                        bsTooltip("sdtlu_n_fits",
+                                  "Default 3 fits. Increase to avoid local minima or if model fit is poor (but be aware this can substantially increase estimation time)",
+                                  placement = "bottom",
+                                  trigger = "hover")),
                     box(width = 6,
                             textOutput("cond1_label"),
                             radioButtons(
@@ -314,6 +334,10 @@ sdtlu_tab = tabItem(tabName = "sdtlu_tab",
                     ),
                     box(width = 12,
                         dataTableOutput("sdtlu_estimates")),
+                    bsTooltip("sdtlu_estimates",
+                              "P-values computed from a X2 distribution with df = 1 (valid only for X2)",
+                              placement = "bottom",
+                              trigger = "hover"),
                     box(width = 12,
                         plotOutput("sdtlu_params_sim_plot")),
                     box(width = 12,
@@ -1104,6 +1128,7 @@ server <- function(input, output, session) {
             filter(exp == input$open_dataset) %>% 
             arrange(cond) %>% 
             mutate(cond = as.factor(cond))
+        
         
         # Flag datasets that don't have a designated innocent suspect ----
         if (data_files$processed_data$exp[1] %in% c("Colloff et al. (2021b): Exp 1: Same-pose vs. Different-pose encoding-test", 
@@ -2767,22 +2792,22 @@ server <- function(input, output, session) {
         #### Set fitting options ----
         if (input$simultaneous_sequential_sim_a == "Simultaneous") {
             options_a = list(model_type = "sim",
-                             fit_fcn = "G2",
+                             fit_fcn = input$sdtlu_fit_fcn,
                              fix_p = "data",
                              fix_sigma_t = "free",
                              use_restr_data = FALSE,
                              run_bootstrap = FALSE,
-                             n_fits = 3)
+                             n_fits = input$sdtlu_n_fits)
             
             est_pos_prop_a = NA
         } else {
             options_a = list(model_type = "seq",
-                             fit_fcn = "G2",
+                             fit_fcn = input$sdtlu_fit_fcn,
                              fix_p = "data",
                              fix_sigma_t = "free",
                              use_restr_data = FALSE,
                              run_bootstrap = FALSE,
-                             n_fits = 3)
+                             n_fits = input$sdtlu_n_fits)
             
             est_pos_prop_a = as.character(paste0(data_sdtlu_processed_a$pos_prop, collapse = ", "))
         }
@@ -2848,22 +2873,22 @@ server <- function(input, output, session) {
         #### Set fitting options ----
         if (input$simultaneous_sequential_sim_b == "Simultaneous") {
             options_b = list(model_type = "sim",
-                             fit_fcn = "G2",
+                             fit_fcn = input$sdtlu_fit_fcn,
                              fix_p = "data",
                              fix_sigma_t = "free",
                              use_restr_data = FALSE,
                              run_bootstrap = FALSE,
-                             n_fits = 3)
+                             n_fits = input$sdtlu_n_fits)
             
             est_pos_prop_b = NA
         } else {
             options_b = list(model_type = "seq",
-                             fit_fcn = "G2",
+                             fit_fcn = input$sdtlu_fit_fcn,
                              fix_p = "data",
                              fix_sigma_t = "free",
                              use_restr_data = FALSE,
                              run_bootstrap = FALSE,
-                             n_fits = 3)
+                             n_fits = input$sdtlu_n_fits)
             
             est_pos_prop_b = as.character(paste0(data_sdtlu_processed_b$pos_prop, collapse = ", "))
         }
@@ -2921,9 +2946,9 @@ server <- function(input, output, session) {
             left_join(params_data_b) %>% 
             `colnames<-`(c("Parameter", parameters$cond1, parameters$cond2))
         
-        fit_measures = data.frame("Parameter" = "Fit (G2)",
-                                  "Cond1" = sdtlu_fit_a$best_fit_measure,
-                                  "Cond2" = sdtlu_fit_b$best_fit_measure) %>% 
+        fit_measures = data.frame("Parameter" = "Fit statistic (P-value)",
+                                  "Cond1" = paste0(sdtlu_fit_a$best_fit_measure, " (", pchisq(sdtlu_fit_a$best_fit_measure, 1, lower.tail = FALSE), ")"),
+                                  "Cond2" = paste0(sdtlu_fit_b$best_fit_measure, " (", pchisq(sdtlu_fit_b$best_fit_measure, 1, lower.tail = FALSE), ")")) %>% 
             `colnames<-`(c("Parameter", parameters$cond1, parameters$cond2))
         
         data_files$sdtlu_estimates = data_files$sdtlu_estimates %>% 
@@ -3720,13 +3745,13 @@ server <- function(input, output, session) {
                                                                parameters$cond1,
                                                                parameters$cond2)) {
                             
-                            confidence_interval_diff = boot.ci(results, index=3, conf=(1-(input$alpha_level*2)), type='bca')
+                            confidence_interval_diff = boot.ci(DPP_results, index=3, conf=(1-(input$alpha_level*2)), type='bca')
                             ci_diff=confidence_interval_diff$bca[,c(4,5)]
                             
                             sim_store$sig_dpp[i] = ifelse(ci_diff[2] < 0, 1, 
                                                           ifelse(is.na(ci_diff[1]) | is.na(ci_diff[2]), NA, 0))
                         } else {
-                            confidence_interval_diff = boot.ci(results, index=3, conf=(1-(input$alpha_level*2)), type='bca')
+                            confidence_interval_diff = boot.ci(DPP_results, index=3, conf=(1-(input$alpha_level*2)), type='bca')
                             ci_diff=confidence_interval_diff$bca[,c(4,5)]
                             
                             sim_store$sig_dpp[i] = ifelse(ci_diff[1] > 0, 1, 
@@ -4470,13 +4495,13 @@ server <- function(input, output, session) {
                                                                    parameters$cond1,
                                                                    parameters$cond2)) {
                                 
-                                confidence_interval_diff = boot.ci(results, index=3, conf=(1-(input$alpha_level*2)), type='bca')
+                                confidence_interval_diff = boot.ci(DPP_results, index=3, conf=(1-(input$alpha_level*2)), type='bca')
                                 ci_diff=confidence_interval_diff$bca[,c(4,5)]
                                 
                                 sim_store$sig_dpp[i] = ifelse(ci_diff[2] < 0, 1, 
                                                               ifelse(is.na(ci_diff[1]) | is.na(ci_diff[2]), NA, 0))
                             } else {
-                                confidence_interval_diff = boot.ci(results, index=3, conf=(1-(input$alpha_level*2)), type='bca')
+                                confidence_interval_diff = boot.ci(DPP_results, index=3, conf=(1-(input$alpha_level*2)), type='bca')
                                 ci_diff=confidence_interval_diff$bca[,c(4,5)]
                                 
                                 sim_store$sig_dpp[i] = ifelse(ci_diff[1] > 0, 1, 

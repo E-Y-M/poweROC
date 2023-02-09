@@ -717,7 +717,7 @@ write.csv(smith_exp2,
           na = "")
 
 # Kaesler et al. (2020) Simultaneous vs. Sequential ----
-kaesler = read.csv("./Dataset testing and reports/Data/Kaesler et al., 2020/Kaesler_2020data.csv") %>% 
+kaesler = read.csv("./Dataset testing and reports/Data/Kaesler et al., 2020/Kaesler_2020data.csv") #%>% 
     rename("cond" = Lineup_Method,
            "culprit_present" = Lineup_Type,
            "conf_level" = id_confidence,
@@ -811,7 +811,8 @@ mutate(suspect_position = ifelse(cond == "US", NA, suspect_position),
                         ifelse(decision == suspect, "suspect", "filler")),
        lineup_size = ifelse(cond == "US", 6, 9)) %>% 
     select(cond, culprit_present, id_type, conf_level, lineup_size, suspect_position) %>% 
-    mutate(conf_level = (as.numeric(conf_level)/10)+1)
+    mutate(conf_level = (as.numeric(conf_level)/10)+1,
+           exp = "Seale-Carlisle & Mickes (2015): US vs. UK lineups")
 
 write.csv(seale,
           "./Dataset testing and reports/Data/Seale-Carlisle & Mickes, 2016/seale_processed_for_estimation.csv",

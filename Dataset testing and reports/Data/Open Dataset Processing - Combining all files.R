@@ -28,7 +28,7 @@ for (i in 1:length(fileList)) {
                           curr_dataset)
 }
 
-## Read in alread-entered lineup sizes ----
+## Read in already-entered lineup sizes ----
 lineup_sizes_old = read.csv("./Dataset testing and reports/Data/Lineup sizes.csv",
                             fileEncoding = "UTF-8-BOM")
 
