@@ -731,10 +731,11 @@ results_tab = tabItem(
         collapsible = TRUE,
         tags$h1("Results"),
         textOutput("time_taken"),
+        textOutput("dpp_errors"),
         tags$br(),
         div(style = 'overflow-x: scroll', dataTableOutput("pwr_store")),
         tags$br(),
-        tags$p(strong("You can download a summary report of the power analysis (including all simulation parameters) by clicking the button below.")),
+        tags$p(strong("You can download a summary report of the power analysis (including all simulation parameters) by clicking the button below. If you encounter an error and the simulation results do not display here, they should still appear in the downloaded report.")),
         downloadButton("report_dl",
                        "Download summary report"),
         #actionButton("upload_results",
@@ -845,7 +846,7 @@ server <- function(input, output, session) {
     #shinyjs::hide("previous_sim_box")
     
     ## initial setup ----
-    hide("effs_different")
+    shinyjs::hide("effs_different")
     
     output$cond1_label = renderText({"Condition 1"})
     
@@ -1114,11 +1115,11 @@ server <- function(input, output, session) {
     ### Choose whether to upload data or use an open dataset ----
     observeEvent(input$data_source, {
         if (input$data_source == "Upload data") {
-            show("user_data")
-            hide("open_dataset")
+            shinyjs::show("user_data")
+            shinyjs::hide("open_dataset")
         } else {
-            hide("user_data")
-            show("open_dataset")
+            shinyjs::hide("user_data")
+            shinyjs::show("open_dataset")
         }
     })
     
@@ -1197,8 +1198,8 @@ server <- function(input, output, session) {
             output$cond2_lineup_text = NULL
 
             
-            hide("lineup_size_1")
-            hide("lineup_size_2")
+            shinyjs::hide("lineup_size_1")
+            shinyjs::hide("lineup_size_2")
         } else if (input$designated_suspect == "No") {
             ### lineup size ----
             output$cond1_lineup_text = renderPrint({
@@ -1210,8 +1211,8 @@ server <- function(input, output, session) {
                         parameters$cond2)
             })
             
-            show("lineup_size_1")
-            show("lineup_size_2")
+            shinyjs::show("lineup_size_1")
+            shinyjs::show("lineup_size_2")
             
             updateNumericInput(session,
                                "lineup_size_1",
@@ -1657,57 +1658,57 @@ server <- function(input, output, session) {
                                 )
     
     observeEvent(input$empirical_theoretical, {
-        hide("sim_start")
+        shinyjs::hide("sim_start")
         
         if (input$empirical_theoretical == "Data") {
-            show("eff_type")
-            show("effs")
+            shinyjs::show("eff_type")
+            shinyjs::show("effs")
             
-            hide("sim_seq_a")
-            hide("lineup_sizes_a")
-            hide("mu_t_a")
-            hide("sigma_t_a")
-            hide("cs_a")
-            hide("pos_prop_a")
+            shinyjs::hide("sim_seq_a")
+            shinyjs::hide("lineup_sizes_a")
+            shinyjs::hide("mu_t_a")
+            shinyjs::hide("sigma_t_a")
+            shinyjs::hide("cs_a")
+            shinyjs::hide("pos_prop_a")
             
-            hide("sim_seq_b")
-            hide("lineup_sizes_b")
-            hide("mu_t_b")
-            hide("sigma_t_b")
-            hide("cs_b")
-            hide("pos_prop_b")
+            shinyjs::hide("sim_seq_b")
+            shinyjs::hide("lineup_sizes_b")
+            shinyjs::hide("mu_t_b")
+            shinyjs::hide("sigma_t_b")
+            shinyjs::hide("cs_b")
+            shinyjs::hide("pos_prop_b")
             
         } else {
-            show("sim_seq_a")
-            show("lineup_sizes_a")
-            show("mu_t_a")
-            show("sigma_t_a")
-            show("cs_a")
+            shinyjs::show("sim_seq_a")
+            shinyjs::show("lineup_sizes_a")
+            shinyjs::show("mu_t_a")
+            shinyjs::show("sigma_t_a")
+            shinyjs::show("cs_a")
             
-            show("sim_seq_b")
-            show("lineup_sizes_b")
-            show("mu_t_b")
-            show("sigma_t_b")
-            show("cs_b")
+            shinyjs::show("sim_seq_b")
+            shinyjs::show("lineup_sizes_b")
+            shinyjs::show("mu_t_b")
+            shinyjs::show("sigma_t_b")
+            shinyjs::show("cs_b")
             
-            hide("eff_type")
-            hide("effs")
+            shinyjs::hide("eff_type")
+            shinyjs::hide("effs")
         }
     })
     
     observeEvent(input$sim_seq_a, {
         if (input$sim_seq_a == "Simultaneous") {
-            hide("pos_prop_a")
+            shinyjs::hide("pos_prop_a")
         } else {
-            show("pos_prop_a")
+            shinyjs::show("pos_prop_a")
         }
     })
     
     observeEvent(input$sim_seq_b, {
         if (input$sim_seq_a == "Simultaneous") {
-            hide("pos_prop_b")
+            shinyjs::hide("pos_prop_b")
         } else {
-            show("pos_prop_b")
+            shinyjs::show("pos_prop_b")
         }
     })
     
@@ -1857,8 +1858,8 @@ server <- function(input, output, session) {
                         input$n_TP_lineups))
         
         if (input$n_total_lineups == 1) {
-            hide("n_TA_lineups")
-            hide("n_TP_lineups")
+            shinyjs::hide("n_TA_lineups")
+            shinyjs::hide("n_TP_lineups")
             updateNumericInput(session,
                                "n_TA_lineups",
                                value = .5)
@@ -1866,8 +1867,8 @@ server <- function(input, output, session) {
                                "n_TP_lineups",
                                value = .5)
         } else {
-            show("n_TA_lineups")
-            show("n_TP_lineups")
+            shinyjs::show("n_TA_lineups")
+            shinyjs::show("n_TP_lineups")
             updateNumericInput(session,
                                "n_TA_lineups",
                                value = input$n_total_lineups/2)
@@ -1882,9 +1883,9 @@ server <- function(input, output, session) {
     ### measure to include ----
     observeEvent(input$measure, {
         if (input$measure == "DPP") {
-            hide("roc_trunc")
+            shinyjs::hide("roc_trunc")
         } else {
-            show("roc_trunc")
+            shinyjs::show("roc_trunc")
         }
     })
     
@@ -1894,7 +1895,7 @@ server <- function(input, output, session) {
         #req(input$n_lineups)
         
         max_n = max(unique(extract(input$ns)))
-        max_boot_iter = max_n * input$n_total_lineups
+        max_boot_iter = round(max_n * input$n_total_lineups * 1.025)
         
         if (input$measure != "pAUC") {
             updateNumericInput(session,
@@ -1962,8 +1963,8 @@ server <- function(input, output, session) {
         req(data_files$processed_data)
         
         if (input$eff_type == "constant") {
-            hide("effs_different")
-            show("effs")
+            shinyjs::hide("effs_different")
+            shinyjs::show("effs")
             
             parameters$effs_different = rep(0, times = parameters$n_confs)
             
@@ -1972,8 +1973,8 @@ server <- function(input, output, session) {
                             value = parameters$effs_different)
             
         } else {
-            show("effs_different")
-            hide("effs")
+            shinyjs::show("effs_different")
+            shinyjs::hide("effs")
             
             parameters$effs = 0
             
@@ -2010,9 +2011,9 @@ server <- function(input, output, session) {
     ### Custom ROC truncation ----
     observeEvent(input$roc_trunc, {
         if (input$roc_trunc == "Custom") {
-            show("custom_trunc") 
+            shinyjs::show("custom_trunc") 
         } else {
-            hide("custom_trunc")
+            shinyjs::hide("custom_trunc")
         }
     })
     
@@ -2047,7 +2048,7 @@ server <- function(input, output, session) {
                     arrange(conf_level) %>% 
                     mutate(conf_effs = 1)
                 
-                hide("sim_start")
+                shinyjs::hide("sim_start")
             } else {
                 data_files$conf_effs_data = data.frame(
                     conf_level = unique(data_files$processed_data$conf_level)) %>% 
@@ -2055,7 +2056,7 @@ server <- function(input, output, session) {
                     arrange(conf_level) %>% 
                     mutate(conf_effs = parameters$effs_different)
                 
-                show("sim_start")
+                shinyjs::show("sim_start")
             }
             
             #### getting proportion data from each condition ----
@@ -2188,7 +2189,7 @@ server <- function(input, output, session) {
                 Change the maximum effect size(s) or the direction of the effect sizes to be tested"
                 ))
                 
-                hide("sim_start")
+                shinyjs::hide("sim_start")
             } else if (min(parameters$effs) < -1) {
                 showModal(modalDialog(
                     title = "Warning",
@@ -2196,9 +2197,9 @@ server <- function(input, output, session) {
                 Please ensure that all effect sizes are greater than or equal to -1"
                 ))
                 
-                hide("sim_start")
+                shinyjs::hide("sim_start")
             } else {
-                show("sim_start")
+                shinyjs::show("sim_start")
             }
             
             ROC_data_wide = spread(ROC_data,
@@ -2341,7 +2342,7 @@ server <- function(input, output, session) {
                     
                     parameters$pos_prop_a = c(rep(1/parameters$lineup_sizes_a), times = lineup_sizes_a)
 
-                    hide("sim_start")
+                    shinyjs::hide("sim_start")
                 } else {
                     simmed_data_a = as.data.frame(t(as.data.frame(sdtlu_seq_sim(params_a, parameters$lineup_sizes_a, n_trials, n_sims, pos_prop = parameters$pos_prop_a))))
                     simmed_data_a$id_type = rep(c(rep("suspect", length(parameters$cs_a)),
@@ -2439,7 +2440,7 @@ server <- function(input, output, session) {
                     
                     parameters$pos_prop_b = c(rep(1/parameters$lineup_sizes_b), times = lineup_sizes_b)
                     
-                    hide("sim_start")
+                    shinyjs::hide("sim_start")
                 } else {
                     simmed_data_b = as.data.frame(t(as.data.frame(sdtlu_seq_sim(params_b, parameters$lineup_sizes_b, n_trials, n_sims, pos_prop = parameters$pos_prop_b))))
                     simmed_data_b$id_type = rep(c(rep("suspect", length(parameters$cs_b)),
@@ -2678,7 +2679,7 @@ server <- function(input, output, session) {
                 Change the maximum effect size(s) or the direction of the effect sizes to be tested"
                 ))
                 
-                hide("sim_start")
+                shinyjs::hide("sim_start")
             } else if (min(parameters$effs) < -1) {
                 showModal(modalDialog(
                     title = "Warning",
@@ -2686,9 +2687,9 @@ server <- function(input, output, session) {
                 Please ensure that all effect sizes are greater than or equal to -1"
                 ))
                 
-                hide("sim_start")
+                shinyjs::hide("sim_start")
             } else {
-                show("sim_start")
+                shinyjs::show("sim_start")
             }
             
             ROC_data_wide = spread(ROC_data,
@@ -3275,6 +3276,7 @@ server <- function(input, output, session) {
         #                                       sd_bootstrap = NA)
         
         other_vars$start_time = Sys.time()
+        dpp_errors = 0
         start_time = Sys.time()
         
         other_vars$sim_total = input$nsims * length(parameters$ns) * length(parameters$effs)
@@ -3350,7 +3352,7 @@ server <- function(input, output, session) {
         #proc_power_store = matrix(nrow = length(parameters$ns),
         #                          ncol = length(parameters$effs))
         
-        show("sim_progress")
+        shinyjs::show("sim_progress")
         sim_counter = 0
         other_vars$sim_counter = 0
         
@@ -4012,7 +4014,7 @@ server <- function(input, output, session) {
                                 
                                 parameters$pos_prop_a = c(rep(1/parameters$lineup_sizes_a), times = lineup_sizes_a)
                                 
-                                hide("sim_start")
+                                shinyjs::hide("sim_start")
                             } else {
                                 simmed_data_a = as.data.frame(t(as.data.frame(sdtlu_seq_sim(params_a, parameters$lineup_sizes_a, curr_trials, 1, pos_prop = parameters$pos_prop_a))))
                                 simmed_data_a$id_type = rep(c(rep("suspect", length(parameters$cs_a)),
@@ -4114,7 +4116,7 @@ server <- function(input, output, session) {
                                 
                                 parameters$pos_prop_b = c(rep(1/parameters$lineup_sizes_b), times = lineup_sizes_b)
                                 
-                                hide("sim_start")
+                                shinyjs::hide("sim_start")
                             } else {
                                 simmed_data_b = as.data.frame(t(as.data.frame(sdtlu_seq_sim(params_b, parameters$lineup_sizes_b, curr_trials, 1, pos_prop = parameters$pos_prop_b))))
                                 simmed_data_b$id_type = rep(c(rep("suspect", length(parameters$cs_b)),
@@ -4483,9 +4485,14 @@ server <- function(input, output, session) {
                             ###### Adjusting the difference confidence interval based on alpha level/test ----
                             if (input$test_tails == "2_tail") {
                                 #generate 95% CIs Bias Corrected and Accelerated
-                                confidence_interval_diff = boot.ci(DPP_results, index=3, conf=(1-input$alpha_level), type='bca')
-                                ci_diff=confidence_interval_diff$bca[,c(4,5)]
+                                confidence_interval_diff = try(boot.ci(DPP_results, index=3, conf=(1-input$alpha_level), type='bca'))
                                 
+                                if ("try-error" %in% class(confidence_interval_diff)) {
+                                    ci_diff = NA
+                                    dpp_errors = dpp_errors + 1
+                                } else {
+                                    ci_diff = confidence_interval_diff$bca[,c(4,5)]
+                                }
                                 
                                 sim_store$sig_dpp[i] = ifelse(ci_diff[1] < 0 & ci_diff[2] < 0, 1, 
                                                               ifelse(ci_diff[1] > 0 & ci_diff[2] > 0, 1, 
@@ -4495,8 +4502,14 @@ server <- function(input, output, session) {
                                                                    parameters$cond1,
                                                                    parameters$cond2)) {
                                 
-                                confidence_interval_diff = boot.ci(DPP_results, index=3, conf=(1-(input$alpha_level*2)), type='bca')
-                                ci_diff=confidence_interval_diff$bca[,c(4,5)]
+                                confidence_interval_diff = try(boot.ci(DPP_results, index=3, conf=(1-(input$alpha_level*2)), type='bca'))
+                                
+                                if("try-error" %in% class(confidence_interval_diff)) {
+                                    ci_diff = NA
+                                    dpp_errors = dpp_errors + 1
+                                } else {
+                                    ci_diff = confidence_interval_diff$bca[,c(4,5)]
+                                }
                                 
                                 sim_store$sig_dpp[i] = ifelse(ci_diff[2] < 0, 1, 
                                                               ifelse(is.na(ci_diff[1]) | is.na(ci_diff[2]), NA, 0))
@@ -4874,6 +4887,10 @@ server <- function(input, output, session) {
             other_vars$time_taken
         })
         
+        output$dpp_errors = renderText({
+            paste("DPP bootstrapping errors: ", dpp_errors, sep = "")
+        })
+        
         other_vars$sims_complete = 1
         
         #### TESTING: Save the raw simulation results ----
@@ -5228,7 +5245,7 @@ server <- function(input, output, session) {
             message("Rendered previous params data")
             
             shinyjs::show("previous_sim_box")
-            show("transfer_params")
+            shinyjs::show("transfer_params")
             }
     })
     
