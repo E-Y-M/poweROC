@@ -268,11 +268,11 @@ data_tab <- tabItem(
     box(width = 6,
         collapsible = TRUE,
         title = "Example data",
-        dataTableOutput("example_data")),
+        DT::DTOutput("example_data")),
     box(width = 6,
         collapsible = TRUE,
         title = "Your data",
-        div(style = 'overflow-x: scroll',dataTableOutput("processed_data")))
+        div(style = 'overflow-x: scroll',DT::DTOutput("processed_data")))
 )
 
 ### sdtlu tab ----
@@ -333,7 +333,7 @@ sdtlu_tab = tabItem(tabName = "sdtlu_tab",
                         class = "btn-info"
                     ),
                     box(width = 12,
-                        dataTableOutput("sdtlu_estimates")),
+                        DT::DTOutput("sdtlu_estimates")),
                     bsTooltip("sdtlu_estimates",
                               "P-values computed from a X2 distribution with df = 1 (valid only for X2)",
                               placement = "bottom",
@@ -371,7 +371,7 @@ effects_tab = tabItem(tabName = "effects_tab",
                       ,
                       box(width = 12, 
                           collapsible = TRUE,
-                          dataTableOutput("effect_sizes")))
+                          DT::DTOutput("effect_sizes")))
                       
 
 ### simulation parameters tab ----
@@ -716,6 +716,8 @@ validation_tab = tabItem(
         title = "",
         collapsible = FALSE,
         includeHTML("./www/App-Testing-Results.html")
+        #htmlOutput("app_validation")
+        #tags$iframe(src="./www/App-Testing-Results.html")
     )
 )
 
@@ -733,7 +735,7 @@ results_tab = tabItem(
         textOutput("time_taken"),
         textOutput("dpp_errors"),
         tags$br(),
-        div(style = 'overflow-x: scroll', dataTableOutput("pwr_store")),
+        div(style = 'overflow-x: scroll', DT::DTOutput("pwr_store")),
         tags$br(),
         tags$p(strong("You can download a summary report of the power analysis (including all simulation parameters) by clicking the button below. If you encounter an error and the simulation results do not display here, they should still appear in the downloaded report.")),
         downloadButton("report_dl",
@@ -775,15 +777,15 @@ previous_tab = tabItem(tabName = "previous_tab",
                                #        min = 0
                            ),
                        box(width = 12,
-                           div(style = 'overflow-x: scroll', dataTableOutput("power_results"))),
+                           div(style = 'overflow-x: scroll', DT::DTOutput("power_results"))),
                        box(id = "previous_sim_box",
                            width = 12,
                            tags$h4("Previous simulation power curves"),
                            plotOutput("previous_sim_plot"),
                            tags$h4("Previous simulation AUC effect sizes"),
-                           dataTableOutput("previous_sim_effs"),
+                           DT::DTOutput("previous_sim_effs"),
                            tags$h4("Previous simulation parameters"),
-                           dataTableOutput("previous_sim_params"),
+                           DT::DTOutput("previous_sim_params"),
                            hidden(actionButton("transfer_params",
                                                "Transfer these parameters to my simulation",
                                                width = '100%',
@@ -951,16 +953,16 @@ server <- function(input, output, session) {
                                 previous_sim_params = data.frame(Parameter = rep(NA, times = 8)),
                                 previous_sim_effs = NULL)
     
-    output$example_data = renderDataTable({
+    output$example_data = DT::renderDT({
         example_data
     })
     
-    output$effect_sizes = renderDataTable({
+    output$effect_sizes = DT::renderDT({
         effect_sizes
     })
     
     observeEvent(input$effects_tab_link, {
-        output$effect_sizes = renderDataTable({
+        output$effect_sizes = DT::renderDT({
             effect_sizes})
     })
     
@@ -1322,11 +1324,11 @@ server <- function(input, output, session) {
         }
     })
     
-    output$user_data = renderDataTable({
+    output$user_data = DT::renderDT({
         data_files$user_data
     })
     
-    output$processed_data = renderDataTable({
+    output$processed_data = DT::renderDT({
         data_files$processed_data
     })
     
@@ -2955,7 +2957,7 @@ server <- function(input, output, session) {
         data_files$sdtlu_estimates = data_files$sdtlu_estimates %>% 
             rbind(fit_measures)
         
-        output$sdtlu_estimates = renderDataTable({
+        output$sdtlu_estimates = DT::renderDT({
             data_files$sdtlu_estimates
         })
         
@@ -4918,7 +4920,7 @@ server <- function(input, output, session) {
     })
     
     ## render final simulation results ----
-    output$pwr_store = renderDataTable({
+    output$pwr_store = DT::renderDT({
         data_files$pwr_store
     })
     
@@ -5114,7 +5116,7 @@ server <- function(input, output, session) {
     })
     
     ## render results compendium ----
-    output$power_results = renderDataTable({
+    output$power_results = DT::renderDT({
         input$upload_results
         as_tibble(read_sheet(google_sheet_id, "Power results")) %>% 
             arrange(desc(sim_id))
@@ -5232,13 +5234,13 @@ server <- function(input, output, session) {
             message("Rendered previous sim plot")
             
             ### rendering the dataframes ----
-            output$previous_sim_effs = renderDataTable({
+            output$previous_sim_effs = DT::renderDT({
                 data_files$previous_sim_effs
             })
             
             message("Rendered previous effs data")
             
-            output$previous_sim_params = renderDataTable({
+            output$previous_sim_params = DT::renderDT({
                 data_files$previous_sim_params
             })
             
@@ -5306,11 +5308,11 @@ server <- function(input, output, session) {
     #})
     #
     #### rendering the dataframes ----
-    #output$previous_sim_effs = renderDataTable({
+    #output$previous_sim_effs = DT::renderDT({
     #    data_files$previous_sim_effs
     #})
     #
-    #output$previous_sim_params = renderDataTable({
+    #output$previous_sim_params = DT::renderDT({
     #    data_files$previous_sim_params
     #})
     
