@@ -715,9 +715,9 @@ validation_tab = tabItem(
         width = 12,
         title = "",
         collapsible = FALSE,
-        includeHTML("./www/App-Testing-Results.html")
+        #includeHTML("./www/App-Testing-Results.html")
         #htmlOutput("app_validation")
-        #tags$iframe(src="./www/App-Testing-Results.html")
+        tags$iframe(src="./www/App-Testing-Results.html")
     )
 )
 

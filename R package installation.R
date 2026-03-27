@@ -22,4 +22,6 @@ pacman::p_load(
 
 renv::restore()
 
-# powe(R)OC also uses the 'sdtlu' package (Cohen et al., 2020). To install that package, see the instructions at https://osf.io/mfk4e/wiki/home/
+install.packages("sdtlu_0.0.0.90100.tar.gz", repos=NULL)
+
+# powe(R)OC also uses the 'sdtlu' package (Cohen et al., 2020). To install that package, see the instructions at https://osf.io/mfk4e/wiki?wiki=unvk5
